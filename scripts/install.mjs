@@ -69,11 +69,14 @@ async function main() {
 	await ensureDir(path.join(ompHome, "rules"));
 	await ensureDir(path.join(ompHome, "agents"));
 
-	// Link extension quality hook
-	await linkOrCopy(
-		path.join(repoRoot, "extensions", "hkx-language-quality.ts"),
-		path.join(ompHome, "extensions", "hkx-language-quality.ts"),
-	);
+	// Link extensions from package.json omp.extensions
+	const pkg = JSON.parse(await fs.readFile(path.join(repoRoot, "package.json"), "utf-8"));
+	const extensions = pkg.omp?.extensions ?? [];
+	for (const ext of extensions) {
+		const srcPath = path.resolve(repoRoot, ext);
+		const destName = path.basename(ext);
+		await linkOrCopy(srcPath, path.join(ompHome, "extensions", destName));
+	}
 
 	// Link commands
 	const commands = await fs.readdir(path.join(repoRoot, "commands"));
