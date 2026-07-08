@@ -28,6 +28,17 @@ To install globally into `~/.omp/agent/` (symlink where possible, copy fallback 
 npm run install-global
 ```
 
+## Discovery Model
+
+OMP exposes this package differently from Claude Code.
+
+- **Extension-package mode**: when you load `hkx-omp-workflows` via `omp -e ./hkx-omp-workflows` or `.omp/settings.json#extensions`, OMP discovers the package root and automatically scans its sibling `commands/`, `skills/`, `rules/`, `agents/`, and `.mcp.json` surfaces.
+- **Global install mode**: when you run `npm run install-global`, this package links or copies its `commands/`, `skills/`, `rules/`, `agents/`, extension modules, and `APPEND_SYSTEM.md` into `~/.omp/agent/`, which is one of OMP's native discovery roots.
+- **Skills**: discovered skills are surfaced to the model as metadata in the system prompt, are readable through `skill://<name>`, and can also appear as `/skill:<name>` commands when OMP skill commands are enabled.
+- **Agents**: discovered agents become available to the OMP agent runner and task orchestration surfaces without a separate manual copy step.
+
+In short: Claude Code often encourages a directory-by-directory mental model. OMP uses provider-based discovery, so loading the package root or installing into `~/.omp/agent/` is enough.
+
 ## Commands
 
 All commands use an `hkx-` prefix to avoid collisions with OMP built-ins.
@@ -55,6 +66,15 @@ All commands use an `hkx-` prefix to avoid collisions with OMP built-ins.
 | `/hkx-orch-review` | Multi-dimension adversarial review of local changes or a PR using parallel OMP reviewer agents |
 | `/hkx-session-summary` | Generate a concise session-end summary from git log and file change evidence |
 | `/hkx-workflow` | Research, plan, implement, verify, and review with OMP-native agents |
+| `/hkx-orch-add-feature` | Thin wrapper entrypoint for the net-new feature orchestration workflow |
+| `/hkx-orch-build-mvp` | Turn a spec document into a thin-slice MVP orchestration workflow |
+| `/hkx-orch-change-feature` | Thin wrapper entrypoint for existing-behavior change orchestration |
+| `/hkx-orch-fix-defect` | Thin wrapper entrypoint for bug-fix orchestration with regression-first flow |
+| `/hkx-orch-refine-code` | Thin wrapper entrypoint for behavior-preserving refactor orchestration |
+| `/hkx-harness-audit` | Audit prompts, skills, commands, MCP, extensions, and safety layers in the local OMP harness |
+| `/hkx-loop-start` | Design and stage a managed autonomous loop with explicit stop conditions |
+| `/hkx-loop-status` | Inspect loop state from local checkpoints, plans, and progress signals |
+| `/hkx-model-route` | Recommend the best OMP model role or service tier for the current task |
 ## Skills
 
 | Skill | Purpose |
@@ -120,10 +140,51 @@ All commands use an `hkx-` prefix to avoid collisions with OMP built-ins.
 | `hkx-ecc-recipes` | Map a described OMP workflow to the right hkx- command group with run-order and stop condition |
 | `hkx-orch-review` | Multi-agent adversarial review workflow using parallel reviewer agents, dedup, and adversarial verification |
 | `hkx-session-summary` | Generate a concise session-end summary from git log and file change evidence |
+| `hkx-orch-pipeline` | Shared gated orchestration engine behind the `hkx-orch-*` workflow family |
+| `hkx-orch-add-feature` | Net-new feature delivery orchestration: research, plan, TDD, review, and commit gates |
+| `hkx-orch-build-mvp` | Turn a design/spec doc into a thin-slice MVP delivery sequence |
+| `hkx-orch-change-feature` | Change existing behavior safely with plan, tests, review, and commit gates |
+| `hkx-orch-fix-defect` | Bug-fix orchestration built around reproduction, regression tests, and review |
+| `hkx-orch-refine-code` | Behavior-preserving refactor orchestration with cleanup and reviewer gates |
+| `hkx-loop-design-check` | Goal-deciding safety check for autonomous or recursive agent loops |
+| `hkx-agent-self-evaluation` | Structured 5-axis self-evaluation rubric for non-trivial agent output |
+| `hkx-browser-qa` | Read-only browser QA using the OMP browser tool for smoke, interaction, and visual checks |
+| `hkx-growth-log` | Capture reusable learning patterns after complex work, failures, or reviews |
+| `hkx-benchmark-optimization-loop` | Bounded measured optimization loop for repeated performance experiments |
+| `hkx-data-throughput-accelerator` | Faster backfills, ETL, export, and table sync with correctness accounting |
+| `hkx-latency-critical-systems` | Realtime and hot-path performance workflow for freshness and p95 latency |
+| `hkx-recursive-decision-ledger` | Durable ledger for repeated rollouts, recursive search, and marked decisions |
+| `hkx-eval-harness` | Eval-driven development framework for agent workflows and regression suites |
+| `hkx-council` | Four-voice structured disagreement for ambiguous tradeoff decisions |
+| `hkx-product-lens` | Pressure-test product direction before turning it into an implementation contract |
+| `hkx-product-capability` | Turn PRD intent into an implementation-ready capability contract |
+| `hkx-design-system` | Generate or audit design systems and styling consistency |
+| `hkx-frontend-design-direction` | Set a stronger product-specific visual direction for web UI work |
+| `hkx-make-interfaces-feel-better` | Polish spacing, typography, motion, and interaction quality in UI work |
+| `hkx-postgres-patterns` | PostgreSQL schema, indexing, and query guidance adapted for OMP workflows |
+| `hkx-redis-patterns` | Redis caching, data structures, rate limits, and lock patterns |
+| `hkx-kubernetes-patterns` | Kubernetes deployment, RBAC, probes, autoscaling, and kubectl debugging |
+| `hkx-skill-comply` | Measure whether skills, rules, and agent definitions are actually being followed |
+| `hkx-content-hash-cache-pattern` | Path-independent file-processing cache pattern using content hashes |
+| `hkx-cost-aware-llm-pipeline` | Budget, routing, retry, and prompt-caching patterns for LLM-backed systems |
+| `hkx-regex-vs-llm-structured-text` | Hybrid decision framework for structured-text parsing with deterministic-first extraction |
+| `hkx-prompt-optimizer` | Turn a rough request into a stronger OMP-native prompt with explicit scope and validation |
+| `hkx-skill-stocktake` | Audit a local OMP skill portfolio for overlap, staleness, and weak discoverability |
 
-This package ports 15 portable reviewer, documentation, build resolver, and architecture agents.
+This package ports 25 portable reviewer, planning, orchestration, documentation,
+build resolver, and architecture agents.
 
-
+| Agent | Purpose |
+|---|---|
+| `architect` | System-design and architectural tradeoff specialist for larger structural changes |
+| `planner` | Requirement-to-step planning specialist with validation and risk breakdowns |
+| `tdd-guide` | Test-first implementation specialist for narrow, behavior-focused changes |
+| `refactor-cleaner` | Conservative cleanup and dead-code refactoring specialist |
+| `docs-lookup` | Current library and API documentation lookup specialist |
+| `e2e-runner` | Critical-journey end-to-end testing specialist |
+| `database-reviewer` | PostgreSQL schema, migration, and query-safety specialist |
+| `loop-operator` | Bounded autonomous-loop operator with checkpoint and stall controls |
+| `harness-optimizer` | OMP harness configuration optimizer for reliability, cost, and throughput |
 | `build-error-resolver` | Build and TypeScript error resolution specialist for minimal code changes and quick recovery |
 | `code-architect` | Designs feature architectures by analyzing codebase patterns and providing implementation blueprints |
 | `code-explorer` | Deeply analyzes codebase features by tracing execution paths, mapping architecture layers, and documenting dependencies |
@@ -140,20 +201,14 @@ This package ports 15 portable reviewer, documentation, build resolver, and arch
 | `silent-failure-hunter` | Reviewer for swallowed errors, dangerous fallbacks, and missing failure propagation |
 | `typescript-reviewer` | Expert TypeScript/JavaScript code reviewer specializing in safety, correctness, and patterns |
 
-### Manual Activation Requirement
+## Agent Exposure
 
-> **IMPORTANT**: OMP core currently does not automatically discover `agents/` directories inside extension packages.
-> To use these agents, you must manually copy or symlink them into your local OMP project's agent folder:
->
-> ```bash
-> # Copy to project-level OMP agents folder
-> cp hkx-omp-workflows/agents/*.md .omp/agents/
->
-> # Or copy to user-level OMP agents folder
-> cp hkx-omp-workflows/agents/*.md ~/.omp/agents/
-> ```
->
-> Once copied/linked, they will be discoverable by OMP's agent runner (e.g. `/agent <agent-name>`).
+Agents ship in two supported ways:
+
+- **Extension-package discovery**: load this package with `omp -e ./hkx-omp-workflows` or an `extensions` entry, and OMP will discover `agents/` directly from the package root alongside `skills/` and `commands/`.
+- **Native OMP install**: run `npm run install-global`, and the install script will link or copy `agents/*.md` into `~/.omp/agent/agents/` together with the rest of the package surfaces.
+
+You only need a manual `cp` or symlink if you are intentionally bypassing both of those supported loading paths.
 
 ## Engineering Pack
 
@@ -167,7 +222,9 @@ across stacks:
 `hkx-hexagonal-architecture`, `hkx-database-migrations`,
 `hkx-production-audit`, `hkx-repo-scan`, `hkx-codebase-onboarding`,
 `hkx-code-tour`, `hkx-architecture-decision-records`,
-`hkx-documentation-lookup`, `hkx-e2e-testing`, and `hkx-accessibility`.
+`hkx-documentation-lookup`, `hkx-e2e-testing`, `hkx-accessibility`,
+`hkx-content-hash-cache-pattern`, `hkx-cost-aware-llm-pipeline`, and
+`hkx-regex-vs-llm-structured-text`.
 
 Use `hkx-engineering-pack` as a router when the task spans multiple engineering
 surfaces.
@@ -204,9 +261,12 @@ The language-quality extension only notifies. It does not format files, edit fil
 
 OMP loads `.mcp.json` from extension package roots automatically to configure default Model Context Protocol (MCP) servers.
 
-- **Bundled Defaults**: `hkx-omp-workflows` includes `.mcp.json` at its root which exposes four default MCP servers (`github`, `context7`, `exa`, and `playwright`). Additional servers like `memory` and `sequential-thinking` are available in the reference catalog below.
-- **Reference Catalog**: A sanitized reference catalog is located at `mcp-configs/mcp-servers.json` with various common servers and instructions on how to add them.
-- **Disabling MCPs**: To disable or override these default servers, use the `disabledMcpServers` or `mcpServers` settings in the OMP project config (`.omp/settings.json`), rather than the environment variables or filters used in HKX.
+- **Bundled Defaults**: `hkx-omp-workflows` keeps root `.mcp.json` intentionally lean and only auto-loads four default servers: `github`, `context7`, `exa`, and `playwright`.
+- **Optional Templates**: `mcp-configs/templates/` now exposes three additive MCP templates: `memory`, `reasoning` (`sequential-thinking`), and `research` (`firecrawl`). Apply them with `npm run mcp:apply-profile -- <name>`, which writes additively to `.omp/mcp.json` by default.
+- **Composable Loads**: You can stack templates in one pass, for example `npm run mcp:apply-profile -- memory reasoning`, or target the user-level file with `npm run mcp:apply-profile -- --scope user research`. OMP named profiles are also supported via `npm run mcp:apply-profile -- --scope user --profile deep-research research`.
+- **Global Install Asset Path**: `npm run install-global` also installs the catalog and helper script under `~/.omp/agent/hkx-omp-workflows/` as an auxiliary asset directory. OMP does not auto-discover that package root just because it exists under `~/.omp/agent/`; it is there so you can still run the helper and inspect the templates after a global install. Package-root auto-loading still requires `omp -e <path>` or an explicit `extensions` entry.
+- **Reference Catalog**: `mcp-configs/mcp-servers.json` remains the broader sanitized catalog of common MCP servers; the shipped templates are thin, named opt-in slices of that catalog.
+- **Disabling And Overrides**: Use `.omp/mcp.json` or `~/.omp/agent/mcp.json` for overrides. Use `disabledServers` in the user-level `mcp.json` to suppress discovered servers by name, or define the same server name in project/user `mcp.json` to override a bundled default.
 
 ## Validate
 

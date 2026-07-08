@@ -27,6 +27,15 @@ This package ports a small, useful slice of HKX into an OMP-native extension pac
 | `ECC/workflows/orch-review.workflow.js` | `commands/hkx-orch-review.md` | Multi-dimension adversarial review: parallel reviewer agents, dedup, adversarial verify of CRITICAL/HIGH. Uses OMP `task` for parallel review agents instead of ECC native Workflow tool |
 | `ECC/.kiro/hooks/session-summary.kiro.hook` | `commands/hkx-session-summary.md` | Session-end summary via `eval` and LLM completion, with optional persistence to `.omp/session-summary.log` |
 | `ECC/skills/delivery-gate/SKILL.md` | `commands/hkx-delivery-gate.md` | Pre-completion quality gate: OMP-native manual checklist using `bash` (disk, git) and `glob`/`grep` (learning artifacts, rationalization heuristics) |
+| `ECC/commands/orch-add-feature.md` | `commands/hkx-orch-add-feature.md` | Thin OMP wrapper over `hkx-orch-add-feature`; preserves gated orchestration while aligning names and OMP command paths |
+| `ECC/commands/orch-build-mvp.md` | `commands/hkx-orch-build-mvp.md` | Thin OMP wrapper over `hkx-orch-build-mvp`; removed ECC GAN-harness assumptions and aligned to `.omp/prds/` / OMP slice workflow |
+| `ECC/commands/orch-change-feature.md` | `commands/hkx-orch-change-feature.md` | Thin OMP wrapper over `hkx-orch-change-feature`; keeps changed-tests-first semantics and OMP gate wording |
+| `ECC/commands/orch-fix-defect.md` | `commands/hkx-orch-fix-defect.md` | Thin OMP wrapper over `hkx-orch-fix-defect`; keeps regression-first bug-fix flow and OMP build-fix references |
+| `ECC/commands/orch-refine-code.md` | `commands/hkx-orch-refine-code.md` | Thin OMP wrapper over `hkx-orch-refine-code`; keeps behavior-preserving refactor gates with OMP reviewer references |
+| `ECC/commands/harness-audit.md` | `commands/hkx-harness-audit.md` | Reinterpreted for OMP: deterministic ECC script dependency removed; now audits prompts, skills, commands, MCP, extensions, and safety surfaces via OMP-native evidence |
+| `ECC/commands/loop-start.md` | `commands/hkx-loop-start.md` | Rewritten for OMP: removed Claude hook/profile assumptions and converted to OMP loop design + staging workflow using `hkx-loop-design-check` and `loop-operator` |
+| `ECC/commands/loop-status.md` | `commands/hkx-loop-status.md` | Rewritten for OMP: removed Claude transcript scanning and ECC CLI dependency; now inspects `.omp/checkpoints.log`, plans, and local progress signals |
+| `ECC/commands/model-route.md` | `commands/hkx-model-route.md` | Rewritten for OMP model roles (`smol`/`default`/`slow`/`plan`) and `/fast` service-tier guidance instead of Claude model naming |
 
 ## Ported Skills
 
@@ -104,6 +113,25 @@ This package ports a small, useful slice of HKX into an OMP-native extension pac
 | `ECC/.kiro/hooks/session-summary.kiro.hook` | `skills/session-summary/SKILL.md` | Adapted to OMP: Kiro agentStop hook converted to explicit command + skill using `eval`/`completion` and optional `.omp/session-summary.log` persistence |
 | `ECC/skills/kubernetes-patterns/SKILL.md` | `skills/kubernetes-patterns/SKILL.md` | Adapted to OMP ops-pack; cross-language infrastructure skill paired with `hkx-docker-patterns`/`hkx-deployment-patterns`; kubectl and YAML content unchanged |
 | `ECC/skills/agent-self-evaluation/SKILL.md` | `skills/agent-self-evaluation/SKILL.md` | OMP adaptation: 5-axis self-evaluation rubric and report template; removed `templates/evaluation-report.md` and `references/hook-integration.md` external refs (template inlined); Stop hook trigger generalized to OMP session-end beat; `agent-eval` related-skill ref replaced with OMP `ai-regression-testing`; pairs with `agent-evaluator` agent |
+| `ECC/skills/council/SKILL.md` | `skills/council/SKILL.md` | Adapted to OMP: structured four-voice decision workflow kept, references aligned to OMP planner/architect agents |
+| `ECC/skills/data-throughput-accelerator/SKILL.md` | `skills/data-throughput-accelerator/SKILL.md` | Adapted to OMP: normalized naming, kept throughput/accounting workflow, and added OMP `.omp/` artifact-path guidance |
+| `ECC/skills/design-system/SKILL.md` | `skills/design-system/SKILL.md` | Adapted to OMP frontend workflow references and package naming |
+| `ECC/skills/eval-harness/SKILL.md` | `skills/eval-harness/SKILL.md` | Adapted to OMP agent-session and eval-driven workflow language |
+| `ECC/skills/frontend-design-direction/SKILL.md` | `skills/frontend-design-direction/SKILL.md` | Adapted to OMP UI-workflow references and naming |
+| `ECC/skills/make-interfaces-feel-better/SKILL.md` | `skills/make-interfaces-feel-better/SKILL.md` | Adapted to OMP UI-polish workflow references and naming |
+| `ECC/skills/postgres-patterns/SKILL.md` | `skills/postgres-patterns/SKILL.md` | Adapted to OMP database workflow references; pairs with `database-reviewer` and `hkx-database-migrations` |
+| `ECC/skills/product-capability/SKILL.md` | `skills/product-capability/SKILL.md` | Adapted to OMP PRD-to-capability workflow and `.omp/` artifact expectations |
+| `ECC/skills/product-lens/SKILL.md` | `skills/product-lens/SKILL.md` | Adapted to OMP product-diagnostic workflow and related-skill references |
+| `ECC/skills/redis-patterns/SKILL.md` | `skills/redis-patterns/SKILL.md` | Adapted to OMP compact infrastructure guidance and package naming |
+| `ECC/skills/skill-comply/SKILL.md` | `skills/skill-comply/SKILL.md` | Adapted to OMP skills/rules/agents compliance measurement language |
+| `ECC/skills/benchmark-optimization-loop/SKILL.md` | `skills/benchmark-optimization-loop/SKILL.md` | Adapted to OMP: bounded optimization loop with `.omp/benchmarks/` ledger guidance and related-skill links |
+| `ECC/skills/latency-critical-systems/SKILL.md` | `skills/latency-critical-systems/SKILL.md` | Adapted to OMP: hot-path latency workflow with browser/canary validation references and OMP artifact guidance |
+| `ECC/skills/recursive-decision-ledger/SKILL.md` | `skills/recursive-decision-ledger/SKILL.md` | Adapted to OMP: recursive rollout ledger with `.omp/ledgers/` default path and OMP safety framing |
+| `ECC/skills/content-hash-cache-pattern/SKILL.md` | `skills/content-hash-cache-pattern/SKILL.md` | Adapted to OMP: compact service-layer cache pattern with OMP-friendly file-processing and benchmark references |
+| `ECC/skills/cost-aware-llm-pipeline/SKILL.md` | `skills/cost-aware-llm-pipeline/SKILL.md` | Adapted to OMP: cost-control guidance rewritten around OMP model roles and interactive routing surfaces |
+| `ECC/skills/regex-vs-llm-structured-text/SKILL.md` | `skills/regex-vs-llm-structured-text/SKILL.md` | Adapted to OMP: compact deterministic-first parsing guidance with OMP cost-routing references |
+| `ECC/skills/prompt-optimizer/SKILL.md` | `skills/prompt-optimizer/SKILL.md` | Adapted to OMP: advisory prompt-rewrite workflow mapped to OMP commands, skills, and agents instead of direct execution |
+| `ECC/skills/skill-stocktake/SKILL.md` | `skills/skill-stocktake/SKILL.md` | Adapted to OMP: local-first audit workflow for OMP/native extension skill portfolios instead of Claude-only stocktake scripts |
 
 ## Ported Rules
 
@@ -148,9 +176,11 @@ The `hkx-gateguard.ts` extension blocks tool execution via the `tool_call` event
 | `HKX/.mcp.json` | `.mcp.json` | Standard default MCP server configurations, automatically loaded by OMP's extension plugin loader |
 | `HKX/mcp-configs/mcp-servers.json` | `mcp-configs/mcp-servers.json` | Sanitized reference catalog of common MCP configurations (removed Claude/HKX install-specific details) |
 
+OMP-native addition: `mcp-configs/templates/*.json` plus `scripts/apply-mcp-profile.mjs` provide small additive MCP templates for `memory`, `sequential-thinking`, and `firecrawl`. This keeps the root `.mcp.json` lean while giving OMP users an explicit opt-in path at `.omp/mcp.json`, `~/.omp/agent/mcp.json`, or a named OMP profile's `agent/mcp.json`.
+
 ### Deferred MCP Surfaces
 
-- `HKX/scripts/lib/mcp-config.js` and associated tests: The install/sync filter `HKX_DISABLED_MCPS` is an HKX-specific feature and is not needed in the OMP extension package surface.
+- `HKX/scripts/lib/mcp-config.js` and associated tests: The install/sync filter `HKX_DISABLED_MCPS` is not ported as-is. OMP uses additive merges through `mcp-configs/templates/*.json` and `scripts/apply-mcp-profile.mjs` instead of HKX-specific env filtering.
 - `HKX/scripts/hooks/mcp-health-check.js` and other hook-based MCP utilities: These are harness-specific and are managed natively by OMP's internal extension/plugin capabilities.
 
 ## Ported Agents
@@ -172,6 +202,15 @@ The `hkx-gateguard.ts` extension blocks tool execution via the `tool_call` event
 | `HKX/agents/typescript-reviewer.md` | `agents/typescript-reviewer.md` | Adapted tools to OMP canonical names; updated rules/skills references; model set to `pi/slow` |
 | `HKX/agents/build-error-resolver.md` | `agents/build-error-resolver.md` | Enabled OMP canonical tools; updated references to local commands/skills (`hkx-refactor-clean`, `hkx-plan`, `tdd-workflow`) |
 | `ECC/agents/agent-evaluator.md` | `agents/agent-evaluator.md` | OMP adaptation: tools `[read, search, find, bash, lsp, ast_grep]`, model `pi/slow`, kept Prompt Defense Baseline and Bash read-only constraints; removed `scripts/evaluate.py` output binding (template inlined); evaluates agent output on 5 axes, orthogonal to `code-reviewer` (which reviews code) |
+| `ECC/agents/architect.md` | `agents/architect.md` | OMP adaptation: read-only architecture/tradeoff agent with canonical tools `[read, search, find]` and `pi/slow` model |
+| `ECC/agents/planner.md` | `agents/planner.md` | OMP adaptation: read-only implementation planner with canonical tools `[read, search, find]` and OMP validation/risk framing |
+| `ECC/agents/tdd-guide.md` | `agents/tdd-guide.md` | OMP adaptation: write-capable TDD agent using canonical tools, OMP validation language, and `hkx-tdd-workflow` references |
+| `ECC/agents/refactor-cleaner.md` | `agents/refactor-cleaner.md` | OMP adaptation: cleanup/refactor agent using canonical tools, conservative deletion rules, and behavior-preservation framing |
+| `ECC/agents/docs-lookup.md` | `agents/docs-lookup.md` | OMP adaptation: docs-search agent using `web_search` plus local evidence instead of direct MCP-prefixed tool names |
+| `ECC/agents/e2e-runner.md` | `agents/e2e-runner.md` | OMP adaptation: E2E agent aligned to OMP browser tool and repo-native test stacks |
+| `ECC/agents/database-reviewer.md` | `agents/database-reviewer.md` | OMP adaptation: PostgreSQL reviewer using canonical tools and OMP skill references (`hkx-postgres-patterns`, `hkx-database-migrations`) |
+| `ECC/agents/loop-operator.md` | `agents/loop-operator.md` | OMP adaptation: autonomous-loop operator using canonical task/todo/yield tools and `.omp/checkpoints.log` guidance |
+| `ECC/agents/harness-optimizer.md` | `agents/harness-optimizer.md` | OMP adaptation: harness-surface optimizer focused on `AGENTS.md`, `.mcp.json`, `.omp/settings.json`, and extension/rule drift |
 
 ### Deferred / Skipped Agents
 

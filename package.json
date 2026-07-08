@@ -6,7 +6,8 @@
   "description": "OMP-native core workflow package adapted from Everything Claude Code.",
   "scripts": {
     "validate": "node scripts/validate.mjs",
-    "install-global": "node scripts/install.mjs"
+    "install-global": "node scripts/install.mjs",
+    "mcp:apply-profile": "node scripts/apply-mcp-profile.mjs"
   },
   "omp": {
     "name": "hkx-omp-workflows",

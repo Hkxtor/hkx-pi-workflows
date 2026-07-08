@@ -194,9 +194,10 @@
     }
   },
   "_comments": {
-    "usage": "Copy the servers you need to your OMP settings.json mcpServers section",
+    "usage": "Apply a named template from mcp-configs/templates/ or copy the servers you need into an OMP mcp.json file",
     "env_vars": "Replace YOUR_*_HERE placeholders with actual values",
-    "disabling": "Disable bundled MCPs via OMP settings.json using the mcpServers configuration or disableMcpServers overrides",
+    "templates": "Optional additive templates currently cover memory, reasoning, and research under mcp-configs/templates/",
+    "disabling": "Disable bundled MCPs with disabledServers in ~/.omp/agent/mcp.json, or override them by defining the same server name in .omp/mcp.json or ~/.omp/agent/mcp.json",
     "context_warning": "Keep under 10 MCPs enabled to preserve context window"
   }
 }

@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "memory": {
+      "file": "memory.json",
+      "description": "Add persistent cross-session memory tools.",
+      "servers": ["memory"]
+    },
+    "reasoning": {
+      "file": "reasoning.json",
+      "description": "Add sequential-thinking for explicit stepwise reasoning.",
+      "servers": ["sequential-thinking"]
+    },
+    "research": {
+      "file": "research.json",
+      "description": "Add firecrawl for fetch, crawl, and research workflows.",
+      "servers": ["firecrawl"],
+      "requiresEnv": ["FIRECRAWL_API_KEY"]
+    }
+  }
+}

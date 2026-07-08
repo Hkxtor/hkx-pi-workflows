@@ -62,12 +62,14 @@ async function mergeMcpConfig(srcPath, destPath) {
 
 async function main() {
 	console.log(`Installing OMP Workflows globally to ${ompHome}...`);
+	const packageAssetRoot = path.join(ompHome, "hkx-omp-workflows");
 
 	await ensureDir(path.join(ompHome, "extensions"));
 	await ensureDir(path.join(ompHome, "commands"));
 	await ensureDir(path.join(ompHome, "skills"));
 	await ensureDir(path.join(ompHome, "rules"));
 	await ensureDir(path.join(ompHome, "agents"));
+	await ensureDir(path.join(packageAssetRoot, "scripts"));
 
 	// Link extensions from package.json omp.extensions
 	const pkg = JSON.parse(await fs.readFile(path.join(repoRoot, "package.json"), "utf-8"));
@@ -131,6 +133,16 @@ async function main() {
 	await linkOrCopy(
 		path.join(repoRoot, "APPEND_SYSTEM.md"),
 		path.join(ompHome, "APPEND_SYSTEM.md"),
+	);
+
+	// Link MCP template assets for optional profile-based loading
+	await linkOrCopy(
+		path.join(repoRoot, "mcp-configs"),
+		path.join(packageAssetRoot, "mcp-configs"),
+	);
+	await linkOrCopy(
+		path.join(repoRoot, "scripts", "apply-mcp-profile.mjs"),
+		path.join(packageAssetRoot, "scripts", "apply-mcp-profile.mjs"),
 	);
 
 	console.log("Global installation to ~/.omp completed successfully!");

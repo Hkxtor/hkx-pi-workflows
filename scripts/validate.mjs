@@ -9,6 +9,10 @@ const requiredFiles = [
 	"README.md",
 	".mcp.json",
 	"mcp-configs/mcp-servers.json",
+	"mcp-configs/templates/manifest.json",
+	"mcp-configs/templates/memory.json",
+	"mcp-configs/templates/reasoning.json",
+	"mcp-configs/templates/research.json",
 	"docs/conversion-map.md",
 	"APPEND_SYSTEM.md",
 	"commands/hkx-workflow.md",
@@ -29,6 +33,15 @@ const requiredFiles = [
 	"commands/hkx-orch-review.md",
 	"commands/hkx-session-summary.md",
 	"commands/hkx-delivery-gate.md",
+	"commands/hkx-orch-add-feature.md",
+	"commands/hkx-orch-build-mvp.md",
+	"commands/hkx-orch-change-feature.md",
+	"commands/hkx-orch-fix-defect.md",
+	"commands/hkx-orch-refine-code.md",
+	"commands/hkx-harness-audit.md",
+	"commands/hkx-loop-start.md",
+	"commands/hkx-loop-status.md",
+	"commands/hkx-model-route.md",
 	"skills/tdd-workflow/SKILL.md",
 	"skills/security-review/SKILL.md",
 	"skills/coding-standards/SKILL.md",
@@ -82,6 +95,15 @@ const requiredFiles = [
 	"skills/loop-design-check/SKILL.md",
 	"skills/growth-log/SKILL.md",
 	"skills/agent-self-evaluation/SKILL.md",
+	"skills/benchmark-optimization-loop/SKILL.md",
+	"skills/content-hash-cache-pattern/SKILL.md",
+	"skills/cost-aware-llm-pipeline/SKILL.md",
+	"skills/data-throughput-accelerator/SKILL.md",
+	"skills/latency-critical-systems/SKILL.md",
+	"skills/prompt-optimizer/SKILL.md",
+	"skills/recursive-decision-ledger/SKILL.md",
+	"skills/regex-vs-llm-structured-text/SKILL.md",
+	"skills/skill-stocktake/SKILL.md",
 	"rules/hkx-common-security.md",
 	"rules/hkx-common-testing.md",
 	"rules/hkx-common-coding-style.md",
@@ -101,6 +123,7 @@ const requiredFiles = [
 	"rules/hkx-web-performance.md",
 	"extensions/hkx-language-quality.ts",
 	"extensions/hkx-gateguard.ts",
+	"scripts/apply-mcp-profile.mjs",
 	"agents/typescript-reviewer.md",
 	"agents/build-error-resolver.md",
 	"agents/python-reviewer.md",
@@ -114,6 +137,15 @@ const requiredFiles = [
 	"agents/pr-test-analyzer.md",
 	"agents/doc-updater.md",
 	"agents/agent-evaluator.md",
+	"agents/architect.md",
+	"agents/planner.md",
+	"agents/tdd-guide.md",
+	"agents/refactor-cleaner.md",
+	"agents/docs-lookup.md",
+	"agents/e2e-runner.md",
+	"agents/database-reviewer.md",
+	"agents/loop-operator.md",
+	"agents/harness-optimizer.md",
 ];
 
 const disallowed = [
@@ -228,7 +260,28 @@ function normalizePackagePath(entry) {
 	return entry.replace(/^\.\//, "");
 }
 
+function sortJson(value) {
+	if (Array.isArray(value)) return value.map(sortJson);
+	if (value && typeof value === "object") {
+		return Object.fromEntries(
+			Object.entries(value)
+				.sort(([left], [right]) => left.localeCompare(right))
+				.map(([key, nested]) => [key, sortJson(nested)]),
+		);
+	}
+	return value;
+}
+
 const errors = [];
+
+async function readJsonFile(relativePath) {
+	try {
+		return JSON.parse(await fs.readFile(path.join(root, relativePath), "utf8"));
+	} catch (error) {
+		errors.push(`${relativePath}: invalid JSON ${error.message}`);
+		return undefined;
+	}
+}
 
 const requiredFileNames = new Set();
 for (const relativePath of requiredFiles) {
@@ -337,6 +390,75 @@ if (!Array.isArray(extensionEntries)) {
 	}
 	for (const entry of allowedExtensions) {
 		if (!normalizedEntries.has(entry)) errors.push(`package.json: missing OMP extension entry ${entry}`);
+	}
+}
+
+const mcpCatalog = await readJsonFile("mcp-configs/mcp-servers.json");
+const templateManifest = await readJsonFile("mcp-configs/templates/manifest.json");
+const templateProfiles = templateManifest?.profiles;
+if (!templateProfiles || typeof templateProfiles !== "object" || Array.isArray(templateProfiles)) {
+	errors.push("mcp-configs/templates/manifest.json: profiles must be an object");
+} else {
+	const seenTemplateFiles = new Set();
+	for (const [profileName, profile] of Object.entries(templateProfiles)) {
+		if (!/^[a-z0-9-]+$/.test(profileName)) {
+			errors.push(`mcp-configs/templates/manifest.json: invalid profile name ${JSON.stringify(profileName)}`);
+		}
+		if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+			errors.push(`mcp-configs/templates/manifest.json: profile ${profileName} must be an object`);
+			continue;
+		}
+
+		const { description, file, servers, requiresEnv } = profile;
+		if (typeof description !== "string" || description.trim().length === 0) {
+			errors.push(`mcp-configs/templates/manifest.json: profile ${profileName} missing description`);
+		}
+		if (typeof file !== "string" || file.trim().length === 0) {
+			errors.push(`mcp-configs/templates/manifest.json: profile ${profileName} missing file`);
+			continue;
+		}
+		if (file.includes("..") || path.isAbsolute(file)) {
+			errors.push(`mcp-configs/templates/manifest.json: profile ${profileName} file must stay within templates/`);
+			continue;
+		}
+		if (seenTemplateFiles.has(file)) {
+			errors.push(`mcp-configs/templates/manifest.json: duplicate template file ${file}`);
+		}
+		seenTemplateFiles.add(file);
+
+		if (!Array.isArray(servers) || servers.length === 0 || !servers.every(server => typeof server === "string" && server.trim().length > 0)) {
+			errors.push(`mcp-configs/templates/manifest.json: profile ${profileName} must declare a non-empty servers array`);
+			continue;
+		}
+		if (requiresEnv !== undefined && (!Array.isArray(requiresEnv) || !requiresEnv.every(entry => typeof entry === "string" && entry.trim().length > 0))) {
+			errors.push(`mcp-configs/templates/manifest.json: profile ${profileName} requiresEnv must be an array of strings`);
+		}
+
+		const templatePath = path.join("mcp-configs", "templates", file);
+		const template = await readJsonFile(templatePath);
+		const templateServers = template?.mcpServers;
+		if (!templateServers || typeof templateServers !== "object" || Array.isArray(templateServers)) {
+			errors.push(`${templatePath}: mcpServers must be an object`);
+			continue;
+		}
+
+		const templateServerNames = Object.keys(templateServers).sort();
+		const declaredServers = [...servers].sort();
+		if (JSON.stringify(templateServerNames) !== JSON.stringify(declaredServers)) {
+			errors.push(`${templatePath}: template server names must match manifest servers for profile ${profileName}`);
+		}
+
+		for (const serverName of templateServerNames) {
+			const catalogServer = mcpCatalog?.mcpServers?.[serverName];
+			if (!catalogServer) {
+				errors.push(`${templatePath}: server ${serverName} not found in mcp-configs/mcp-servers.json`);
+				continue;
+			}
+			const templateServer = templateServers[serverName];
+			if (JSON.stringify(sortJson(templateServer)) !== JSON.stringify(sortJson(catalogServer))) {
+				errors.push(`${templatePath}: server ${serverName} must match the reference catalog entry`);
+			}
+		}
 	}
 }
 
