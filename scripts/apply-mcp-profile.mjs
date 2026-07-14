@@ -77,7 +77,11 @@ function resolveEnvVarsInServer(server) {
 	if (Array.isArray(resolved.args)) {
 		resolved.args = resolved.args.map((arg) => resolve(arg));
 	}
-	return { config: resolved, missing: Array.from(missing), placeholders: placed };
+	return {
+		config: resolved,
+		missing: Array.from(missing),
+		placeholders: placed,
+	};
 }
 
 async function readJson(filePath, fallback) {
@@ -260,10 +264,12 @@ async function main() {
 				skippedServers.push(serverName);
 				continue;
 			}
-			const { config: resolved, missing, placeholders } =
-				resolveEnvVarsInServer(serverConfig);
-			for (const envVar of resolved.requiresEnv ?? [])
-				requiredEnv.add(envVar);
+			const {
+				config: resolved,
+				missing,
+				placeholders,
+			} = resolveEnvVarsInServer(serverConfig);
+			for (const envVar of resolved.requiresEnv ?? []) requiredEnv.add(envVar);
 			for (const m of missing) unresolvedEnv.add(m);
 			if (placeholders.length > 0) {
 				placeholderServers.push(`${serverName} (${placeholders.join(", ")})`);
