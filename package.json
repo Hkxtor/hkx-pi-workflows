@@ -23,6 +23,7 @@
   },
   "scripts": {
     "validate": "node scripts/validate.mjs",
+    "test": "node scripts/tests/run.mjs",
     "install-global": "node scripts/install.mjs",
     "mcp:apply-profile": "node scripts/apply-mcp-profile.mjs"
   },

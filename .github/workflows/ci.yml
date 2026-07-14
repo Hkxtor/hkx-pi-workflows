@@ -1,0 +1,21 @@
+# Minimal CI for @hkx/pi-workflows (MF-4).
+# Keeps package surface validation and versioned smoke on every push/PR.
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate package surfaces
+        run: npm run validate
+      - name: Run versioned smoke suite
+        run: npm test

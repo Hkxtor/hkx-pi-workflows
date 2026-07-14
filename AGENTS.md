@@ -20,7 +20,7 @@ Included surfaces:
 - `GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (Path B only)
 - `APPEND_SYSTEM.md` — source for global `~/.pi/agent/APPEND_SYSTEM.md` (Path B only)
 - `.mcp.json` and `mcp-configs/` — MCP defaults and templates (Path B only)
-- `scripts/` — day-to-day package scripts (`install`, `validate`, `mcp:apply-profile`) plus maintenance-only helpers
+- `scripts/` — day-to-day package scripts (`install`, `validate`, `test`, `mcp:apply-profile`) plus maintenance-only helpers
 - `package.json` dual-path manifest: official `pi` resources + `pi-subagents` agents/chains
 
 Keep this package intentionally small. It should stay focused on a useful core workflow set, not become a giant mirror of every possible domain pack.
@@ -31,7 +31,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 2. Keep surfaces pi-native. Do not add compatibility shims for unrelated runtimes unless the user explicitly asks.
 3. Reuse the package conventions already present instead of introducing a second pattern.
 4. Prefer compact workflow guidance over long tutorial text.
-5. Verify with `npm run validate` after changing package surfaces or install scripts.
+5. Verify with `npm run validate` and `npm test` after changing package surfaces, install scripts, or MCP resolver logic.
 6. Before creating a new surface, check `docs/architecture.md` for layer boundaries, `docs/conversion-map.md` for the current stable package map, and `docs/skill-routing.md` when skill families may overlap.
 7. When changing what gets installed, also check `package.json` (`pi` / `pi-subagents`), `scripts/install.mjs`, `scripts/validate.mjs`, `README.md` dual-path section, `configs/agent-settings.json` (if packages/settings change), and the installed target paths under `~/.pi/agent/`.
 8. Keep dual install paths honest: Path A is `pi install` (official package resources only); Path B is `npm run install-global` (full operator overlays). Do not claim Path A installs rules/MCP/GLOBAL_AGENTS.
@@ -92,7 +92,8 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Day-to-day npm entry points:
   - `npm run install-global` → `scripts/install.mjs` (Path B full operator install)
-  - `npm run validate` → `scripts/validate.mjs` (includes dual-path manifest checks)
+  - `npm run validate` → `scripts/validate.mjs` (includes dual-path manifest checks + MCP catalog lint)
+  - `npm test` → `scripts/tests/run.mjs` (versioned smoke: merge contract + env-resolver)
   - `npm run mcp:apply-profile` → `scripts/apply-mcp-profile.mjs`
 - Official package install (Path A) is `pi install git:...` / `pi install npm:...` and does not run `install.mjs`.
 - Maintenance-only helpers stay as direct `node scripts/...` invocations and must **not** be promoted into `package.json` scripts unless they become part of the normal operator path.
@@ -130,7 +131,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 You are successful when:
 
 - the requested package surface is complete and internally consistent
-- `npm run validate` passes
+- `npm run validate` and `npm test` pass
 - install behavior matches documentation
 - global files under `~/.pi/agent/` come from the intended sources
 - the result is smaller, clearer, and more pi-native than the source material it was adapted from

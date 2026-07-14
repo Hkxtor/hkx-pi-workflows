@@ -193,7 +193,8 @@ In short: search with pi-fff, reason about code with pi-lens, mutate narrowly.
 | Script | Purpose |
 | --- | --- |
 | `npm run install-global` | Full operator install into `~/.pi/agent/` (Path B) |
-| `npm run validate` | Validate package surfaces, frontmatter, and dual-path manifest |
+| `npm run validate` | Validate package surfaces, frontmatter, dual-path manifest, and MCP catalog invariants |
+| `npm test` | Run versioned smoke suites under `scripts/tests/` (merge + env-resolver) |
 | `npm run mcp:apply-profile` | Apply MCP template profiles |
 
 ### Maintenance-only helpers
@@ -208,7 +209,10 @@ These are **not** part of the normal install/runtime path and are not exposed as
 
 ```bash
 npm run validate
+npm test
 ```
+
+`npm test` runs the versioned smoke suite in `scripts/tests/` (MCP merge contract + env-var resolver / placeholder / args-url guards). Local scratch under `scripts/_smoke/` is gitignored and is not part of the package gate.
 
 ## Design Principles
 

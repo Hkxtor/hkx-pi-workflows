@@ -193,7 +193,8 @@ subagent({
 | 脚本 | 用途 |
 | --- | --- |
 | `npm run install-global` | 完整操作者安装到 `~/.pi/agent/`（路径 B） |
-| `npm run validate` | 校验 package surfaces、frontmatter 与双路径清单 |
+| `npm run validate` | 校验 package surfaces、frontmatter、双路径清单与 MCP 目录不变量 |
+| `npm test` | 运行 `scripts/tests/` 下的版本化冒烟（merge + env-resolver） |
 | `npm run mcp:apply-profile` | 应用 MCP 模板 profile |
 
 官方包安装（路径 A）**不是** npm 脚本：
@@ -214,7 +215,10 @@ pi install git:git@github.com:Hkxtor/hkx-pi-workflows
 
 ```bash
 npm run validate
+npm test
 ```
+
+`npm test` 运行 `scripts/tests/` 下的版本化冒烟套件（MCP merge 契约 + env 解析 / 占位符 / args-url 守护）。`scripts/_smoke/` 仅为本地草稿并已 gitignore，不在包门禁内。
 
 ## 设计原则
 

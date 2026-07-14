@@ -39,6 +39,10 @@ const requiredFiles = [
 	"agents/planner.md",
 	"chains/hkx-pr-review.chain.json",
 	"chains/hkx-feature-flow.chain.json",
+	// MF-4: versioned smoke suite (npm test). Do not re-gitignore these.
+	"scripts/tests/run.mjs",
+	"scripts/tests/merge-contract.mjs",
+	"scripts/tests/resolve-env-vars.mjs",
 ];
 
 const allowedPiTools = new Set([
@@ -301,6 +305,20 @@ async function main() {
 		errors.push(
 			"package.json still has omp block — remove for pi-native package",
 		);
+	// MF-4: package must expose a runnable smoke suite via `npm test`.
+	// Pre-fix the suite lived only under gitignored scripts/_smoke/ and there
+	// was no scripts.test entry — ~62 of ~67 P1 behavior lines were unexercised
+	// in any versioned/CI path.
+	const scripts = pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : {};
+	if (typeof scripts.test !== "string" || scripts.test.trim().length === 0) {
+		errors.push(
+			'package.json scripts.test is required (MF-4: wire versioned smoke via `npm test`)',
+		);
+	} else if (!String(scripts.test).includes("scripts/tests")) {
+		errors.push(
+			'package.json scripts.test should invoke the versioned suite under scripts/tests/',
+		);
+	}
 
 	// Official pi package resources (pi install / package gallery)
 	const pi = pkg.pi && typeof pkg.pi === "object" ? pkg.pi : {};

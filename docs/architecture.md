@@ -263,6 +263,7 @@ Package scripts fall into two buckets:
 1. **Day-to-day npm scripts**
    - `npm run install-global` — Path B: sync package surfaces + merge agent settings + update pi packages
    - `npm run validate` — enforce package surface contracts **and** dual-path manifest shape
+   - `npm test` — versioned smoke under `scripts/tests/` (MCP merge + env-resolver guards)
    - `npm run mcp:apply-profile` — merge MCP templates into a pi MCP config
 
 2. **Maintenance-only helpers**
