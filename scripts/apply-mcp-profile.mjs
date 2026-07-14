@@ -31,8 +31,6 @@ function expandHome(inputPath) {
 	return inputPath;
 }
 
-const PLACEHOLDER_PATTERN = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
-
 /**
  * Shared charset for env-var names referenced via ${VAR} in MCP templates.
  * POSIX env-var names allow [A-Za-z_][A-Za-z0-9_]*; MCP configs commonly
@@ -47,6 +45,33 @@ const PLACEHOLDER_PATTERN = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
  */
 const ENV_VAR_NAME = "[A-Za-z_][A-Za-z0-9_-]*";
 const ENV_VAR_REF = new RegExp(`\\$\{(${ENV_VAR_NAME})}`, "g");
+// Pure ${VAR} templates are env substitutions, not placeholder slots.
+const PURE_ENV_REF = new RegExp(`^\\$\\{(${ENV_VAR_NAME})\\}$`);
+
+/**
+ * Placeholder detection is a property of the TEMPLATE, not of the resolved
+ * secret (MF-2 / typescript B2 / tests T8).
+ *
+ * Whole-string forms (exact slot never filled):
+ *   YOUR_TOKEN_HERE, TOKEN_HERE, REPLACE_ME, <redacted>
+ * Embedded forms (realistic header/arg values):
+ *   Bearer <REPLACE_ME>, prefix YOUR_TOKEN suffix, Authorization: <YOUR_KEY>
+ *
+ * Pure `${VAR}` templates are never placeholders: after substitution the
+ * value is a real env secret (even if that secret happens to equal
+ * REPLACE_ME / YOUR_TOKEN_HERE). Detecting post-substitution was the bug.
+ */
+const PLACEHOLDER_EXACT = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
+const PLACEHOLDER_EMBEDDED =
+	/(?:\bYOUR_[A-Za-z0-9_]+\b|\bREPLACE_ME\b|\b[A-Za-z0-9_]+_HERE\b|<[^\s>]+>)/;
+
+function isPlaceholderTemplate(value) {
+	if (typeof value !== "string") return false;
+	const trimmed = value.trim();
+	if (PURE_ENV_REF.test(trimmed)) return false;
+	if (PLACEHOLDER_EXACT.test(trimmed)) return true;
+	return PLACEHOLDER_EMBEDDED.test(value);
+}
 
 /**
  * True iff `value` still contains an unresolved ${VAR} reference after
@@ -67,7 +92,8 @@ function hasUnresolvedRef(value) {
  *
  * `missing` lists the config keys (env/headers) or arg indices (args)
  * whose resolved value still contains an unresolved ${VAR} reference.
- * `placeholders` lists keys/indices whose value matches PLACEHOLDER_PATTERN.
+ * `placeholders` lists keys/indices whose TEMPLATE (pre-substitution)
+ * matches a placeholder form — never the post-substitution secret.
  */
 function resolveEnvVarsInServer(server) {
 	const resolve = (value) => {
@@ -82,36 +108,37 @@ function resolveEnvVarsInServer(server) {
 	const placed = [];
 	const missing = new Set();
 
-	const check = (key, out) => {
-		if (typeof out !== "string") return;
-		if (PLACEHOLDER_PATTERN.test(out)) placed.push(key);
+	// Placeholder check uses the template; unresolved check uses the output.
+	const check = (key, template, out) => {
+		if (isPlaceholderTemplate(template)) placed.push(key);
 		if (hasUnresolvedRef(out)) missing.add(key);
 	};
 
 	if (resolved.env) {
 		for (const [key, value] of Object.entries(resolved.env)) {
 			const out = resolve(value);
-			check(key, out);
+			check(key, value, out);
 			resolved.env[key] = out;
 		}
 	}
 	if (resolved.headers) {
 		for (const [key, value] of Object.entries(resolved.headers)) {
 			const out = resolve(value);
-			check(key, out);
+			check(key, value, out);
 			resolved.headers[key] = out;
 		}
 	}
 	if (Array.isArray(resolved.args)) {
 		resolved.args = resolved.args.map((arg, i) => {
 			const out = resolve(arg);
-			check(`args[${i}]`, out);
+			check(`args[${i}]`, arg, out);
 			return out;
 		});
 	}
 	if (typeof resolved.command === "string") {
-		const out = resolve(resolved.command);
-		check("command", out);
+		const template = resolved.command;
+		const out = resolve(template);
+		check("command", template, out);
 		resolved.command = out;
 	}
 	return {

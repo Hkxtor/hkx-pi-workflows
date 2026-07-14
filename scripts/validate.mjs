@@ -184,12 +184,12 @@ function lintMcpServerEntry(relativePath, serverName, server, errors) {
 				if (!ENV_VAR_NAME_PATTERN.test(name)) {
 					errors.push(
 						`${relativePath}: server ${JSON.stringify(serverName)} references \${${name}} at ${where}, which does not match the resolver charset [A-Za-z_][A-Za-z0-9_-]*. The resolver would leave it literal; fix the name or widen ENV_VAR_NAME in apply-mcp-profile.mjs.`,
-				);
+					);
 				}
 				if (PLACEHOLDER_LITERAL.test(name)) {
 					errors.push(
 						`${relativePath}: server ${JSON.stringify(serverName)} references a placeholder-looking name \${${name}} at ${where}. Use a real env-var name backed by requiresEnv.`,
-				);
+					);
 				}
 			}
 			if (PLACEHOLDER_LITERAL.test(v)) {
@@ -200,8 +200,7 @@ function lintMcpServerEntry(relativePath, serverName, server, errors) {
 		} else if (Array.isArray(v)) {
 			v.forEach((item, i) => scanValue(`${where}[${i}]`, item));
 		} else if (v && typeof v === "object") {
-			for (const [k, val] of Object.entries(v))
-				scanValue(`${where}.${k}`, val);
+			for (const [k, val] of Object.entries(v)) scanValue(`${where}.${k}`, val);
 		}
 	};
 	for (const field of ["env", "headers"]) {
@@ -212,7 +211,9 @@ function lintMcpServerEntry(relativePath, serverName, server, errors) {
 	if (typeof server.command === "string") scanValue("command", server.command);
 	if (typeof server.url === "string") scanValue("url", server.url);
 
-	const requiresEnv = Array.isArray(server.requiresEnv) ? server.requiresEnv : [];
+	const requiresEnv = Array.isArray(server.requiresEnv)
+		? server.requiresEnv
+		: [];
 	for (const name of requiresEnv) {
 		if (!ENV_VAR_NAME_PATTERN.test(name)) {
 			errors.push(
