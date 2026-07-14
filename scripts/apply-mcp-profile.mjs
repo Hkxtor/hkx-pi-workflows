@@ -87,13 +87,14 @@ function hasUnresolvedRef(value) {
 }
 
 /**
- * Resolve ${VAR} references in a server config (env/headers/args/command)
- * against the current process environment. Returns { config, missing, placeholders }.
+ * Resolve ${VAR} references in a server config
+ * (env/headers/args/command/url) against the current process environment.
+ * Returns { config, missing, placeholders }.
  *
- * `missing` lists the config keys (env/headers) or arg indices (args)
- * whose resolved value still contains an unresolved ${VAR} reference.
- * `placeholders` lists keys/indices whose TEMPLATE (pre-substitution)
- * matches a placeholder form — never the post-substitution secret.
+ * `missing` lists the config keys (env/headers/url/command) or arg indices
+ * (args[i]) whose resolved value still contains an unresolved ${VAR}
+ * reference. `placeholders` lists keys/indices whose TEMPLATE
+ * (pre-substitution) matches a placeholder form — never the post-sub secret.
  */
 function resolveEnvVarsInServer(server) {
 	const resolve = (value) => {
@@ -140,6 +141,14 @@ function resolveEnvVarsInServer(server) {
 		const out = resolve(template);
 		check("command", template, out);
 		resolved.command = out;
+	}
+	// HTTP MCP servers may embed ${VAR} in the URL (query tokens, path refs).
+	// Guard the url channel the same way as env/headers/args/command (MF-3).
+	if (typeof resolved.url === "string") {
+		const template = resolved.url;
+		const out = resolve(template);
+		check("url", template, out);
+		resolved.url = out;
 	}
 	return {
 		config: resolved,
@@ -378,7 +387,7 @@ async function main() {
 	}
 	if (!options.dryRun && unresolvedEnv.size > 0) {
 		throw new Error(
-			`Unresolved \${VAR} references in env/headers: ${Array.from(unresolvedEnv).sort().join(", ")}. ` +
+			`Unresolved \${VAR} references in env/headers/args/command/url: ${Array.from(unresolvedEnv).sort().join(", ")}. ` +
 				"Set these in your environment before applying, or run with --dry-run.",
 		);
 	}
