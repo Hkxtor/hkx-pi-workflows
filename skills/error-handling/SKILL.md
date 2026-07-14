@@ -1,12 +1,12 @@
 ---
 name: hkx-error-handling
-description: Robust OMP error handling across TypeScript, Rust, Python, providers, tools, MCP, streaming, auth, retries, and TUI rendering. Use when designing failures or debugging swallowed errors.
-origin: HKX-converted-for-OMP
+description: Robust Pi error handling across TypeScript, Rust, Python, providers, tools, MCP, streaming, auth, retries, and TUI rendering. Use when designing failures or debugging swallowed errors.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Error Handling For OMP
+# HKX Error Handling For Pi
 
-Use this when adding or changing failure behavior. OMP errors are part of the
+Use this when adding or changing failure behavior. Pi errors are part of the
 agent contract: the user, model, renderer, retry loop, and tests may all depend
 on the exact shape.
 

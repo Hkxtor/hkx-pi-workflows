@@ -1,17 +1,17 @@
 ---
 name: hkx-agent-harness-construction
-description: Design or revise OMP agent tools, command prompts, skill prompts, observations, recovery paths, and action-space boundaries. Use when adding or changing model-callable capabilities.
-origin: HKX-converted-for-OMP
+description: Design or revise Pi agent tools, command prompts, skill prompts, observations, recovery paths, and action-space boundaries. Use when adding or changing model-callable capabilities.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Agent Harness Construction For OMP
+# HKX Agent Harness Construction For Pi
 
-Use this when building or changing how the OMP agent acts: tools, prompts,
+Use this when building or changing how the Pi agent acts: tools, prompts,
 skills, rules, slash commands, extensions, MCP wrappers, or subagent workflows.
 
 ## Harness Contract
 
-Good OMP harness surfaces make the model's next correct action obvious:
+Good Pi harness surfaces make the model's next correct action obvious:
 
 - narrow tool names
 - typed schemas
@@ -25,9 +25,9 @@ Good OMP harness surfaces make the model's next correct action obvious:
 
 | Need | Prefer |
 | --- | --- |
-| Model-readable workflow or domain guidance | `.omp/skills/<name>/SKILL.md` |
-| User-invoked workflow | `.omp/commands/<name>.md` |
-| Passive correction when a pattern appears | `.omp/rules/<name>.md` |
+| Model-readable workflow or domain guidance | `.pi/skills/<name>/SKILL.md` |
+| User-invoked workflow | `.pi/commands/<name>.md` |
+| Passive correction when a pattern appears | `.pi/rules/<name>.md` |
 | Model-callable runtime action | tool or extension tool |
 | Runtime event interception | extension event handler |
 | External service bridge | MCP or extension, depending on lifecycle |
@@ -60,7 +60,7 @@ next: safe retry, verification, or stop condition
 Keep raw logs out of the model context unless the exact bytes matter. Prefer
 artifact paths or bounded excerpts.
 
-## OMP-Specific Guardrails
+## Pi-Specific Guardrails
 
 - Prompts live in static `.md` files and are imported as text.
 - Avoid inline prompt strings in product code.

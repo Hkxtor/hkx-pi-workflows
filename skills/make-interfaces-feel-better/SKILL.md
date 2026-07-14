@@ -1,7 +1,7 @@
 ---
 name: hkx-make-interfaces-feel-better
-description: Apply concrete design-engineering details that make interfaces feel polished. Use when reviewing or improving UI spacing, typography, borders, shadows, motion, hit areas, icons, text wrapping, and interaction states.
-origin: ECC-converted-for-OMP
+description: "Design-engineering polish: spacing, typography, borders, shadows, motion, hit areas, icons, wrapping, and interaction states. Use when reviewing or improving how an existing UI feels. Not design-system creation, architecture patterns, WCAG compliance audits, or browser automation QA."
+origin: ECC-converted-for-Pi
 ---
 
 # Make Interfaces Feel Better

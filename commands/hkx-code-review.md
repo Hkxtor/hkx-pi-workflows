@@ -3,7 +3,7 @@ description: Review local changes or a GitHub PR, prioritizing bugs, regressions
 argument-hint: "[pr-number | pr-url | blank for local diff]"
 ---
 
-# HKX Code Review For OMP
+# HKX Code Review For Pi
 
 Review target: `$ARGUMENTS`
 
@@ -32,7 +32,7 @@ PR mode:
 - Read PR intent, linked issues, and test plan.
 - Read changed files in full where needed, not only hunks.
 
-Always read relevant `AGENTS.md`, `.omp/`, `.codex/`, or other project guidance.
+Always read relevant `AGENTS.md`, `.pi/`, `.codex/`, or other project guidance.
 
 ## Review Checklist
 

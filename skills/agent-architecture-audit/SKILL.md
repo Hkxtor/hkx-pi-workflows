@@ -1,12 +1,12 @@
 ---
 name: hkx-agent-architecture-audit
-description: Audit OMP agent architecture changes across prompts, tools, memory, MCP, retries, compaction, rendering, auth, and persistence. Use before shipping or debugging agent behavior regressions.
-origin: HKX-converted-for-OMP
+description: Audit Pi agent architecture changes across prompts, tools, memory, MCP, retries, compaction, rendering, auth, and persistence. Use before shipping or debugging agent behavior regressions.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Agent Architecture Audit For OMP
+# HKX Agent Architecture Audit For Pi
 
-Use this when OMP's agent behavior changes or degrades. The target is the
+Use this when Pi's agent behavior changes or degrades. The target is the
 `packages/coding-agent/` implementation unless the user names another package.
 
 ## Activate
@@ -16,15 +16,15 @@ Use this when OMP's agent behavior changes or degrades. The target is the
 - Memory, recall, compaction, handoff, retry, or loop behavior changed.
 - MCP, extension loading, marketplace/plugin, or internal URL behavior changed.
 - Provider streaming, tool-call conversion, auth fallback, or usage accounting changed.
-- The same model behaves correctly outside OMP but fails inside OMP.
+- The same model behaves correctly outside Pi but fails inside Pi.
 
-## OMP Stack Layers
+## Pi Stack Layers
 
 Audit the smallest relevant slice, but keep these layers in mind:
 
-| Layer | OMP surface |
+| Layer | Pi surface |
 | --- | --- |
-| Prompt contract | `packages/coding-agent/src/prompts/`, `AGENTS.md`, `.omp/skills/` |
+| Prompt contract | `packages/coding-agent/src/prompts/`, `AGENTS.md`, `.pi/skills/` |
 | Session history | `packages/coding-agent/src/session/` |
 | Memory | `packages/coding-agent/src/mnemopi/`, `packages/mnemopi/` |
 | Tool selection | `packages/coding-agent/src/tools/`, `src/tool-discovery/` |
@@ -38,7 +38,7 @@ Audit the smallest relevant slice, but keep these layers in mind:
 
 1. Identify the user-visible failure:
    - what the user asked for
-   - what OMP did
+   - what Pi did
    - why that violates the contract
 2. Trace the request through only the relevant layers.
 3. Compare model-facing input with runtime output:

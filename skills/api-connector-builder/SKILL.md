@@ -1,10 +1,10 @@
 ---
 name: hkx-api-connector-builder
-description: Build OMP-compatible API connectors, providers, plugins, or MCP integrations by matching the host repo's existing integration architecture.
-origin: HKX-converted-for-OMP
+description: Build Pi-compatible API connectors, providers, plugins, or MCP integrations by matching the host repo's existing integration architecture.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX API Connector Builder For OMP
+# HKX API Connector Builder For Pi
 
 Use when adding one more connector/provider/plugin/tool for an external API and the repo already has integration patterns to follow.
 
@@ -52,7 +52,7 @@ tests
 docs/examples when expected
 ```
 
-For OMP MCP/tool integrations, also verify schema names, idempotency, timeout behavior, observation shape, and permission boundaries.
+For Pi MCP/tool integrations, also verify schema names, idempotency, timeout behavior, observation shape, and permission boundaries.
 
 ### 4. Validate
 

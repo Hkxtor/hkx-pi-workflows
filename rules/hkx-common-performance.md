@@ -1,5 +1,5 @@
 ---
-description: Measurement-first performance, model routing, context, and troubleshooting guidance for HKX OMP workflows.
+description: Measurement-first performance, model routing, context, and troubleshooting guidance for HKX Pi workflows.
 ---
 
 # HKX Common Performance

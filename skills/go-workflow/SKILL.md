@@ -1,6 +1,6 @@
 ---
 name: hkx-go-workflow
-description: Go development workflow for idiomatic implementation, tests, and validation.
+description: Go development workflow for idiomatic implementation, tests, and validation on Pi projects. Use when editing Go code. Not other language workflows or architecture-only hexagonal guidance.
 ---
 
 # HKX Go Workflow

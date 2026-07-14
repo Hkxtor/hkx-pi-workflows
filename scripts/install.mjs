@@ -1,25 +1,62 @@
+#!/usr/bin/env node
+/**
+ * Day-to-day package installer for @hkx/pi-workflows.
+ *
+ * npm entry: npm run install-global
+ *
+ * Syncs package surfaces into ~/.pi/agent for pi / pi-subagents discovery:
+ * - agents/*.md              -> ~/.pi/agent/agents/hkx/*.md   (runtime: hkx.<name>)
+ * - chains/*                 -> ~/.pi/agent/chains/
+ * - commands/ skills/ rules/ -> ~/.pi/agent/{commands,skills,rules}/
+ * - package.json pi.extensions -> ~/.pi/agent/extensions/
+ * - configs/agent-settings.json
+ *                            -> deep-merge into ~/.pi/agent/settings.json
+ *                              (managed keys only: packages + portable defaults)
+ * - GLOBAL_AGENTS.md         -> ~/.pi/agent/AGENTS.md
+ * - APPEND_SYSTEM.md         -> ~/.pi/agent/APPEND_SYSTEM.md
+ * - .mcp.json                -> merge into ~/.pi/agent/mcp.json
+ * - mcp-configs/             -> ~/.pi/agent/hkx-pi-workflows/mcp-configs/ (reference)
+ * - then: pi update --extensions (install/update packages listed in settings)
+ * - configs/pi-permission-system/config.json
+ *                            -> ~/.pi/agent/extensions/pi-permission-system/config.json
+ *                              (after package update; creates the extension dir if missing)
+ *
+ * This is the normal operator install path. It does not run migration helpers.
+ */
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const ompHome = path.join(os.homedir(), ".omp", "agent");
+const piHome = path.join(os.homedir(), ".pi", "agent");
 
 async function ensureDir(dir) {
 	await fs.mkdir(dir, { recursive: true });
 }
 
+async function pathExists(p) {
+	try {
+		await fs.access(p);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 async function linkOrCopy(src, dest) {
 	try {
 		await fs.rm(dest, { force: true, recursive: true });
-	} catch {}
+	} catch {
+		// ignore
+	}
 
 	try {
 		await fs.symlink(src, dest);
 		console.log(`Linked: ${dest} -> ${src}`);
-	} catch (err) {
+	} catch {
 		await fs.cp(src, dest, { recursive: true });
 		console.log(`Copied: ${dest} <- ${src}`);
 	}
@@ -36,15 +73,14 @@ async function mergeMcpConfig(srcPath, destPath) {
 	}
 
 	let destContent = {
-		$schema: "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
 		mcpServers: {},
 	};
 
 	try {
 		const rawDest = await fs.readFile(destPath, "utf-8");
 		destContent = JSON.parse(rawDest);
-	} catch (err) {
-		// File doesn't exist or is invalid JSON; we will initialize it
+	} catch {
+		// init
 	}
 
 	destContent.mcpServers = {
@@ -52,100 +88,296 @@ async function mergeMcpConfig(srcPath, destPath) {
 		...srcContent.mcpServers,
 	};
 
-	if (!destContent.$schema) {
-		destContent.$schema = "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
-	}
-
 	await fs.writeFile(destPath, JSON.stringify(destContent, null, 2), "utf-8");
 	console.log(`Merged MCP configuration: ${destPath}`);
 }
 
-async function main() {
-	console.log(`Installing OMP Workflows globally to ${ompHome}...`);
-	const packageAssetRoot = path.join(ompHome, "hkx-omp-workflows");
-
-	await ensureDir(path.join(ompHome, "extensions"));
-	await ensureDir(path.join(ompHome, "commands"));
-	await ensureDir(path.join(ompHome, "skills"));
-	await ensureDir(path.join(ompHome, "rules"));
-	await ensureDir(path.join(ompHome, "agents"));
-	await ensureDir(path.join(packageAssetRoot, "scripts"));
-
-	// Link extensions from package.json omp.extensions
-	const pkg = JSON.parse(await fs.readFile(path.join(repoRoot, "package.json"), "utf-8"));
-	const extensions = pkg.omp?.extensions ?? [];
-	for (const ext of extensions) {
-		const srcPath = path.resolve(repoRoot, ext);
-		const destName = path.basename(ext);
-		await linkOrCopy(srcPath, path.join(ompHome, "extensions", destName));
+/** Deep-merge objects; arrays are replaced by source (not concatenated). */
+function deepMerge(target, source) {
+	if (source === null || typeof source !== "object" || Array.isArray(source)) {
+		return source;
 	}
-
-	// Link commands
-	const commands = await fs.readdir(path.join(repoRoot, "commands"));
-	for (const cmd of commands) {
-		if (cmd.endsWith(".md")) {
-			await linkOrCopy(
-				path.join(repoRoot, "commands", cmd),
-				path.join(ompHome, "commands", cmd),
-			);
+	const out =
+		target && typeof target === "object" && !Array.isArray(target)
+			? { ...target }
+			: {};
+	for (const [key, value] of Object.entries(source)) {
+		if (
+			value &&
+			typeof value === "object" &&
+			!Array.isArray(value) &&
+			out[key] &&
+			typeof out[key] === "object" &&
+			!Array.isArray(out[key])
+		) {
+			out[key] = deepMerge(out[key], value);
+		} else {
+			out[key] = value;
 		}
 	}
-
-	// Link rules
-	const rules = await fs.readdir(path.join(repoRoot, "rules"));
-	for (const rule of rules) {
-		if (rule.endsWith(".md") || rule.endsWith(".mdc")) {
-			await linkOrCopy(
-				path.join(repoRoot, "rules", rule),
-				path.join(ompHome, "rules", rule),
-			);
-		}
-	}
-
-	// Link agents
-	const agents = await fs.readdir(path.join(repoRoot, "agents"));
-	for (const agent of agents) {
-		if (agent.endsWith(".md")) {
-			await linkOrCopy(
-				path.join(repoRoot, "agents", agent),
-				path.join(ompHome, "agents", agent),
-			);
-		}
-	}
-
-	// Link skills
-	const skills = await fs.readdir(path.join(repoRoot, "skills"));
-	for (const skill of skills) {
-		const skillPath = path.join(repoRoot, "skills", skill);
-		const stat = await fs.stat(skillPath);
-		if (stat.isDirectory()) {
-			await linkOrCopy(skillPath, path.join(ompHome, "skills", skill));
-		}
-	}
-
-	// Merge MCP config
-	await mergeMcpConfig(
-		path.join(repoRoot, ".mcp.json"),
-		path.join(ompHome, "mcp.json"),
-	);
-
-	// Link APPEND_SYSTEM.md
-	await linkOrCopy(
-		path.join(repoRoot, "APPEND_SYSTEM.md"),
-		path.join(ompHome, "APPEND_SYSTEM.md"),
-	);
-
-	// Link MCP template assets for optional profile-based loading
-	await linkOrCopy(
-		path.join(repoRoot, "mcp-configs"),
-		path.join(packageAssetRoot, "mcp-configs"),
-	);
-	await linkOrCopy(
-		path.join(repoRoot, "scripts", "apply-mcp-profile.mjs"),
-		path.join(packageAssetRoot, "scripts", "apply-mcp-profile.mjs"),
-	);
-
-	console.log("Global installation to ~/.omp completed successfully!");
+	return out;
 }
 
-main().catch(console.error);
+/**
+ * Merge managed agent settings into ~/.pi/agent/settings.json.
+ * Managed keys from configs/agent-settings.json overwrite local values.
+ * packages is replaced by the managed list (authoritative), not unioned.
+ * Machine-local keys (shellPath, defaultProvider, …) are preserved when absent from source.
+ */
+async function mergeAgentSettings(srcPath, destPath) {
+	let managed;
+	try {
+		managed = JSON.parse(await fs.readFile(srcPath, "utf-8"));
+	} catch (err) {
+		console.error(`Failed to read agent settings: ${err.message}`);
+		return;
+	}
+
+	let current = {};
+	try {
+		current = JSON.parse(await fs.readFile(destPath, "utf-8"));
+	} catch {
+		// init empty
+	}
+
+	const next = deepMerge(current, managed);
+
+	// packages: managed list is authoritative (order preserved)
+	if (Array.isArray(managed.packages)) {
+		next.packages = managed.packages;
+	}
+
+	await fs.writeFile(destPath, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
+	const pkgCount = Array.isArray(next.packages) ? next.packages.length : 0;
+	console.log(
+		`Merged agent settings (${pkgCount} packages, managed keys): ${destPath}`,
+	);
+}
+
+function runCommand(command, args, options = {}) {
+	return new Promise((resolve) => {
+		const child = spawn(command, args, {
+			stdio: "inherit",
+			shell: true,
+			...options,
+		});
+		child.on("error", (err) => {
+			console.error(`Failed to spawn ${command}: ${err.message}`);
+			resolve({ ok: false, code: 1 });
+		});
+		child.on("close", (code) => {
+			resolve({ ok: code === 0, code: code ?? 1 });
+		});
+	});
+}
+
+async function updatePiExtensions() {
+	console.log("Updating pi packages (pi update --extensions)...");
+	const result = await runCommand("pi", ["update", "--extensions"]);
+	if (!result.ok) {
+		console.warn(
+			`Warning: pi update --extensions exited with code ${result.code}. Settings were still written; install packages manually if needed.`,
+		);
+		return false;
+	}
+	console.log("Pi packages updated successfully.");
+	return true;
+}
+
+/**
+ * Install managed pi-permission-system config overlay.
+ * Runs after `pi update --extensions` so a first-time install can create
+ * ~/.pi/agent/extensions/pi-permission-system/ when the package did not
+ * materialize that path yet (common on cold install).
+ */
+async function installPermissionSystemConfig() {
+	const permissionConfigSrc = path.join(
+		repoRoot,
+		"configs",
+		"pi-permission-system",
+		"config.json",
+	);
+	if (!(await pathExists(permissionConfigSrc))) {
+		console.warn(
+			"Skip pi-permission-system config: source missing at",
+			permissionConfigSrc,
+		);
+		return false;
+	}
+
+	const permissionExtDir = path.join(
+		piHome,
+		"extensions",
+		"pi-permission-system",
+	);
+	await ensureDir(permissionExtDir);
+	await linkOrCopy(
+		permissionConfigSrc,
+		path.join(permissionExtDir, "config.json"),
+	);
+	return true;
+}
+
+async function main() {
+	console.log(`Installing Pi Workflows globally to ${piHome}...`);
+	const packageAssetRoot = path.join(piHome, "hkx-pi-workflows");
+
+	await ensureDir(path.join(piHome, "extensions"));
+	await ensureDir(path.join(piHome, "commands"));
+	await ensureDir(path.join(piHome, "skills"));
+	await ensureDir(path.join(piHome, "rules"));
+	await ensureDir(path.join(piHome, "agents", "hkx"));
+	await ensureDir(path.join(piHome, "chains"));
+	await ensureDir(path.join(packageAssetRoot, "scripts"));
+
+	let pkg = {};
+	try {
+		pkg = JSON.parse(
+			await fs.readFile(path.join(repoRoot, "package.json"), "utf-8"),
+		);
+	} catch (err) {
+		console.warn("Could not parse package.json:", err.message);
+	}
+
+	// Extensions
+	const extensions = pkg.pi?.extensions ?? [];
+	for (const ext of extensions) {
+		const srcPath = path.resolve(repoRoot, ext);
+		if (!(await pathExists(srcPath))) {
+			console.warn(`Skip missing extension: ${ext}`);
+			continue;
+		}
+		await linkOrCopy(
+			srcPath,
+			path.join(piHome, "extensions", path.basename(ext)),
+		);
+	}
+
+	// Commands
+	const commandsDir = path.join(repoRoot, "commands");
+	if (await pathExists(commandsDir)) {
+		for (const cmd of await fs.readdir(commandsDir)) {
+			if (cmd.endsWith(".md")) {
+				await linkOrCopy(
+					path.join(commandsDir, cmd),
+					path.join(piHome, "commands", cmd),
+				);
+			}
+		}
+	}
+
+	// Rules
+	const rulesDir = path.join(repoRoot, "rules");
+	if (await pathExists(rulesDir)) {
+		for (const rule of await fs.readdir(rulesDir)) {
+			if (rule.endsWith(".md") || rule.endsWith(".mdc")) {
+				await linkOrCopy(
+					path.join(rulesDir, rule),
+					path.join(piHome, "rules", rule),
+				);
+			}
+		}
+	}
+
+	// Skills
+	const skillsDir = path.join(repoRoot, "skills");
+	if (await pathExists(skillsDir)) {
+		for (const skill of await fs.readdir(skillsDir)) {
+			const skillPath = path.join(skillsDir, skill);
+			const stat = await fs.stat(skillPath);
+			if (stat.isDirectory()) {
+				await linkOrCopy(skillPath, path.join(piHome, "skills", skill));
+			}
+		}
+	}
+
+	// Agents under agents/hkx so package: hkx is discoverable and namespaced
+	const agentsDir = path.join(repoRoot, "agents");
+	if (await pathExists(agentsDir)) {
+		for (const agent of await fs.readdir(agentsDir)) {
+			if (agent.endsWith(".md")) {
+				await linkOrCopy(
+					path.join(agentsDir, agent),
+					path.join(piHome, "agents", "hkx", agent),
+				);
+			}
+		}
+	}
+
+	// Chains
+	const chainsDir = path.join(repoRoot, "chains");
+	if (await pathExists(chainsDir)) {
+		for (const chain of await fs.readdir(chainsDir)) {
+			if (chain.endsWith(".chain.json") || chain.endsWith(".chain.md")) {
+				await linkOrCopy(
+					path.join(chainsDir, chain),
+					path.join(piHome, "chains", chain),
+				);
+			}
+		}
+	}
+
+	// MCP
+	const mcpSrc = path.join(repoRoot, ".mcp.json");
+	if (await pathExists(mcpSrc)) {
+		await mergeMcpConfig(mcpSrc, path.join(piHome, "mcp.json"));
+	}
+
+	// Managed global agent settings (packages + portable defaults)
+	const agentSettingsSrc = path.join(
+		repoRoot,
+		"configs",
+		"agent-settings.json",
+	);
+	if (await pathExists(agentSettingsSrc)) {
+		await mergeAgentSettings(
+			agentSettingsSrc,
+			path.join(piHome, "settings.json"),
+		);
+	} else {
+		console.warn("Skip agent settings: configs/agent-settings.json not found");
+	}
+
+	// System / agent guidance files
+	const appendSrc = path.join(repoRoot, "APPEND_SYSTEM.md");
+	if (await pathExists(appendSrc)) {
+		await linkOrCopy(appendSrc, path.join(piHome, "APPEND_SYSTEM.md"));
+	}
+	const globalAgentsSrc = path.join(repoRoot, "GLOBAL_AGENTS.md");
+	if (await pathExists(globalAgentsSrc)) {
+		await linkOrCopy(globalAgentsSrc, path.join(piHome, "AGENTS.md"));
+	}
+
+	// MCP templates + helper
+	const mcpConfigs = path.join(repoRoot, "mcp-configs");
+	if (await pathExists(mcpConfigs)) {
+		await linkOrCopy(mcpConfigs, path.join(packageAssetRoot, "mcp-configs"));
+	}
+	const applyProfile = path.join(repoRoot, "scripts", "apply-mcp-profile.mjs");
+	if (await pathExists(applyProfile)) {
+		await linkOrCopy(
+			applyProfile,
+			path.join(packageAssetRoot, "scripts", "apply-mcp-profile.mjs"),
+		);
+	}
+
+	// Install/update packages listed in ~/.pi/agent/settings.json
+	await updatePiExtensions();
+
+	// After packages are installed: ensure extension config dir exists and
+	// write the managed overlay (first install often has no config yet).
+	await installPermissionSystemConfig();
+
+	console.log("Global installation to ~/.pi/agent completed successfully!");
+	console.log("Agents: ~/.pi/agent/agents/hkx/*.md  (runtime: hkx.<name>)");
+	console.log("Chains: ~/.pi/agent/chains/hkx-*.chain.json");
+	console.log(
+		"Settings: configs/agent-settings.json → merge ~/.pi/agent/settings.json",
+	);
+	console.log("Packages: pi update --extensions (from settings packages)");
+}
+
+main().catch((err) => {
+	console.error(err);
+	process.exit(1);
+});

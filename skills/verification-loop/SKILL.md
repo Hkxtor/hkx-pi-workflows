@@ -1,10 +1,10 @@
 ---
 name: hkx-verification-loop
-description: OMP verification workflow after code or prompt changes. Use to choose and run focused format, lint, typecheck, unit, Rust, Python, native, smoke, or release checks.
-origin: HKX-converted-for-OMP
+description: "Post-change verification: choose and run focused format, lint, typecheck, unit, language, smoke, or release checks after code or prompt edits. Use immediately after implementation. Not session-end hygiene (delivery-gate) or subjective quality scoring (agent-self-evaluation)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Verification Loop For OMP
+# HKX Verification Loop For Pi
 
 Use this after a change, before a PR, or when the user asks whether work is
 verified. Pick the smallest commands that prove the changed contract.
@@ -81,7 +81,7 @@ bun run test:py
 
 ## Skills Frontmatter Check
 
-OMP discovers skills one level under `skills/` for extension packages:
+Pi discovers skills one level under `skills/` for extension packages:
 
 ```text
 skills/<skill-name>/SKILL.md

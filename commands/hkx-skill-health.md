@@ -1,12 +1,12 @@
 ---
 name: hkx-skill-health
-description: Audit and report the health state of all installed skills in the current ECC or OMP skill portfolio.
+description: Audit and report the health state of all installed skills in the current ECC or Pi skill portfolio.
 argument-hint: ""
 ---
 
 # /hkx-skill-health - Skill Portfolio Health Audit
 
-Audit and report the health state of all installed skills in the current ECC or OMP skill portfolio.
+Audit and report the health state of all installed skills in the current ECC or Pi skill portfolio.
 
 ## What It Does
 
@@ -63,4 +63,4 @@ Errors:
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

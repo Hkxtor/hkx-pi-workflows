@@ -1,10 +1,10 @@
 ---
 name: hkx-architecture-decision-records
-description: Capture durable OMP project architecture decisions as ADRs with context, alternatives, consequences, lifecycle, and approval-gated writes.
-origin: HKX-converted-for-OMP
+description: Capture durable Pi project architecture decisions as ADRs with context, alternatives, consequences, lifecycle, and approval-gated writes.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Architecture Decision Records For OMP
+# HKX Architecture Decision Records For Pi
 
 Use when a task makes or investigates a durable technical decision: framework, data model, API style, auth, deployment, package boundary, agent/tool surface, migration strategy, or testing strategy.
 

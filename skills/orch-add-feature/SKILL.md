@@ -1,7 +1,7 @@
 ---
 name: hkx-orch-add-feature
-description: Orchestrate building a brand-new feature end to end — research, plan, TDD implementation, review, and gated commit — by delegating each phase to the matching OMP agent. Use when adding a capability that does not exist yet.
-origin: HKX-converted-for-OMP
+description: Orchestrate building a brand-new feature end to end — research, plan, TDD implementation, review, and gated commit — by delegating each phase to the matching Pi agent. Use when adding a capability that does not exist yet.
+origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-add-feature

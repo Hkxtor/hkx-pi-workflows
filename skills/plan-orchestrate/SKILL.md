@@ -1,12 +1,12 @@
 ---
 name: hkx-plan-orchestrate
-description: Read a plan document, decompose it into steps, design a per-step agent chain from the OMP catalogue, and emit ready-to-use task agent invocations. Generative only — never executes the tasks itself. Use when the user has a multi-step plan and wants to drive it through orchestrated agents without composing chains by hand.
-origin: HKX-converted-for-OMP
+description: Read a plan document, decompose it into steps, design a per-step agent chain from the Pi catalogue, and emit ready-to-use task agent invocations. Generative only — never executes the tasks itself. Use when the user has a multi-step plan and wants to drive it through orchestrated agents without composing chains by hand.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Plan Orchestrate For OMP
+# HKX Plan Orchestrate For Pi
 
-Bridge a plan document to OMP `task` agent invocations by emitting one
+Bridge a plan document to Pi `task` agent invocations by emitting one
 ready-to-use call per step. The skill is generative only — it never executes the
 tasks. The user invokes each step when ready.
 
@@ -38,7 +38,7 @@ Skip when:
 - `--dry-run` — print decomposition + chain rationale only; do not emit final
   prompts.
 
-## OMP Task Invocation Shape
+## Pi Task Invocation Shape
 
 Each step emits a `task` agent invocation:
 

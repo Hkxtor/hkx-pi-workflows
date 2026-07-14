@@ -1,7 +1,7 @@
 ---
 name: hkx-recursive-decision-ledger
 description: Use when the user asks for repeated rollouts, marked decision processes, high-dimensional search, ensemble comparison, or recursive reasoning with a visible evidence trail.
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # Recursive Decision Ledger
@@ -27,7 +27,7 @@ Every rollout should record:
 - promotion gate result.
 
 Prefer JSONL for append-only ledgers and Markdown for human summaries. If you
-write artifacts, default to `.omp/ledgers/recursive-decisions.jsonl` unless the
+write artifacts, default to `.pi/ledgers/recursive-decisions.jsonl` unless the
 repo already documents another durable location.
 
 ## Rollout Loop

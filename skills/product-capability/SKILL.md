@@ -1,7 +1,7 @@
 ---
 name: hkx-product-capability
-description: Translate PRD intent, roadmap asks, or product discussions into an implementation-ready capability plan that exposes constraints, invariants, interfaces, and unresolved decisions before multi-service work starts. Use when the user needs an OMP PRD-to-SRS lane instead of vague planning prose.
-origin: ECC-converted-for-OMP
+description: "PRD-to-capability planning: translate product intent into constraints, invariants, interfaces, and unresolved decisions before multi-service build. Use when a product ask needs an implementation-ready capability plan. Not pure \"why\" diagnostics (product-lens), testable acceptance bullets only (intent-driven-development), or go/no-go multi-voice decisions (council)."
+origin: ECC-converted-for-Pi
 ---
 
 # Product Capability
@@ -24,7 +24,7 @@ If the repo has a durable product-context file such as `PRODUCT.md`, `docs/produ
 
 If no capability manifest exists yet, create one using the template at:
 
-- `.omp/plans/`
+- `.pi/plans/`
 
 The goal is not to create another planning stack. The goal is to make hidden capability constraints durable and reusable.
 
@@ -98,7 +98,7 @@ End with the exact handoff:
 - needs architecture review first
 - needs product clarification first
 
-If useful, point to the next OMP lane:
+If useful, point to the next Pi lane:
 
 - `hkx-project-flow-ops`
 - `hkx-workspace-surface-audit`
@@ -130,11 +130,11 @@ OPEN QUESTIONS
 - blockers or product decisions still required
 
 HANDOFF
-- what should happen next and which OMP lane should take it
+- what should happen next and which Pi lane should take it
 ```
 
 ## Good Outcomes
 
 - Product intent is now concrete enough to implement without rediscovering hidden constraints mid-PR.
 - Engineering review has a durable artifact instead of relying on memory or Slack context.
-- The resulting plan is reusable across Claude Code, Codex, Cursor, OpenCode, and OMP and other planning surfaces.
+- The resulting plan is reusable across Claude Code, Codex, Cursor, OpenCode, and Pi and other planning surfaces.

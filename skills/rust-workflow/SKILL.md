@@ -1,6 +1,6 @@
 ---
 name: hkx-rust-workflow
-description: Rust development workflow for safe implementation, tests, and cargo validation.
+description: "Rust development workflow: safe implementation, tests, and cargo validation. Use for end-to-end Rust change flow. Prefer rust-patterns for crates/FFI/unsafe design and rust-testing for test strategy; not a substitute for those deeper skills."
 ---
 
 # HKX Rust Workflow

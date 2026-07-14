@@ -1,7 +1,7 @@
 ---
 name: hkx-browser-qa
-description: Automate visual testing and UI interaction verification using the OMP browser tool after deploying features. Covers smoke test, interaction, visual regression, and accessibility — read-only by default, baseline-or-die, honest a11y scope.
-origin: HKX-converted-for-OMP
+description: "Post-deploy browser automation QA with the Pi browser tool: smoke, interaction, visual regression, and honest a11y scope—read-only by default. Use after features are deployed or locally runnable in a browser. Not unit/e2e test authoring (e2e-testing), design direction, or pure WCAG checklist work without a live page (accessibility)."
+origin: HKX-converted-for-Pi
 ---
 
 # Browser QA — Automated Visual Testing & Interaction
@@ -16,7 +16,7 @@ origin: HKX-converted-for-OMP
 
 ## How It Works
 
-Use the OMP `browser` tool to interact with live pages like a real user: `open` a tab, then `run` JavaScript via `tab.evaluate`, `tab.observe` for accessibility snapshots, `tab.screenshot` for visual capture, `tab.extract` for readable content, `tab.waitForResponse` / `tab.waitForUrl` for navigation/network signals.
+Use the Pi `browser` tool to interact with live pages like a real user: `open` a tab, then `run` JavaScript via `tab.evaluate`, `tab.observe` for accessibility snapshots, `tab.screenshot` for visual capture, `tab.extract` for readable content, `tab.waitForResponse` / `tab.waitForUrl` for navigation/network signals.
 
 ### Safety first — blast radius (run read-only by default)
 
@@ -98,7 +98,7 @@ credentials/tokens/PII before saving any screenshot.
 
 ## Integration
 
-- Default: the OMP `browser` tool (Chromium with stealth patches).
+- Default: the Pi `browser` tool (Chromium with stealth patches).
 - Screenshots taken with `tab.screenshot({ save: <path> })` persist across run calls for
   baseline comparison; review committed baselines into the repo under `qa/baselines/`.
 - Pair with `hkx-canary-watch` for post-deploy monitoring.

@@ -1,15 +1,15 @@
 ---
 name: hkx-orch-review
-description: Multi-dimension review workflow for code diffs using OMP reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. OMP-native port of the orch-review workflow.
+description: Multi-dimension review workflow for code diffs using Pi reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. Pi-native port of the orch-review workflow.
 version: 1.0.0
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # HKX Orch Review — Multi-Dimension Code Review
 
-A multi-dimension review workflow for code diffs. Uses OMP reviewer agents in parallel to assess code quality, language-specific correctness, and security. Deduplicates findings on evidence and produces a blocking vs advisory report.
+A multi-dimension review workflow for code diffs. Uses Pi reviewer agents in parallel to assess code quality, language-specific correctness, and security. Deduplicates findings on evidence and produces a blocking vs advisory report.
 
-This is the OMP-native port of the ECC `orch-review.workflow.js` — it replaces the external workflow script with in-process `agent()` and `eval` orchestration.
+This is the Pi-native port of the ECC `orch-review.workflow.js` — it replaces the external workflow script with in-process `agent()` and `eval` orchestration.
 
 ## When to Activate
 

@@ -1,0 +1,39 @@
+{
+  "packages": [
+    "npm:@gotgenes/pi-permission-system",
+    "npm:pi-rewind",
+    "npm:pi-wtf",
+    "npm:@ff-labs/pi-fff",
+    "npm:pi-web-access",
+    "npm:pi-markdown-preview",
+    "npm:@juicesharp/rpiv-todo",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:@juicesharp/rpiv-advisor",
+    "npm:@juicesharp/rpiv-i18n",
+    "npm:@narumitw/pi-plan-mode",
+    "npm:pi-until-done",
+    "npm:pi-observational-memory",
+    "npm:context-mode",
+    "npm:pi-subagents",
+    "npm:pi-mcp-adapter",
+    "npm:pi-lens",
+    "npm:pi-simplify"
+  ],
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 32768,
+    "keepRecentTokens": 48000
+  },
+  "observational-memory": {
+    "observeAfterTokens": 30000,
+    "reflectAfterTokens": 90000,
+    "compactAfterTokens": 200000,
+    "compactAfterTokensMode": "ratio",
+    "compactAfterTokensRatio": 0.8,
+    "observationsPoolMaxTokens": 32000,
+    "observationsPoolTargetTokens": 16000,
+    "agentMaxTurns": 16,
+    "passive": false,
+    "debugLog": false
+  }
+}

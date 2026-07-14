@@ -1,6 +1,6 @@
 ---
 name: hkx-orch-review
-description: Run a multi-dimension review over a code diff (local changes or a GitHub PR) using OMP reviewer agents. Covers code quality, language-specific checks, security, and silent-failure detection. Returns blocking vs advisory findings.
+description: Run a multi-dimension review over a code diff (local changes or a GitHub PR) using Pi reviewer agents. Covers code quality, language-specific checks, security, and silent-failure detection. Returns blocking vs advisory findings.
 argument-hint: "[pr-number | pr-url | blank for local uncommitted changes]"
 ---
 
@@ -58,4 +58,4 @@ Never present a clean APPROVE when the review could not fully run. If any dimens
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

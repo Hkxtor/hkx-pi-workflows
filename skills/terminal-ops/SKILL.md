@@ -1,10 +1,10 @@
 ---
 name: hkx-terminal-ops
-description: Evidence-first terminal workflow for OMP projects. Use when running commands, checking repo state, debugging CI/build failures, making narrow fixes, or reporting exact verification status.
-origin: HKX-converted-for-OMP
+description: Evidence-first terminal workflow for Pi projects. Use when running commands, checking repo state, debugging CI/build failures, making narrow fixes, or reporting exact verification status.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Terminal Ops For OMP
+# HKX Terminal Ops For Pi
 
 Use when the answer depends on real command output, git state, test results, or
 verified local behavior.

@@ -1,0 +1,48 @@
+{
+  "name": "hkx-rust-build-fix",
+  "description": "Rust cargo/borrow-checker failure recovery: minimal fix via rust-build-resolver, then Rust + general residual-risk review.",
+  "chain": [
+    {
+      "agent": "hkx.rust-build-resolver",
+      "phase": "Fix",
+      "label": "Unblock Rust build",
+      "as": "fix",
+      "output": "rust-build/fix.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Fix Rust build, compilation, borrow-checker, and Cargo dependency errors for:\n\n{task}\n\nRules:\n- Sole writer for the active worktree.\n- Minimal diffs only; no architecture or feature changes.\n- Prefer local crate evidence (Cargo.toml, rustc diagnostics) over broad rewrites.\n- Re-run the failing cargo commands (e.g. cargo check, cargo test, cargo clippy if already used) and report remaining failures.\n- Avoid unwrap/expect or discarding Results just to silence the compiler unless tests prove it is correct.\n\nReturn root causes, changed files, commands run, and remaining failures."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.rust-reviewer",
+          "phase": "Review",
+          "label": "Rust safety",
+          "as": "rustReview",
+          "output": "rust-build/rust-review.md",
+          "outputMode": "file-only",
+          "task": "Review the Rust build fix for ownership/lifetime correctness, unsafe boundaries, and idiomatic error handling.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Minimal-fix review",
+          "as": "review",
+          "output": "rust-build/review.md",
+          "outputMode": "file-only",
+          "task": "Review the Rust build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "rust-build/silent.md",
+          "outputMode": "file-only",
+          "task": "Check whether the Rust build fix hides failures (discarded Results, unwrap/expect in non-test paths, context-erasing map_err).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 ---
 name: hkx-recipes
-description: Browse or match OMP workflow command recipes. Shows all command families with run-order and stop conditions, or maps a workflow description to the right command sequence.
+description: Browse or match Pi workflow command recipes. Shows all command families with run-order and stop conditions, or maps a workflow description to the right command sequence.
 argument-hint: "[workflow description | empty=list all]"
 ---
 
-# /hkx-recipes — OMP Workflow Recipes
+# /hkx-recipes — Pi Workflow Recipes
 
-Browse or match OMP command-group recipes. Trigger the `hkx-ecc-recipes` skill for: `$ARGUMENTS`
+Browse or match Pi command-group recipes. Trigger the `hkx-ecc-recipes` skill for: `$ARGUMENTS`
 
 ## Behavior
 
@@ -41,4 +41,4 @@ Run-order:
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

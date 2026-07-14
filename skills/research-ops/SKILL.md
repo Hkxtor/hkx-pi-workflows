@@ -1,10 +1,10 @@
 ---
 name: hkx-research-ops
-description: Evidence-first current-state research workflow for OMP projects. Use when the user wants fresh facts, comparisons, enrichment, or a recommendation built from current public evidence and any supplied local context.
-origin: HKX-converted-for-OMP
+description: Primary entry for evidence-first current-state research on Pi projects. Use when the user wants fresh facts, comparisons, enrichment, or a recommendation from public evidence plus local context. Route specialized depth to deep-research, Exa tool calls to exa-search, business diligence to market-research, and library/API docs to documentation-lookup. Not for pre-coding "should we build or reuse" checks (use search-first).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Research Ops For OMP
+# HKX Research Ops For Pi
 
 Use when the user asks to research something current, compare options, enrich
 people or companies, or turn repeated lookups into a monitored workflow.

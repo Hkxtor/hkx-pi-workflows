@@ -1,9 +1,9 @@
 ---
-description: Draft a lean PRD for an OMP implementation and save it under .omp/prds after confirmation.
+description: Draft a lean PRD for an Pi implementation and save it under .pi/prds after confirmation.
 argument-hint: "[product or feature brief]"
 ---
 
-# HKX PRD For OMP
+# HKX PRD For Pi
 
 Draft a lean PRD for: `$ARGUMENTS`
 
@@ -14,7 +14,7 @@ If the brief is too vague, ask up to three clarifying questions. Otherwise draft
 Use:
 
 ```text
-.omp/prds/{kebab-case-name}.prd.md
+.pi/prds/{kebab-case-name}.prd.md
 ```
 
 ## PRD Template
@@ -58,5 +58,5 @@ Use:
 After writing the PRD, recommend running:
 
 ```text
-/hkx-plan .omp/prds/{kebab-case-name}.prd.md
+/hkx-plan .pi/prds/{kebab-case-name}.prd.md
 ```

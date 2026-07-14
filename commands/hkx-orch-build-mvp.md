@@ -20,7 +20,7 @@ Invoke the `hkx-orch-build-mvp` skill. The workflow will:
 4. scaffold the first end-to-end slice, then TDD each remaining slice;
 5. review each slice and stop at **Gate 2** before commit.
 
-Prefer spec paths under `.omp/prds/` when that is the repo's documented PRD
+Prefer spec paths under `.pi/prds/` when that is the repo's documented PRD
 location.
 
 If `$ARGUMENTS` is empty, ask the user for the design or spec path.

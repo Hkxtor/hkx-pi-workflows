@@ -1,0 +1,48 @@
+{
+  "name": "hkx-go-build-fix",
+  "description": "Go build/vet/compile failure recovery: minimal fix via go-build-resolver, then Go + general residual-risk review.",
+  "chain": [
+    {
+      "agent": "hkx.go-build-resolver",
+      "phase": "Fix",
+      "label": "Unblock Go build",
+      "as": "fix",
+      "output": "go-build/fix.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Fix Go build, vet, and compilation errors for:\n\n{task}\n\nRules:\n- Sole writer for the active worktree.\n- Minimal diffs only; no architecture or feature changes.\n- Prefer local module evidence (go.mod, packages, compile errors) over broad rewrites.\n- Re-run the failing Go commands (e.g. go test ./..., go build, go vet) and report remaining failures.\n- Do not silence errors with `_`/empty catches unless that is the proven correct behavior.\n\nReturn root causes, changed files, commands run, and remaining failures."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.go-reviewer",
+          "phase": "Review",
+          "label": "Go safety",
+          "as": "goReview",
+          "output": "go-build/go-review.md",
+          "outputMode": "file-only",
+          "task": "Review the Go build fix for idiomatic correctness, concurrency safety, and error-handling regressions.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Minimal-fix review",
+          "as": "review",
+          "output": "go-build/review.md",
+          "outputMode": "file-only",
+          "task": "Review the Go build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "go-build/silent.md",
+          "outputMode": "file-only",
+          "task": "Check whether the Go build fix hides failures (ignored errors, empty if err != nil, log-only paths).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    }
+  ]
+}

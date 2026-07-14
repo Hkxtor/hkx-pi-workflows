@@ -1,0 +1,48 @@
+{
+  "name": "hkx-python-build-fix",
+  "description": "Python install/type/test failure recovery: minimal fix via tdd-guide (no dedicated python-build-resolver), then Python + general residual-risk review.",
+  "chain": [
+    {
+      "agent": "hkx.tdd-guide",
+      "phase": "Fix",
+      "label": "Unblock Python checks",
+      "as": "fix",
+      "output": "python-build/fix.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Fix Python build/install/type/test failures for:\n\n{task}\n\nNote: there is no dedicated hkx.python-build-resolver. Act as a minimal Python build fixer.\n\nRules:\n- Sole writer for the active worktree.\n- Minimal diffs only; no architecture or feature changes.\n- Prefer local evidence (pyproject/setup, failing pytest/mypy/ruff/import errors) over broad rewrites.\n- Re-run the failing Python commands and report remaining failures.\n- Prefer red-green only when a regression test is needed to lock the failure; otherwise keep the fix surgical.\n- Do not silence failures with bare except/pass.\n\nReturn root causes, changed files, commands run, and remaining failures."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.python-reviewer",
+          "phase": "Review",
+          "label": "Python safety",
+          "as": "pythonReview",
+          "output": "python-build/python-review.md",
+          "outputMode": "file-only",
+          "task": "Review the Python build fix for idiomatic correctness, typing, packaging, and maintainability regressions.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Minimal-fix review",
+          "as": "review",
+          "output": "python-build/review.md",
+          "outputMode": "file-only",
+          "task": "Review the Python build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "python-build/silent.md",
+          "outputMode": "file-only",
+          "task": "Check whether the Python build fix hides failures (bare except, pass/log-only handlers, dangerous fallbacks).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    }
+  ]
+}

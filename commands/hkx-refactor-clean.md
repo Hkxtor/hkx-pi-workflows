@@ -3,7 +3,7 @@ description: Refactor a scoped area while preserving behavior and existing proje
 argument-hint: "[scope or goal]"
 ---
 
-# HKX Refactor Clean For OMP
+# HKX Refactor Clean For Pi
 
 Refactor scope: `$ARGUMENTS`
 

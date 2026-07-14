@@ -1,9 +1,9 @@
 ---
-description: Orchestrate a read-only OMP pull request or local diff review with available reviewer agents.
+description: Orchestrate a read-only Pi pull request or local diff review with available reviewer agents.
 argument-hint: "[pr-number | pr-url | branch | blank for local diff]"
 ---
 
-# HKX PR Review For OMP
+# HKX PR Review For Pi
 
 Review target: `$ARGUMENTS`
 
@@ -17,7 +17,7 @@ Default to read-only. Do not post comments, approve, request changes, merge, pus
 | PR number or URL | That pull request |
 | Branch name | Matching branch or PR when discoverable |
 
-Use the evidence available in this OMP session. Prefer `read`, `search`, and `find` for repository context. Use `bash` only for read-only evidence commands when needed, such as inspecting a local diff or available PR metadata. If no GitHub/PR tooling is available, review the local branch evidence and state the limitation.
+Use the evidence available in this Pi session. Prefer `read`, `search`, and `find` for repository context. Use `bash` only for read-only evidence commands when needed, such as inspecting a local diff or available PR metadata. If no GitHub/PR tooling is available, review the local branch evidence and state the limitation.
 
 ## Gather Evidence
 
@@ -32,7 +32,7 @@ Read changed files or focused ranges with `read`; locate related callers, tests,
 
 ## Orchestrate Reviewers
 
-Use `task` to run only the reviewer agents that are available in the current OMP environment:
+Use `task` to run only the reviewer agents that are available in the current Pi environment:
 
 - `code-reviewer` for correctness, regressions, maintainability, and user-facing behavior.
 - `security-reviewer` for trust boundaries, secrets, injection, authz/authn, unsafe commands, and data exposure.

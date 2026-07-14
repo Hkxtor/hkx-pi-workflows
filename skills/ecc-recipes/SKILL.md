@@ -1,13 +1,13 @@
 ---
 name: hkx-ecc-recipes
-description: Map a described workflow to the right OMP command group with run-order and stop condition, and browse all command-group recipe families. Adds family-grouping, run-order, and when-to-stop on top of the flat command catalog. Advisory only.
+description: Map a described workflow to the right Pi command group with run-order and stop condition, and browse all command-group recipe families. Adds family-grouping, run-order, and when-to-stop on top of the flat command catalog. Advisory only.
 version: 1.0.0
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # HKX ECC Recipes
 
-One entry point for "which group of OMP slash-commands runs my workflow, in what order, and when do I stop." Also browses every command-group recipe family.
+One entry point for "which group of Pi slash-commands runs my workflow, in what order, and when do I stop." Also browses every command-group recipe family.
 
 This skill adds **family grouping + run-order + stop condition** on top of a flat command catalog.
 
@@ -15,7 +15,7 @@ This skill adds **family grouping + run-order + stop condition** on top of a fla
 
 - "Which command group do I run for <workflow>?"
 - "What's the command sequence to build an MVP / fix a defect / refactor?"
-- "Show me all OMP command-group recipes" (catalog mode)
+- "Show me all Pi command-group recipes" (catalog mode)
 - "How many workflow pipelines does the project have?"
 - User invokes `/hkx-recipes` with or without a description.
 
@@ -30,7 +30,7 @@ This skill adds **family grouping + run-order + stop condition** on top of a fla
 
 ### Live reads
 
-List command files in the OMP commands directory using `glob` or `bash`:
+List command files in the Pi commands directory using `glob` or `bash`:
 
 ```bash
 ls commands/*.md 2>/dev/null | xargs -n1 basename -s .md | sort

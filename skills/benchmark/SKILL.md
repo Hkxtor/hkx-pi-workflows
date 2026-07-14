@@ -1,13 +1,13 @@
 ---
 name: hkx-benchmark
-description: Use this skill to measure performance baselines, detect regressions before/after PRs, and compare stack alternatives.
-origin: HKX-converted-for-OMP
+description: Measure performance baselines, before/after PR regressions, and stack comparisons. Use when you need numbers first. Not the optimization loop itself (benchmark-optimization-loop), latency architecture (latency-critical-systems), or ETL throughput redesign (data-throughput-accelerator).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Benchmark For OMP
+# HKX Benchmark For Pi
 
 Measure performance baselines, detect regressions, and compare alternatives using
-OMP-native tools.
+Pi-native tools.
 
 ## When to Use
 
@@ -21,7 +21,7 @@ OMP-native tools.
 
 ### Mode 1: Page Performance
 
-Measures real browser metrics via OMP browser tool:
+Measures real browser metrics via Pi browser tool:
 
 ```
 1. Navigate to each target URL using browser tool
@@ -74,7 +74,7 @@ Measures development feedback loop using bash:
 
 Run before and after a change to measure impact:
 
-1. Collect baseline metrics and save to `.omp/benchmarks/baseline.json`
+1. Collect baseline metrics and save to `.pi/benchmarks/baseline.json`
 2. Make changes
 3. Collect comparison metrics
 4. Generate delta report
@@ -91,7 +91,7 @@ Output format:
 
 ## Baseline Storage
 
-Store baselines in `.omp/benchmarks/` as JSON. Git-track so the team shares
+Store baselines in `.pi/benchmarks/` as JSON. Git-track so the team shares
 baselines.
 
 Schema:
@@ -112,13 +112,13 @@ Schema:
 
 ## Tools
 
-Use OMP canonical tools:
+Use pi-native tools:
 
 - `browser` — page performance measurement via `tab.evaluate()` and
   `tab.screenshot()`
 - `bash` — API benchmarking, build timing, percentile computation
 - `read`/`write` — baseline storage and comparison
-- `search` — find performance-related config (webpack, vite, tsconfig)
+- `ffgrep` — locate performance-related config (webpack, vite, tsconfig)
 
 ## Integration
 

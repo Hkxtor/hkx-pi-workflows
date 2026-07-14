@@ -1,0 +1,48 @@
+{
+  "name": "hkx-typescript-build-fix",
+  "description": "TypeScript/JavaScript build/type failure recovery: minimal fix via build-error-resolver, then TS + general residual-risk review.",
+  "chain": [
+    {
+      "agent": "hkx.build-error-resolver",
+      "phase": "Fix",
+      "label": "Unblock TS/JS build",
+      "as": "fix",
+      "output": "ts-build/fix.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Fix TypeScript/JavaScript build and type errors for:\n\n{task}\n\nRules:\n- Sole writer for the active worktree.\n- Minimal diffs only; no architecture or feature changes.\n- Prefer local evidence (tsc/vite/next/jest diagnostics, package scripts) over broad rewrites.\n- Re-run the failing build/typecheck/test commands and report remaining failures.\n- Avoid `as any`, non-null assertions, or deleted checks just to silence the compiler unless proven necessary.\n\nReturn root causes, changed files, commands run, and remaining failures."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.typescript-reviewer",
+          "phase": "Review",
+          "label": "TS safety",
+          "as": "tsReview",
+          "output": "ts-build/ts-review.md",
+          "outputMode": "file-only",
+          "task": "Review the TypeScript/JavaScript build fix for type safety, async correctness, and idiomatic regressions.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Minimal-fix review",
+          "as": "review",
+          "output": "ts-build/review.md",
+          "outputMode": "file-only",
+          "task": "Review the TS/JS build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "ts-build/silent.md",
+          "outputMode": "file-only",
+          "task": "Check whether the TS/JS build fix hides failures (swallowed promises, empty catch, dangerous fallbacks).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    }
+  ]
+}

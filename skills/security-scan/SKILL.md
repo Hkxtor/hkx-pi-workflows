@@ -1,19 +1,19 @@
 ---
 name: hkx-security-scan
-description: OMP security scan workflow for agent config, extension packages, MCP servers, commands, skills, rules, secrets, permissions, hooks, and dependency surfaces.
-origin: HKX-converted-for-OMP
+description: "Inventory-style security scan of Pi config surfaces: agent config, extension packages, MCP servers, commands, skills, rules, hooks, secrets handling, permissions, and dependency exposure. Use when setting up or changing Pi automation/config. Not a code threat model or auth design review (use security-review)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Security Scan For OMP
+# HKX Security Scan For Pi
 
-Use when setting up or changing OMP configuration, extension packages, MCP servers, commands, skills, rules, hooks, auth, secret handling, or automation that can execute tools.
+Use when setting up or changing Pi configuration, extension packages, MCP servers, commands, skills, rules, hooks, auth, secret handling, or automation that can execute tools.
 
 ## Scan Surfaces
 
 | Surface | Check For |
 | --- | --- |
-| `.omp/` and project settings | Broad permissions, unsafe extensions, private host paths, unreviewed external mutation |
-| `package.json` OMP metadata | Unexpected commands, skills, rules, extensions, or install surfaces |
+| `.pi/` and project settings | Broad permissions, unsafe extensions, private host paths, unreviewed external mutation |
+| `package.json` Pi metadata | Unexpected commands, skills, rules, extensions, or install surfaces |
 | `commands/` | Prompt injection, auto-run external writes, unsafe shell guidance, missing approval gates |
 | `skills/` and `rules/` | Tool misuse, stale harness assumptions, secret leakage, unsafe delegation |
 | `extensions/` | Command execution, file writes, network calls, silent failures, unsanitized user paths |

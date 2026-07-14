@@ -1,13 +1,37 @@
-import type { ExtensionFactory } from "@oh-my-pi/pi-coding-agent";
+type ToolName = "edit" | "write" | "ast_grep_replace" | "bash" | string;
+
+type ToolCallEvent = {
+	toolName: ToolName;
+	input?: Record<string, unknown>;
+};
+
+type ToolCallBlockResult = {
+	block: true;
+	reason: string;
+};
+
+type ExtensionRuntime = {
+	on(
+		event: "tool_call",
+		handler: (
+			event: ToolCallEvent,
+		) =>
+			| ToolCallBlockResult
+			| undefined
+			| Promise<ToolCallBlockResult | undefined>,
+	): void;
+};
+
+type ExtensionFactory = (pi: ExtensionRuntime) => void;
 
 /**
- * HKX GateGuard — fact-forcing pre-action gate for OMP.
+ * HKX GateGuard — fact-forcing pre-action gate for Pi.
  *
- * A `tool_call` hook that blocks first Edit/Write/AstEdit per file and
+ * A `tool_call` hook that blocks first edit/write/ast_grep_replace per file and
  * destructive commands, demanding concrete investigation facts before
  * allowing the action to proceed.
  *
- * Mirrors ECC's `scripts/hooks/gateguard-fact-force.js` using OMP's native
+ * Mirrors ECC's `scripts/hooks/gateguard-fact-force.js` using Pi's native
  * extension `tool_call` event with `{ block: true, reason }` semantics.
  *
  * Disable per-session: set `HKX_GATEGUARD=off` in the environment.
@@ -26,12 +50,21 @@ let denialCount = 0;
 /** Max full denials before switching to condensed single-line messages. */
 const MAX_FULL_DENIALS = 3;
 
+const MUTATING_TOOL_NAMES = new Set<ToolName>([
+	"edit",
+	"write",
+	"ast_grep_replace",
+]);
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function isEnabled(): boolean {
-	const v = process.env.HKX_GATEGUARD?.toLowerCase();
+	const env = (
+		globalThis as { process?: { env?: Record<string, string | undefined> } }
+	).process?.env;
+	const v = env?.HKX_GATEGUARD?.toLowerCase();
 	return v !== "0" && v !== "false" && v !== "off" && v !== "disabled";
 }
 
@@ -44,7 +77,9 @@ function extractFilePath(input: Record<string, unknown>): string | undefined {
 	if (Array.isArray(input.edits)) {
 		for (const edit of input.edits) {
 			if (edit && typeof edit === "object") {
-				const p = (edit as Record<string, unknown>).path ?? (edit as Record<string, unknown>).file_path;
+				const p =
+					(edit as Record<string, unknown>).path ??
+					(edit as Record<string, unknown>).file_path;
 				if (typeof p === "string" && p.trim()) return p;
 			}
 		}
@@ -73,10 +108,14 @@ function isDestructiveCommand(command: string): boolean {
 		/\bpkill\b/,
 		/\bsudo\s+rm\b/,
 	];
-	return destructive.some(re => re.test(command));
+	return destructive.some((re) => re.test(command));
 }
 
-function gateMessage(toolName: string, filePath: string | undefined, isDestructive: boolean): string {
+function gateMessage(
+	_toolName: string,
+	filePath: string | undefined,
+	isDestructive: boolean,
+): string {
 	denialCount++;
 	const condensed = denialCount > MAX_FULL_DENIALS;
 
@@ -117,15 +156,15 @@ function markInvestigated(filePath: string): void {
 // Extension
 // ---------------------------------------------------------------------------
 
-const extension: ExtensionFactory = pi => {
-	pi.on("tool_call", async event => {
+const extension: ExtensionFactory = (pi) => {
+	pi.on("tool_call", async (event) => {
 		if (!isEnabled()) return undefined;
 
 		const { toolName, input } = event;
 		const rawInput = (input ?? {}) as Record<string, unknown>;
 
-		// --- Edit / Write / AstEdit: block first access per file ---
-		if (toolName === "edit" || toolName === "write" || toolName === "ast_edit") {
+		// --- edit / write / ast_grep_replace: block first access per file ---
+		if (MUTATING_TOOL_NAMES.has(toolName)) {
 			const filePath = extractFilePath(rawInput);
 			if (!filePath) return undefined;
 
@@ -152,7 +191,8 @@ const extension: ExtensionFactory = pi => {
 
 		// --- Bash: block destructive commands ---
 		if (toolName === "bash") {
-			const command = typeof rawInput.command === "string" ? rawInput.command : "";
+			const command =
+				typeof rawInput.command === "string" ? rawInput.command : "";
 			if (!command || !isDestructiveCommand(command)) return undefined;
 
 			return {

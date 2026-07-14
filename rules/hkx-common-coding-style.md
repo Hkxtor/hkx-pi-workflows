@@ -1,5 +1,5 @@
 ---
-description: Coding style defaults for HKX OMP workflows.
+description: Coding style defaults for HKX Pi workflows.
 ---
 
 # HKX Common Coding Style
@@ -12,4 +12,4 @@ Read this rule when editing code or workflow artifacts.
 - Use structured parsing for structured data.
 - Avoid unrelated formatting churn.
 - Add comments only when they clarify non-obvious decisions.
-- Use OMP-native paths and concepts in OMP workflow files.
+- Use Pi-native paths and concepts in Pi workflow files.

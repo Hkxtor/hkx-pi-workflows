@@ -1,12 +1,12 @@
 ---
 name: hkx-agent-introspection-debugging
-description: Debug OMP agent runs that loop, retry without progress, lose context, misread tool output, or fail after compaction/retry. Use for repeated agent behavior failures.
-origin: HKX-converted-for-OMP
+description: "Debug live/repeated Pi agent failures: loops without progress, context loss, misread tool output, compaction/retry breakage. Use when an agent run is misbehaving. Not loop-contract design (loop-design-check) or architecture audits before shipping (agent-architecture-audit)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Agent Introspection Debugging For OMP
+# HKX Agent Introspection Debugging For Pi
 
-Use this when OMP or a subagent is failing as an agent system, not just when a
+Use this when Pi or a subagent is failing as an agent system, not just when a
 normal function has a bug.
 
 ## Activate
@@ -39,7 +39,7 @@ Use local evidence:
 - `git status --short --branch`
 - focused `rg` over the failing surface
 - relevant test output
-- recent OMP log excerpt from `~/.omp/logs/`
+- recent Pi log excerpt from `~/.pi/logs/`
 - session dump only when the failure depends on message history
 
 ## Diagnose
@@ -52,7 +52,7 @@ Classify one primary cause:
 | Retry storms | retryable error too broad | inspect retry decision and backoff path |
 | Correct tool, wrong conclusion | observation ambiguity | inspect renderer/result shape |
 | Works before compaction | summary lost binding | inspect compaction prep/result |
-| Works outside OMP | wrapper regression | compare direct provider vs OMP messages |
+| Works outside Pi | wrapper regression | compare direct provider vs Pi messages |
 | File missing or stale | wrong cwd/worktree/cache | re-check path and git state |
 | Auth fallback changes behavior | fallback role mismatch | inspect provider/model/auth selection |
 
@@ -67,7 +67,7 @@ Take the smallest reversible action:
 - add a contract test before changing shared behavior
 - stop if the next action would mutate external state without approval
 
-## OMP-Specific Traps
+## Pi-Specific Traps
 
 - Streaming preview path and transcript replay path can diverge.
 - Tool-call args may be partial while the model is still streaming.

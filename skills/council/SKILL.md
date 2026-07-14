@@ -1,7 +1,7 @@
 ---
 name: hkx-council
-description: Convene a four-voice council for ambiguous decisions, tradeoffs, and go/no-go calls. Use when multiple valid paths exist and you need structured disagreement before choosing.
-origin: ECC-converted-for-OMP
+description: Four-voice structured disagreement for ambiguous tradeoffs and go/no-go calls. Use only when multiple valid paths exist and a single answer is premature. Not routine product diagnostics, capability planning, or acceptance-criteria capture.
+origin: ECC-converted-for-Pi
 ---
 
 # Council
@@ -156,8 +156,8 @@ Keep it scannable on a phone screen.
 Do **not** write ad-hoc notes to shadow paths from this skill.
 
 If the council materially changes the recommendation:
-- use OMP knowledge storage (`knowledge-ops` if available) to store the lesson in the right durable location
-- or use an OMP session checkpoint (`/hkx-checkpoint`) if the outcome belongs in session memory
+- use Pi knowledge storage (`knowledge-ops` if available) to store the lesson in the right durable location
+- or use an Pi session checkpoint (`/hkx-checkpoint`) if the outcome belongs in session memory
 - or update the relevant GitHub / Linear issue directly if the decision changes active execution truth
 
 Only persist a decision when it changes something real.
@@ -182,7 +182,7 @@ If the user wants another round:
 ## Related Skills
 
 - `santa-method` — adversarial verification
-- `knowledge-ops` — persist durable decision deltas correctly (OMP knowledge storage if available)
+- `knowledge-ops` — persist durable decision deltas correctly (Pi knowledge storage if available)
 - `hkx-search-first` — gather external reference material before the council if needed
 - `hkx-architecture-decision-records` — formalize the outcome when the decision becomes long-lived system policy
 

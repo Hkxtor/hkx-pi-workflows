@@ -1,8 +1,8 @@
 ---
 name: hkx-delivery-gate
-description: Manual quality gate check that runs before session completion. Verifies learning capture, disk space, rationalization signals, and standard build/type/lint/test gates. Complements self-audit by mechanically enforcing delivery hygiene.
+description: "Manual pre-completion delivery hygiene checklist: learning capture, disk space, rationalization signals, and standard build/type/lint/test gates. Use at session end after verification-loop is green. Not a substitute for focused post-change checks (verification-loop) or 5-axis self-scoring (agent-self-evaluation)."
 version: 1.0.0
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # HKX Delivery Gate — Manual Pre-Completion Checklist
@@ -27,8 +27,8 @@ This is the same pattern as CI pipeline gates — automated, deterministic check
 
 | Check | Mechanism | On Hit |
 |-------|-----------|--------|
-| Learning capture | Check `.omp/memory/growth-log/` or equivalent for today's mtime | Warning if untouched |
-| Decision log | Check `.omp/memory/decisions/log.md` for today's mtime | Warning if untouched |
+| Learning capture | Check `.pi/memory/growth-log/` or equivalent for today's mtime | Warning if untouched |
+| Decision log | Check `.pi/memory/decisions/log.md` for today's mtime | Warning if untouched |
 | Rationalization patterns | Search output for "skip tests", "pre-existing bug", "not in scope" | **Warning only** (never blocks) |
 | Disk space < 50GB | `df -h .` or similar | Warning |
 | Disk space < 15GB | `df -h .` | **Block condition** |
@@ -45,11 +45,11 @@ Invoke via command:
 /hkx-delivery-gate
 ```
 
-The command runs each check using OMP tools (`bash` for disk / git, `glob` for learning files, `grep` for rationalization patterns) and produces a report.
+The command runs each check using Pi tools (`bash` for disk / git, `glob` for learning files, `grep` for rationalization patterns) and produces a report.
 
 ## Why
 
-OMP's built-in checks cover code quality. But there is a different failure mode: the agent produces working code while session hygiene is neglected — learning not captured, rationalized shortcuts, disk running out silently.
+Pi's built-in checks cover code quality. But there is a different failure mode: the agent produces working code while session hygiene is neglected — learning not captured, rationalized shortcuts, disk running out silently.
 
 Over many sessions of "ship and forget," the team hasn't grown. This gate enforces the habit: complex task → must verify delivery hygiene.
 
@@ -73,10 +73,10 @@ Overall:            [READY / NOT READY]
 
 ## Learning Libraries
 
-Create these files or directories in `.omp/memory/`. The gate checks if at least one was modified today:
+Create these files or directories in `.pi/memory/`. The gate checks if at least one was modified today:
 
 ```
-.omp/memory/
+.pi/memory/
 ├── growth-log/            # Daily learning entries (directory)
 ├── decisions/log.md       # Decision log
 ├── output-index.md        # Index of session outputs

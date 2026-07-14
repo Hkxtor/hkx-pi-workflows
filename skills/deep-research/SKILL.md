@@ -1,10 +1,10 @@
 ---
 name: hkx-deep-research
-description: Multi-source deep research using web search MCPs. Searches the web, synthesizes findings, and delivers cited reports with source attribution. Use when the user wants thorough research on any topic with evidence and citations.
-origin: HKX-converted-for-OMP
+description: Multi-source deep research with cited synthesis for thorough topic reports. Use when the user wants exhaustive evidence and source attribution after research-ops has framed the question, or explicitly asks for a deep/cited report. Not for quick lookups, library docs, Exa tool how-to, market/investor diligence, or pre-coding search-first decisions.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Deep Research For OMP
+# HKX Deep Research For Pi
 
 Produce thorough, cited research reports from multiple web sources using
 available MCP search tools.
@@ -26,7 +26,7 @@ At least one search-capable MCP server must be configured. Common options:
 - **firecrawl** — `firecrawl_search`, `firecrawl_scrape`
 - **context7** — documentation lookup for library/framework specifics
 
-Configure MCP servers in `.mcp.json` at project root or `~/.omp/.mcp.json` for
+Configure MCP servers in `.mcp.json` at project root or `~/.pi/.mcp.json` for
 global availability. Verify the exposed tool names before relying on them.
 
 ## Workflow
@@ -111,7 +111,7 @@ Sub-questions investigated: [list]
 
 ## Parallel Research with Subagents
 
-For broad topics, use OMP `task` tool to parallelize:
+For broad topics, use Pi `task` tool to parallelize:
 
 ```
 Launch 3 research agents in parallel:

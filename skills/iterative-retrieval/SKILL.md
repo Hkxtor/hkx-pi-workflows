@@ -1,10 +1,10 @@
 ---
 name: hkx-iterative-retrieval
-description: OMP pattern for progressively refining repository context before delegating to agents or implementing changes.
-origin: HKX-converted-for-OMP
+description: Pi pattern for progressively refining repository context before delegating to agents or implementing changes.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Iterative Retrieval For OMP
+# HKX Iterative Retrieval For Pi
 
 Use this when the first search cannot reliably identify all context needed for a task, especially before spawning agents or changing code across unfamiliar areas.
 

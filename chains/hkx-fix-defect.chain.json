@@ -1,0 +1,67 @@
+{
+  "name": "hkx-fix-defect",
+  "description": "Bug-fix flow: explore failing path, regression-first plan, TDD fix, then adversarial review.",
+  "chain": [
+    {
+      "agent": "hkx.code-explorer",
+      "phase": "Research",
+      "label": "Trace defect",
+      "as": "context",
+      "output": "defect/context.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Trace the defect and likely root cause for:\n\n{task}\n\nMap the failing path, related tests, recent changes if visible, and reproduction clues.\nDo not modify project/source files; write findings to the configured output artifact.\n\nReturn root-cause hypotheses ranked by evidence, exact files/functions, and the smallest reproduction."
+    },
+    {
+      "agent": "hkx.planner",
+      "phase": "Planning",
+      "label": "Regression-first plan",
+      "as": "plan",
+      "output": "defect/plan.md",
+      "outputMode": "file-only",
+      "task": "Plan a regression-first bug fix for:\n\n{task}\n\nContext:\n{outputs.context}\n\nRules:\n- First add/adjust a failing test that locks the bug.\n- Then minimal production fix.\n- Avoid drive-by refactors.\nDo not modify project/source files.\n\nReturn ordered steps, files, validation, and risks."
+    },
+    {
+      "agent": "hkx.tdd-guide",
+      "phase": "Implementation",
+      "label": "Fix with TDD",
+      "as": "impl",
+      "output": "defect/implementation.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Implement the bug fix for:\n\n{task}\n\nPlan:\n{outputs.plan}\n\nContext:\n{outputs.context}\n\nRules:\n- Sole writer for the active worktree.\n- Regression test first, then minimal fix.\n- Run focused tests/validation and report results.\n- Do not expand scope into cleanup unless required for the fix.\n\nReturn changed files, regression test, validation, and residual risk."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Fix review",
+          "as": "reviewGeneral",
+          "output": "defect/review-general.md",
+          "outputMode": "file-only",
+          "task": "Review the bug fix for correctness and regressions.\n\nDefect:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failure check",
+          "as": "reviewSilent",
+          "output": "defect/review-silent.md",
+          "outputMode": "file-only",
+          "task": "Check whether the bug fix introduces or leaves silent failures.\n\nDefect:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Regression test review",
+          "as": "reviewTests",
+          "output": "defect/review-tests.md",
+          "outputMode": "file-only",
+          "task": "Verify the regression test quality for:\n\n{task}\n\nImplementation:\n{outputs.impl}\n\nConfirm the test would fail without the fix and covers the real failure mode. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    }
+  ]
+}

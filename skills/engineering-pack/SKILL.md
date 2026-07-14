@@ -1,10 +1,10 @@
 ---
 name: hkx-engineering-pack
-description: Router for the HKX OMP engineering pack: research, context retrieval, intent capture, parallel execution, agent-loop design and runaway review, pre-action gating, context hygiene, error handling, API design, connectors, architecture, migrations, production audit, repo scan, onboarding, code tours, ADRs, docs lookup, E2E, accessibility, post-deploy browser QA, and learning capture.
-origin: HKX-converted-for-OMP
+description: "Router for the HKX Pi engineering pack: research, context retrieval, intent capture, parallel execution, agent-loop design and runaway review, pre-action gating, context hygiene, error handling, API design, connectors, architecture, migrations, production audit, repo scan, onboarding, code tours, ADRs, docs lookup, E2E, accessibility, post-deploy browser QA, and learning capture."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Engineering Pack For OMP
+# HKX Engineering Pack For Pi
 
 Use this as the entry point when the task is broad engineering work rather than
 one language-specific implementation. Pull in the narrow skill that matches the
@@ -66,7 +66,7 @@ work surface.
 - Use `hkx-architecture-decision-records` when a durable architecture decision is
   made, changed, or investigated.
 - Use `hkx-e2e-testing` for user-visible flows and CLI/browser smoke workflows.
-- Use `hkx-browser-qa` for post-deploy visual smoke, interaction, regression, and a11y checks against a staging URL via the OMP `browser` tool.
+- Use `hkx-browser-qa` for post-deploy visual smoke, interaction, regression, and a11y checks against a staging URL via the Pi `browser` tool.
 - Use `hkx-growth-log` to extract a transferable learning entry after a complex task, failure, or non-obvious decision.
 - Pair with language skills such as `hkx-typescript-workflow`,
   `hkx-python-workflow`, `hkx-rust-workflow`, or `hkx-go-workflow` when editing

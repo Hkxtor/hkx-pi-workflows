@@ -1,10 +1,10 @@
 ---
 name: hkx-search-first
-description: Research-before-coding workflow for OMP projects. Use before adding dependencies, integrations, helpers, tools, abstractions, MCPs, or custom implementations.
-origin: HKX-converted-for-OMP
+description: Research-before-coding gate for Pi projects. Use before adding dependencies, integrations, helpers, tools, abstractions, MCPs, or custom implementations. Not for open-ended topic research, market diligence, or library doc lookups (use research-ops / documentation-lookup).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Search First For OMP
+# HKX Search First For Pi
 
 Use this before writing custom code for a problem that may already have a local
 implementation, package, SDK, MCP, extension, or documented pattern.
@@ -13,7 +13,7 @@ implementation, package, SDK, MCP, extension, or documented pattern.
 
 - adding a dependency or integration
 - writing a new utility/helper/adapter
-- adding an OMP tool, extension, command, rule, or skill
+- adding an Pi tool, extension, command, rule, or skill
 - choosing a package, SDK, parser, protocol library, or test harness
 - replacing existing code with a custom abstraction
 
@@ -32,7 +32,7 @@ implementation, package, SDK, MCP, extension, or documented pattern.
    - existing package-local patterns
 4. Check available knowledge surfaces:
    - repo docs
-   - OMP skills/rules/commands
+   - Pi skills/rules/commands
    - configured MCP/docs tools when relevant
 5. Search external sources only when current information matters or the local
    repo lacks the answer.
@@ -50,9 +50,9 @@ implementation, package, SDK, MCP, extension, or documented pattern.
 | No maintained solution or security constraint blocks it | Build |
 | Requirement unclear | Defer and ask for scope |
 
-## OMP Guardrails
+## Pi Guardrails
 
-- Prefer existing OMP package patterns over introducing new frameworks.
+- Prefer existing Pi package patterns over introducing new frameworks.
 - Do not install packages without explicit user approval when network access or
   dependency changes are required.
 - Use official docs or Context7-style current docs for APIs that may have changed.

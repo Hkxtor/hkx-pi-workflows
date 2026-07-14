@@ -1,7 +1,7 @@
 ---
 name: hkx-eval-harness
 description: Formal evaluation framework for agent sessions implementing eval-driven development (EDD) principles.
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # Eval Harness Skill
@@ -68,7 +68,7 @@ npm run build && echo "PASS" || echo "FAIL"
 ### 2. Model-Based Grader
 Use a language model to evaluate open-ended outputs:
 ```markdown
-[MODEL GRADER PROMPT]
+[MODEL GRADER PRPiT]
 Evaluate the following code change:
 1. Does it solve the stated problem?
 2. Is it well-structured?
@@ -167,7 +167,7 @@ Status: READY FOR REVIEW
 ```
 Define a new eval for feature-name
 ```
-Creates eval definition file at `.omp/evals/feature-name.md`
+Creates eval definition file at `.pi/evals/feature-name.md`
 
 ### During Implementation
 ```
@@ -185,7 +185,7 @@ Generates full eval report
 
 Store evals in project:
 ```
-.omp/
+.pi/
   evals/
     feature-xyz.md      # Eval definition
     feature-xyz.log     # Eval run history
@@ -264,6 +264,6 @@ Recommended thresholds:
 
 ### Minimal Eval Artifact Layout
 
-- `.omp/evals/<feature>.md` definition
-- `.omp/evals/<feature>.log` run history
+- `.pi/evals/<feature>.md` definition
+- `.pi/evals/<feature>.log` run history
 - `docs/releases/<version>/eval-summary.md` release snapshot

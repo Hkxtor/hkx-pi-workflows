@@ -1,5 +1,5 @@
 ---
-description: Reuse-first, repository, API response, and integration boundary patterns for HKX OMP workflows.
+description: Reuse-first, repository, API response, and integration boundary patterns for HKX Pi workflows.
 ---
 
 # HKX Common Patterns

@@ -1,0 +1,35 @@
+{
+  "name": "hkx-docs-update",
+  "description": "Evidence-backed documentation update: explore, update docs/codemaps, then review accuracy.",
+  "chain": [
+    {
+      "agent": "hkx.code-explorer",
+      "phase": "Research",
+      "label": "Source of truth",
+      "as": "context",
+      "output": "docs/context.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Collect source-of-truth evidence for the documentation update:\n\n{task}\n\nIdentify code, configs, commands, and existing docs that must stay consistent.\nDo not modify project/source files; write findings to the configured output artifact."
+    },
+    {
+      "agent": "hkx.doc-updater",
+      "phase": "Implementation",
+      "label": "Update docs",
+      "as": "docs",
+      "output": "docs/update.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Update documentation for:\n\n{task}\n\nEvidence:\n{outputs.context}\n\nRules:\n- Sole writer for the active worktree.\n- Prefer local evidence over invention.\n- Preserve hand-written intent and examples unless contradicted by code.\n- Call out verification gaps explicitly.\n\nReturn changed docs, preserved sections, and remaining gaps."
+    },
+    {
+      "agent": "hkx.code-reviewer",
+      "phase": "Review",
+      "label": "Docs accuracy",
+      "as": "review",
+      "output": "docs/review.md",
+      "outputMode": "file-only",
+      "task": "Review the documentation update for accuracy against code evidence.\n\nRequest:\n{task}\n\nDocs update summary:\n{outputs.docs}\n\nContext evidence:\n{outputs.context}\n\nFlag claims that are unsupported, stale, or over-confident. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+    }
+  ]
+}

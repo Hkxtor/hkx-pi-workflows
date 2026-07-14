@@ -1,7 +1,7 @@
 ---
 name: hkx-latency-critical-systems
-description: Use for latency-sensitive systems such as realtime dashboards, market data, streaming agents, queues, caches, or execution paths where freshness and p95 latency matter.
-origin: ECC-converted-for-OMP
+description: Design and verify latency-sensitive paths (realtime dashboards, market data, streaming agents, queues, caches) with p95/freshness metrics. Use for architecture and hot-path latency. Not generic page/API benchmark capture or ETL bulk throughput.
+origin: ECC-converted-for-Pi
 ---
 
 # Latency Critical Systems
@@ -57,7 +57,7 @@ Use live readbacks when a deployed surface exists:
 - browser verification for actual UI freshness;
 - logs around retries and degraded mode.
 
-If benchmark artifacts are written, store them under `.omp/benchmarks/` or a
+If benchmark artifacts are written, store them under `.pi/benchmarks/` or a
 documented repo-local ops path.
 
 ## Guardrails

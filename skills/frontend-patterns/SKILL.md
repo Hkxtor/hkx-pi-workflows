@@ -1,6 +1,6 @@
 ---
 name: hkx-frontend-patterns
-description: Frontend implementation guidance for React, TypeScript, accessibility, and OMP UI work.
+description: "React/TypeScript frontend implementation patterns for Pi UI: components, state, composition, and practical accessibility hooks. Use when building or reviewing frontend code. Not design direction, design-system generation, micro-polish, full WCAG audits, or post-deploy browser QA."
 ---
 
 # HKX Frontend Patterns

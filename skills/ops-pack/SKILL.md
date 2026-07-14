@@ -1,10 +1,10 @@
 ---
 name: hkx-ops-pack
-description: Router for the HKX OMP operations pack: terminal execution, GitHub ops, git workflow, project flow, deployment, Docker, Kubernetes, automation audit, workspace audit, canary checks, MCP server operations, safety guardrails, and security scans.
-origin: HKX-converted-for-OMP
+description: "Router for the HKX Pi operations pack: terminal execution, GitHub ops, git workflow, project flow, deployment, Docker, Kubernetes, automation audit, workspace audit, canary checks, MCP server operations, safety guardrails, and security scans."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Ops Pack For OMP
+# HKX Ops Pack For Pi
 
 Use this as the entry point when the task is operational: run or debug commands,
 inspect CI, triage GitHub work, prepare deployment, audit automation, verify
@@ -26,7 +26,7 @@ post-deploy health, or inspect MCP/plugin workspace state.
 | Post-deploy URL and endpoint verification | `hkx-canary-watch` |
 | MCP server design and operational review | `hkx-mcp-server-patterns` |
 | Destructive-operation and scoped-write guardrails | `hkx-safety-guard` |
-| OMP config, extension, MCP, secret, and permission scanning | `hkx-security-scan` |
+| Pi config, extension, MCP, secret, and permission scanning | `hkx-security-scan` |
 
 ## Operating Defaults
 
@@ -53,7 +53,7 @@ post-deploy health, or inspect MCP/plugin workspace state.
 - "Check staging/prod after deploy" -> `hkx-canary-watch`.
 - "Build or review MCP server/tools/resources" -> `hkx-mcp-server-patterns`.
 - "This could delete, publish, deploy, rewrite, bill, or mutate externally" -> `hkx-safety-guard`.
-- "Scan OMP config/extensions/MCP/commands/skills/rules for security risk" -> `hkx-security-scan`.
+- "Scan Pi config/extensions/MCP/commands/skills/rules for security risk" -> `hkx-security-scan`.
 
 ## Output
 

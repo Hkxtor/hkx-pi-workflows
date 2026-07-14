@@ -1,10 +1,10 @@
 ---
 name: hkx-code-tour
 description: Create reusable CodeTour-style walkthrough artifacts with verified repository file and line anchors.
-origin: HKX-converted-for-OMP
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Code Tour For OMP
+# HKX Code Tour For Pi
 
 Use this when the user wants a reusable guided walkthrough of a codebase area, architecture path, PR, RCA, onboarding route, or security boundary.
 

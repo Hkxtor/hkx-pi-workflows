@@ -1,20 +1,20 @@
 ---
 name: hkx-security-review
-description: Security review for OMP auth, secrets, tool permissions, extensions, MCP, browser/eval/bash/ssh tools, internal URLs, provider APIs, and release/install surfaces.
-origin: HKX-converted-for-OMP
+description: Threat-model security review of Pi auth, secrets in code, tool permissions, extensions/MCP trust boundaries, browser/eval/bash/ssh tools, internal URLs, provider APIs, and release/install paths. Use when reviewing code or architecture for security risk. Not a config inventory scan (use security-scan).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Security Review For OMP
+# HKX Security Review For Pi
 
 Use this when a change touches user input, credentials, auth, permissions,
 external processes, network calls, plugin/extension loading, MCP, browser, eval,
 ssh, file writes, or release/install behavior.
 
-## OMP Trust Boundaries
+## Pi Trust Boundaries
 
 - model provider APIs and auth storage
 - OAuth and API key login flows
-- `.omp/secrets.yml`, env vars, debug bundles, logs
+- `.pi/secrets.yml`, env vars, debug bundles, logs
 - bash, eval, browser, ssh, debug, write, edit, and ast-edit tools
 - ACP/editor permission bridge
 - MCP stdio/http servers

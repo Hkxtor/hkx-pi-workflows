@@ -31,4 +31,4 @@ Use this rule when editing TypeScript or JavaScript.
 
 ## Validation
 
-Use the repository's package manager and scripts. In Oh My Pi itself, prefer `bun check` over direct TypeScript compiler calls.
+Use the repository's package manager and scripts. In the pi codebase itself, prefer `bun check` over direct TypeScript compiler calls.

@@ -1,7 +1,7 @@
 ---
 name: hkx-design-system
-description: Use this skill to generate or audit design systems, check visual consistency, and review PRs that touch styling.
-origin: ECC-converted-for-OMP
+description: Generate or audit design systems, tokens, visual consistency, and styling PRs. Use for system-level visual language work. Not one-off product design direction (frontend-design-direction), component implementation (frontend-patterns), spacing/polish passes (make-interfaces-feel-better), or a11y-only reviews (accessibility).
+origin: ECC-converted-for-Pi
 ---
 
 # Design System — Generate & Audit Visual Systems

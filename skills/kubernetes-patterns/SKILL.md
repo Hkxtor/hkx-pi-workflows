@@ -1,7 +1,7 @@
 ---
 name: hkx-kubernetes-patterns
 description: Kubernetes workload patterns, resource management, RBAC, probes, autoscaling, ConfigMap/Secret handling, and kubectl debugging for production-grade deployments.
-origin: HKX-converted-for-OMP
+origin: HKX-converted-for-Pi
 ---
 
 # Kubernetes Patterns

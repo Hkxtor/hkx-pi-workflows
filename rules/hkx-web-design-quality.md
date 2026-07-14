@@ -1,5 +1,5 @@
 ---
-description: Prompt-time web UI design-quality guidance for OMP sessions.
+description: Prompt-time web UI design-quality guidance for Pi sessions.
 ---
 
 # HKX Web Design Quality

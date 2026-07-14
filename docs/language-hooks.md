@@ -1,10 +1,15 @@
-# Language Rules And Extensions
+# Language Rules and Extensions
 
-HKX language migration uses two OMP surfaces.
+This document explains the two lightweight enforcement layers in `hkx-pi-workflows`:
+
+- **rules** — prompt-time language guidance and reminders
+- **extensions** — runtime notifications and gatekeeping
+
+Use this document when deciding whether language-specific behavior belongs in a rule or an extension.
 
 ## Rules
 
-Language guidance belongs in `rules/*.md` with OMP frontmatter:
+Language guidance belongs in `rules/*.md` with rule frontmatter.
 
 ```md
 ---
@@ -14,16 +19,28 @@ globs:
 ---
 ```
 
-Use `globs`, not the HKX/Claude `paths` field.
-
 Rules are best for:
 
-- Coding style
-- Testing policy
-- Security reminders
-- TTSR patterns such as `console.log`, bare `except`, or Rust `unwrap`
+- coding style
+- testing policy
+- security reminders
+- narrow language-specific pitfalls such as `console.log`, bare `except`, or Rust `unwrap`
+
+Choose a rule when the behavior should stay:
+
+- lightweight
+- prompt-visible
+- advisory rather than runtime-enforced
 
 ## Extensions
+
+Extensions are the runtime hook layer.
+
+Choose an extension when the behavior must react to live tool events, for example:
+
+- reminding the operator to run validation after a mutation
+- blocking risky edits until investigation facts are gathered
+- surfacing low-noise runtime guidance that should not live in every prompt
 
 ### hkx-language-quality.ts
 
@@ -31,17 +48,17 @@ Post-execution notification extension.
 
 Current behavior:
 
-- Observes successful `edit`, `write`, and `ast_edit` tool results.
+- Observes successful `edit`, `write`, and `ast_grep_replace` tool results.
 - Extracts touched file paths from tool input and details.
 - Shows a UI notification listing suggested validation checks.
 - Logs a debug entry for diagnostics.
 
 It does not:
 
-- Auto-format files
-- Run build commands
-- Modify files
-- Block tool calls
+- auto-format files
+- run build commands
+- modify files
+- block tool calls
 
 That default keeps the pack safe for projects that have not opted into automatic command execution.
 
@@ -51,7 +68,7 @@ Pre-execution fact-forcing gate extension.
 
 Current behavior:
 
-- Intercepts `tool_call` events for `edit`, `write`, `ast_edit`, and `bash` before execution.
+- Intercepts `tool_call` events for `edit`, `write`, `ast_grep_replace`, and `bash` before execution.
 - Blocks first access to each file with investigation questions (which importers, schemas, user instruction).
 - Blocks destructive Bash commands (`rm -rf`, `git push --force`, `DROP TABLE`, etc.).
 - Tracks per-session state so a file passes the gate after the first denial.
@@ -65,19 +82,37 @@ HKX_GATEGUARD=off
 
 It does not:
 
-- Auto-investigate files
-- Run commands on the agent's behalf
-- Persist state across sessions
+- auto-investigate files
+- run commands on the agent's behalf
+- persist state across sessions
 
 Complementary surfaces:
 
-- `skills/gateguard/SKILL.md` — prompt-level gate guidance and output format.
-- `skills/safety-guard/SKILL.md` — runtime safety checks (non-overlapping).
+- `skills/gateguard/SKILL.md` — prompt-level gate guidance and output format
+- `skills/safety-guard/SKILL.md` — runtime safety checks that do not overlap with the gate
 
-## Future Additions
+## Placement Guide
 
-Good next migrations:
+Use this rule-of-thumb:
 
-- Separate optional auto-fix extension with explicit settings.
-- Per-language skill packs for Python, Rust, Go, Java, Kotlin, Swift, and frontend frameworks.
-- Project-local rule overlays under `.omp/rules/` for repo-specific standards.
+- put **general language guidance** in `rules/`
+- put **workflow explanation** in `skills/`
+- put **runtime reaction** in `extensions/`
+
+If a rule is becoming dynamic or stateful, it probably wants an extension.
+If an extension is becoming a long teaching document, it probably wants a skill.
+
+## Possible Future Additions
+
+Likely future optional additions:
+
+- a separate opt-in auto-fix extension with explicit settings
+- per-language optional packs for deeper framework-specific behavior
+- project-local rule overlays under `.pi/rules/` for repo-specific standards
+
+## Related Docs
+
+- `docs/README.md` — documentation index and routing guide
+- `docs/architecture.md` — layer boundaries across commands, skills, rules, agents, chains, and extensions
+- `docs/conversion-map.md` — current package surface map
+- `docs/skill-routing.md` — primary skill choice when families overlap

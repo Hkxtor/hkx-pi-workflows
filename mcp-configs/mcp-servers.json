@@ -44,7 +44,7 @@
     "longhand": {
       "command": "longhand",
       "args": ["mcp-server"],
-      "description": "Lossless OMP session history — indexes raw tool calls, file edits, and thinking blocks. Complements memory/omega-memory (synthesized) with verbatim recall. Install: pip install longhand && longhand setup"
+      "description": "Lossless agent session history — indexes raw tool calls, file edits, and thinking blocks. Complements memory/omega-memory (synthesized) with verbatim recall. Install: pip install longhand && longhand setup"
     },
     "sequential-thinking": {
       "command": "npx",
@@ -141,7 +141,7 @@
     "devfleet": {
       "type": "http",
       "url": "http://localhost:18801/mcp",
-      "description": "Multi-agent orchestration — dispatch parallel OMP agents in isolated worktrees. Plan projects, auto-chain missions, read structured reports. Repo: https://github.com/LEC-AI/claude-devfleet"
+      "description": "Multi-agent orchestration — dispatch parallel agents in isolated worktrees. Plan projects, auto-chain missions, and read structured reports. Repo: https://github.com/LEC-AI/claude-devfleet"
     },
     "token-optimizer": {
       "command": "npx",
@@ -190,14 +190,14 @@
     "squish": {
       "command": "npx",
       "args": ["-y", "squish-memory"],
-      "description": "Local-first persistent memory runtime for AI agents — MCP server for OMP, Cursor, OpenCode, Codex, Cline. Auto-captures context across sessions. 1-20ms recall, 283KB, no second LLM needed. Runs locally with SQLite. Supports cloud sync via Stripe checkout ($9-$99/mo). GitHub: https://github.com/michielhdoteth/squish | Docs: https://squishplugin.dev | (also available via local `squish run mcp`)"
+      "description": "Local-first persistent memory runtime for AI agents — MCP server for pi, Cursor, OpenCode, Codex, Cline. Auto-captures context across sessions. 1-20ms recall, 283KB, no second LLM needed. Runs locally with SQLite. Supports cloud sync via Stripe checkout ($9-$99/mo). GitHub: https://github.com/michielhdoteth/squish | Docs: https://squishplugin.dev | (also available via local `squish run mcp`)"
     }
   },
   "_comments": {
-    "usage": "Apply a named template from mcp-configs/templates/ or copy the servers you need into an OMP mcp.json file",
+    "usage": "Apply a named template from mcp-configs/templates/ or copy the servers you need into a pi mcp.json file",
     "env_vars": "Replace YOUR_*_HERE placeholders with actual values",
     "templates": "Optional additive templates currently cover memory, reasoning, and research under mcp-configs/templates/",
-    "disabling": "Disable bundled MCPs with disabledServers in ~/.omp/agent/mcp.json, or override them by defining the same server name in .omp/mcp.json or ~/.omp/agent/mcp.json",
+    "disabling": "Disable bundled MCPs with disabledServers in ~/.pi/agent/mcp.json, or override them by defining the same server name in .pi/mcp.json or ~/.pi/agent/mcp.json",
     "context_warning": "Keep under 10 MCPs enabled to preserve context window"
   }
 }

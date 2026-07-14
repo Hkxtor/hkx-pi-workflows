@@ -1,12 +1,12 @@
 ---
 name: hkx-postgres-patterns
 description: PostgreSQL database patterns for query optimization, schema design, indexing, and security. Based on Supabase best practices.
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # PostgreSQL Patterns
 
-Quick reference for PostgreSQL best practices. For detailed guidance, use the OMP agent: `database-reviewer` (if available).
+Quick reference for PostgreSQL best practices. For detailed guidance, use the Pi agent: `database-reviewer` (if available).
 
 ## When to Activate
 
@@ -138,8 +138,8 @@ SELECT pg_reload_conf();
 
 ## Related
 
-- Agent: `database-reviewer` — Full database review workflow (OMP agent, if available)
-- Skill: `clickhouse-io` — ClickHouse analytics patterns (not included in OMP core)
+- Agent: `database-reviewer` — Full database review workflow (Pi agent, if available)
+- Skill: `clickhouse-io` — ClickHouse analytics patterns (not included in Pi core)
 - Skill: `hkx-backend-patterns` — API and backend patterns
 
 ---

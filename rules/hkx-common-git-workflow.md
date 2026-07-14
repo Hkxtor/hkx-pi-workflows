@@ -1,5 +1,5 @@
 ---
-description: Git commit, branch, PR, release, and history-safety guidance for HKX OMP workflows.
+description: Git commit, branch, PR, release, and history-safety guidance for HKX Pi workflows.
 ---
 
 # HKX Common Git Workflow

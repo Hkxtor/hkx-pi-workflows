@@ -1,11 +1,66 @@
-import type { ExtensionFactory } from "@oh-my-pi/pi-coding-agent";
+type ToolName = "edit" | "write" | "ast_grep_replace" | string;
 
-const LANGUAGE_CHECKS: Array<{ label: string; pattern: RegExp; checks: string[] }> = [
-	{ label: "TypeScript", pattern: /\.(?:ts|tsx|js|jsx|mts|cts)$/, checks: ["typecheck", "lint", "targeted tests"] },
-	{ label: "Python", pattern: /\.(?:py|pyi)$/, checks: ["ruff", "type check", "targeted tests"] },
-	{ label: "Rust", pattern: /\.rs$/, checks: ["cargo fmt", "cargo clippy", "cargo test"] },
-	{ label: "Go", pattern: /\.go$/, checks: ["gofmt", "go test"] },
+type ToolResultEvent = {
+	isError?: boolean;
+	toolName: ToolName;
+	input: Record<string, unknown>;
+	details?: unknown;
+};
+
+type ExtensionContext = {
+	ui: {
+		notify(message: string, level?: string): void;
+	};
+	cwd?: string;
+};
+
+type ExtensionRuntime = {
+	on(
+		event: "tool_result",
+		handler: (
+			event: ToolResultEvent,
+			ctx: ExtensionContext,
+		) => void | Promise<void>,
+	): void;
+	logger: {
+		debug(message: string, data?: unknown): void;
+	};
+};
+
+type ExtensionFactory = (pi: ExtensionRuntime) => void;
+
+const LANGUAGE_CHECKS: Array<{
+	label: string;
+	pattern: RegExp;
+	checks: string[];
+}> = [
+	{
+		label: "TypeScript",
+		pattern: /\.(?:ts|tsx|js|jsx|mts|cts)$/,
+		checks: ["typecheck", "lint", "targeted tests"],
+	},
+	{
+		label: "Python",
+		pattern: /\.(?:py|pyi)$/,
+		checks: ["ruff", "type check", "targeted tests"],
+	},
+	{
+		label: "Rust",
+		pattern: /\.rs$/,
+		checks: ["cargo fmt", "cargo clippy", "cargo test"],
+	},
+	{
+		label: "Go",
+		pattern: /\.go$/,
+		checks: ["gofmt", "go test"],
+	},
 ];
+
+const MUTATING_TOOL_NAMES = new Set<ToolName>([
+	"edit",
+	"write",
+	"ast_grep_replace",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
@@ -40,7 +95,10 @@ function extractPathsFromUnknown(paths: Set<string>, value: unknown): void {
 	}
 }
 
-function extractPaths(input: Record<string, unknown>, details: unknown): string[] {
+function extractPaths(
+	input: Record<string, unknown>,
+	details: unknown,
+): string[] {
 	const paths = new Set<string>();
 	extractPathsFromUnknown(paths, input);
 	extractPathsFromUnknown(paths, details);
@@ -58,10 +116,10 @@ function matchingChecks(paths: readonly string[]): string[] {
 	return [...seen];
 }
 
-const extension: ExtensionFactory = pi => {
+const extension: ExtensionFactory = (pi) => {
 	pi.on("tool_result", async (event, ctx) => {
 		if (event.isError) return;
-		if (!["edit", "write", "ast_edit"].includes(event.toolName)) return;
+		if (!MUTATING_TOOL_NAMES.has(event.toolName)) return;
 
 		const paths = extractPaths(event.input, event.details);
 		const checks = matchingChecks(paths);

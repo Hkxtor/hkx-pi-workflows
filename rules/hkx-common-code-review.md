@@ -1,5 +1,5 @@
 ---
-description: Code review triggers, checklist, severity, and approval criteria for HKX OMP workflows.
+description: Code review triggers, checklist, severity, and approval criteria for HKX Pi workflows.
 ---
 
 # HKX Common Code Review

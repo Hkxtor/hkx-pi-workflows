@@ -1,7 +1,7 @@
 ---
 name: hkx-product-lens
-description: Use this skill to validate the "why" before building, run product diagnostics, and pressure-test product direction before the request becomes an implementation contract.
-origin: ECC-converted-for-OMP
+description: "Product diagnostic layer: validate the \"why\", pressure-test direction, and run product/journey prioritization before an implementation contract. Use early when the problem or value is unclear. Not PRD-to-capability specs (product-capability), engineering acceptance criteria (intent-driven-development), or multi-path council votes (council)."
+origin: ECC-converted-for-Pi
 ---
 
 # Product Lens — Think Before You Build

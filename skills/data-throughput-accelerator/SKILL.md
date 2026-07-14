@@ -1,7 +1,7 @@
 ---
 name: hkx-data-throughput-accelerator
-description: Use when large data ingestion, backfill, export, ETL, warehouse loading, manifest catch-up, or table synchronization needs to become much faster while preserving data correctness.
-origin: ECC-converted-for-OMP
+description: Speed up large ingestion, backfill, export, ETL, warehouse load, or table sync while preserving correctness. Use for bulk data throughput problems. Not interactive p95 latency design or simple before/after microbenchmarks.
+origin: ECC-converted-for-Pi
 ---
 
 # Data Throughput Accelerator

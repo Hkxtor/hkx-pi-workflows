@@ -1,7 +1,7 @@
 ---
 name: hkx-benchmark-optimization-loop
-description: Use when the user asks to make something faster, compare multiple variants, run bounded optimization loops, or choose a winner by repeated measured tests instead of intuition.
-origin: ECC-converted-for-OMP
+description: Bounded measure-optimize loop across variants with a promotion gate. Use when making something faster by repeated measured tests, after a baseline exists. Not one-shot baseline capture (benchmark), p95/freshness architecture (latency-critical-systems), or bulk ETL throughput (data-throughput-accelerator).
+origin: ECC-converted-for-Pi
 ---
 
 # Benchmark Optimization Loop
@@ -34,7 +34,7 @@ If the target is unrealistic, preserve the ambition but bound the loop.
 
 ## Variant Ledger
 
-When writing artifacts, prefer `.omp/benchmarks/` for benchmark notes and
+When writing artifacts, prefer `.pi/benchmarks/` for benchmark notes and
 machine-readable ledgers.
 
 Track variants in a table like this:

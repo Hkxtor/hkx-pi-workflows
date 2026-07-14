@@ -1,10 +1,10 @@
 ---
 name: hkx-production-audit
-description: Local-evidence production readiness audit for OMP projects, releases, install paths, CI, deployments, migrations, observability, and launch-critical flows.
-origin: HKX-converted-for-OMP
+description: "Local-evidence production readiness audit: release/install paths, CI, deploy, migrations, observability, and launch-critical flows. Use when asking \"is this safe to ship?\". Not general repo inventory (repo-scan) or onboarding docs (codebase-onboarding)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Production Audit For OMP
+# HKX Production Audit For Pi
 
 Use when the user asks whether a project, release, feature, package, or deploy is
 ready to ship.

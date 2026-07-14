@@ -1,10 +1,10 @@
 ---
 name: hkx-canary-watch
-description: Post-deploy canary verification for OMP projects: deployed URL health, HTTP status, console/network errors, static assets, SSE streams, and performance regressions.
-origin: HKX-converted-for-OMP
+description: "Post-deploy canary checks on a live URL: HTTP health, console/network errors, assets, SSE, and coarse performance regressions. Use after deploy. Not E2E test authoring (e2e-testing) or full visual-regression browser QA suites (browser-qa)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Canary Watch For OMP
+# HKX Canary Watch For Pi
 
 Use after deploys, merges, dependency upgrades, or release candidate promotion to
 verify the deployed surface still behaves.

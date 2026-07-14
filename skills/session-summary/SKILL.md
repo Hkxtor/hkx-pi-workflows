@@ -1,15 +1,15 @@
 ---
 name: hkx-session-summary
-description: Generate a concise, structured summary of the current OMP session — key accomplishments, decisions made, files changed, issues discovered, and next steps. Uses LLM summarization of session transcript for rich context.
+description: Generate a concise, structured summary of the current Pi session — key accomplishments, decisions made, files changed, issues discovered, and next steps. Uses LLM summarization of session transcript for rich context.
 version: 1.0.0
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # HKX Session Summary
 
 Generate a structured summary of the current session's work. The summary captures key accomplishments, decisions, files changed, issues discovered, and recommended next steps.
 
-This is adapted from ECC's `session-summary` stop hook and `llm-summary.js` generator. In OMP, it runs as a deliberate end-of-session or checkpoint command rather than an automatic hook.
+This is adapted from ECC's `session-summary` stop hook and `llm-summary.js` generator. In Pi, it runs as a deliberate end-of-session or checkpoint command rather than an automatic hook.
 
 ## When to Activate
 
@@ -101,8 +101,8 @@ Use the following approaches to build the summary:
 
 When the user wants to persist the summary:
 
-1. Write to `.omp/sessions/session-<date>.md`.
-2. Or append to `.omp/memory/output-index.md`.
+1. Write to `.pi/sessions/session-<date>.md`.
+2. Or append to `.pi/memory/output-index.md`.
 
 Do not persist without explicit user approval.
 

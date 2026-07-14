@@ -1,10 +1,10 @@
 ---
 name: hkx-database-migrations
-description: Safe database migration workflow for schema changes, indexes, backfills, rollbacks, and zero-downtime deploys across SQL and ORM-backed OMP projects.
-origin: HKX-converted-for-OMP
+description: Safe database migration workflow for schema changes, indexes, backfills, rollbacks, and zero-downtime deploys across SQL and ORM-backed Pi projects.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Database Migrations For OMP
+# HKX Database Migrations For Pi
 
 Use this before creating, editing, reviewing, or deploying schema migrations,
 indexes, data backfills, or persistent storage format changes.

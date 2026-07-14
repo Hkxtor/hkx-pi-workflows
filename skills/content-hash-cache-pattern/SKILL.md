@@ -1,7 +1,7 @@
 ---
 name: hkx-content-hash-cache-pattern
 description: Cache expensive file-processing results using content hashes instead of paths, so cache hits survive renames and invalidate automatically when the file changes.
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # Content-Hash Cache Pattern

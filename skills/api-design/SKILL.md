@@ -1,10 +1,10 @@
 ---
 name: hkx-api-design
-description: OMP-compatible API design workflow for REST, HTTP, JSON-RPC, internal tool APIs, webhooks, resources, pagination, errors, versioning, and rate limits.
-origin: HKX-converted-for-OMP
+description: Pi-compatible API design workflow for REST, HTTP, JSON-RPC, internal tool APIs, webhooks, resources, pagination, errors, versioning, and rate limits.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX API Design For OMP
+# HKX API Design For Pi
 
 Use this when designing or reviewing an API boundary: HTTP, REST, JSON-RPC, tool
 schemas, MCP resources/tools, webhooks, CLI JSON output, or package public APIs.
@@ -88,7 +88,7 @@ Error responses should include stable machine-readable codes:
 - Separate test and production credentials.
 - Return quickly; move slow work to a job if the runtime supports it.
 
-## OMP Tool/API Surfaces
+## Pi Tool/API Surfaces
 
 For model-callable tools and extensions:
 

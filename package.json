@@ -1,22 +1,24 @@
 {
-  "name": "@hkx/omp-workflows",
+  "name": "@hkx/pi-workflows",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "OMP-native core workflow package adapted from Everything Claude Code.",
+  "description": "Pi-native core workflow package adapted from Everything Claude Code.",
   "scripts": {
     "validate": "node scripts/validate.mjs",
     "install-global": "node scripts/install.mjs",
     "mcp:apply-profile": "node scripts/apply-mcp-profile.mjs"
   },
-  "omp": {
-    "name": "hkx-omp-workflows",
+  "pi": {
+    "name": "hkx-pi-workflows",
     "extensions": [
       "./extensions/hkx-language-quality.ts",
       "./extensions/hkx-gateguard.ts"
     ],
     "commands": "./commands",
     "skills": "./skills",
-    "rules": "./rules"
+    "rules": "./rules",
+    "agents": "./agents",
+    "chains": "./chains"
   }
 }

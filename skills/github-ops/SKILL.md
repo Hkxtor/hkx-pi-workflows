@@ -1,10 +1,10 @@
 ---
 name: hkx-github-ops
-description: GitHub operations workflow for OMP projects: issues, PRs, CI checks, releases, changelogs, security alerts, and repository automation. Read-only by default.
-origin: HKX-converted-for-OMP
+description: "GitHub operations workflow for Pi projects: issues, PRs, CI checks, releases, changelogs, security alerts, and repository automation. Read-only by default."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX GitHub Ops For OMP
+# HKX GitHub Ops For Pi
 
 Use when the task depends on GitHub issues, pull requests, workflow runs,
 releases, repository settings, or security alerts.

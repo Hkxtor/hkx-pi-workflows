@@ -1,10 +1,10 @@
 ---
 name: hkx-automation-audit-ops
-description: Read-only automation inventory for OMP projects: CI workflows, hooks, MCP servers, extensions, scripts, scheduled jobs, wrappers, and overlapping automation lanes.
-origin: HKX-converted-for-OMP
+description: "Read-only automation inventory: CI, hooks, MCP servers, extensions, scripts, scheduled jobs, wrappers, and overlapping automation lanes. Use when asking what automation is live, broken, or duplicated. Not full workspace surface maps, skill portfolio quality, or destructive config GC."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Automation Audit Ops For OMP
+# HKX Automation Audit Ops For Pi
 
 Use when the user asks what automation exists, what is live, what is broken, or
 which overlapping surfaces should be kept, merged, cut, or fixed next.
@@ -16,7 +16,7 @@ Inspect:
 - CI workflows
 - package scripts
 - release scripts
-- OMP commands, skills, rules, tools, extensions
+- Pi commands, skills, rules, tools, extensions
 - MCP configs and servers
 - local extension handlers
 - Docker/compose automation

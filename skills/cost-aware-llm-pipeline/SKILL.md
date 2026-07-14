@@ -1,7 +1,7 @@
 ---
 name: hkx-cost-aware-llm-pipeline
-description: Cost-control patterns for LLM-backed systems: route by task complexity, enforce budgets, retry only transient failures, and avoid resending stable prompt context.
-origin: ECC-converted-for-OMP
+description: "Cost-control patterns for LLM-backed systems: route by task complexity, enforce budgets, retry only transient failures, and avoid resending stable prompt context."
+origin: ECC-converted-for-Pi
 ---
 
 # Cost-Aware LLM Pipeline

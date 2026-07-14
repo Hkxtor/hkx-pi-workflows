@@ -1,7 +1,7 @@
 ---
 name: hkx-orch-build-mvp
 description: Orchestrate bootstrapping a working MVP from a design or spec document — ingest the doc, plan thin vertical slices, scaffold the first end-to-end slice, then TDD-implement, review, and gated commit. Use to turn an SDD/PRD into a running starting point.
-origin: HKX-converted-for-OMP
+origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-build-mvp
@@ -10,7 +10,7 @@ Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SK
 ## When to Use
 
 - The user has a **design / spec document** (SDD, PRD, system_design) and wants a working vertical slice bootstrapped from it.
-- Takes a doc path as its argument, e.g. `.omp/prds/feature-spec.md`.
+- Takes a doc path as its argument, e.g. `.pi/prds/feature-spec.md`.
 
 ## Operation Settings
 
@@ -29,7 +29,7 @@ Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SK
 ## Example
 
 ```text
-hkx-orch-build-mvp: .omp/prds/SDD-v0.6.md
+hkx-orch-build-mvp: .pi/prds/SDD-v0.6.md
 → read SDD → slice list (vertical) → scaffold slice 1  [GATE 1: approve]
 → TDD each slice → review → commit feat:  [GATE 2: confirm] → next slice
 ```

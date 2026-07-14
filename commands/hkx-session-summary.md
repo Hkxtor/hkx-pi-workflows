@@ -13,7 +13,7 @@ Generate a structured summary of the current session. Trigger the `hkx-session-s
 | Argument | Mode |
 |---|---|
 | Empty | **Display mode** — print the summary to output |
-| `--save` | **Save mode** — display and save to `.omp/sessions/session-<date>.md` |
+| `--save` | **Save mode** — display and save to `.pi/sessions/session-<date>.md` |
 
 ## Summary Sections
 
@@ -27,7 +27,7 @@ Generate a structured summary of the current session. Trigger the `hkx-session-s
 ## Evidence Gathering
 
 - **Files changed**: `git diff --name-only HEAD` or `git status --short`
-- **Decisions**: Check `.omp/memory/decisions/` or `docs/decisions/`
+- **Decisions**: Check `.pi/memory/decisions/` or `docs/decisions/`
 - **Test results**: Recall verification commands run during this session
 
 ## Output Template
@@ -60,4 +60,4 @@ Next Steps:
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

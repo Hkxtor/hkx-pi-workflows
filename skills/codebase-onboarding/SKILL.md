@@ -1,24 +1,24 @@
 ---
 name: hkx-codebase-onboarding
-description: OMP-native codebase onboarding workflow for repo reconnaissance, architecture maps, entry points, conventions, commands, and starter guidance.
-origin: HKX-converted-for-OMP
+description: "Generate onboarding maps for unfamiliar repos: reconnaissance, architecture, entry points, conventions, commands, and starter guidance. Use for handoffs or first-week orientation. Not raw ownership/inventory scans (repo-scan) or launch readiness audits (production-audit)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Codebase Onboarding For OMP
+# HKX Codebase Onboarding For Pi
 
-Use when opening an unfamiliar repository, preparing a handoff, or generating a concise onboarding guide for maintainers or OMP agents.
+Use when opening an unfamiliar repository, preparing a handoff, or generating a concise onboarding guide for maintainers or Pi agents.
 
 ## Phase 1: Reconnaissance
 
 Gather signals without reading every file:
 
 - Manifests: `package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, `pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `pubspec.yaml`.
-- Framework/config fingerprints: app configs, tsconfig, Dockerfiles, CI workflows, test configs, env examples, OMP extension package metadata.
+- Framework/config fingerprints: app configs, tsconfig, Dockerfiles, CI workflows, test configs, env examples, Pi extension package metadata.
 - Entry points: `main`, `index`, `app`, `server`, `cmd/`, `src/main`, routes, commands, extension registration.
 - Test layout: `tests/`, `test/`, `__tests__/`, `*.test.*`, `*.spec.*`, `*_test.go`, integration and e2e directories.
-- Project guidance: relevant `AGENTS.md`, `.omp/`, command docs, local rules, and package READMEs.
+- Project guidance: relevant `AGENTS.md`, `.pi/`, command docs, local rules, and package READMEs.
 
-Use OMP `find`, `search`, `read`, LSP, and parallel read-only agents. Read selectively and verify ambiguous signals in code.
+Use Pi `find`, `search`, `read`, LSP, and parallel read-only agents. Read selectively and verify ambiguous signals in code.
 
 ## Redaction
 

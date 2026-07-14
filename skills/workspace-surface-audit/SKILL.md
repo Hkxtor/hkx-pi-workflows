@@ -1,10 +1,10 @@
 ---
 name: hkx-workspace-surface-audit
-description: Read-only workspace audit for OMP projects: repo stack, MCP servers, plugins, extension packages, skills, commands, rules, env surfaces, and missing operator workflows.
-origin: HKX-converted-for-OMP
+description: "Read-only workspace inventory: repo stack, MCP, plugins, extensions, skills, commands, rules, env surfaces, and missing operator workflows. Use for \"what do we have installed?\" maps. Not skill-quality stocktake, automation-lane audit, security scan, or confirm-delete cleanup (config-gc)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Workspace Surface Audit For OMP
+# HKX Workspace Surface Audit For Pi
 
 Use to answer: what can this workspace do right now, and what should be enabled
 or built next?
@@ -15,8 +15,8 @@ or built next?
 - Surface only key names, provider names, file paths, and presence/absence.
 - Stay read-only unless the user approves a concrete change.
 - Separate available now, primitive-only, and missing.
-- Prefer OMP-native commands, skills, rules, extensions, and MCPs over generic
-  extra tooling when OMP can own the workflow.
+- Prefer Pi-native commands, skills, rules, extensions, and MCPs over generic
+  extra tooling when Pi can own the workflow.
 
 ## Inputs
 
@@ -24,7 +24,7 @@ Inspect only relevant files:
 
 - `package.json`, lockfiles, language manifests
 - `README.md`, `AGENTS.md`, project docs
-- `.omp/` config, commands, skills, rules, extensions
+- `.pi/` config, commands, skills, rules, extensions
 - MCP configs
 - LSP/tool configs
 - CI workflows
@@ -41,7 +41,7 @@ Inspect only relevant files:
 4. Missing integrations
    - not available yet
 5. Top next moves
-   - 3-5 highest-impact OMP-native additions
+   - 3-5 highest-impact Pi-native additions
 
 ## Recommendation Shape
 

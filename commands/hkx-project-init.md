@@ -1,11 +1,11 @@
 ---
-description: Inspect a project and propose an OMP-native setup plan for commands, skills, rules, MCP, and validation.
+description: Inspect a project and propose an Pi-native setup plan for commands, skills, rules, MCP, and validation.
 argument-hint: "[project goal or stack]"
 ---
 
-# HKX Project Init For OMP
+# HKX Project Init For Pi
 
-Prepare an OMP setup plan for: `$ARGUMENTS`
+Prepare an Pi setup plan for: `$ARGUMENTS`
 
 Default to dry run. Do not modify project guidance, settings, rules, skills, or credentials until the user approves a concrete plan.
 
@@ -14,7 +14,7 @@ Default to dry run. Do not modify project guidance, settings, rules, skills, or 
 Read:
 
 - `AGENTS.md`
-- Existing `.omp/`, `.codex/`, `.gemini/`, `.opencode/`, `.cursor/`, and editor guidance
+- Existing `.pi/`, `.codex/`, `.gemini/`, `.opencode/`, `.cursor/`, and editor guidance
 - Package manifests and CI config
 - Test, lint, build, and format scripts
 - Existing MCP configuration
@@ -23,10 +23,10 @@ Read:
 
 Produce a plan for:
 
-- `.omp/commands/` project commands
-- `.omp/skills/` project skills
-- `.omp/rules/` rulebook entries
-- `.omp/settings.json` extension or MCP entries
+- `.pi/commands/` project commands
+- `.pi/skills/` project skills
+- `.pi/rules/` rulebook entries
+- `.pi/settings.json` extension or MCP entries
 - Validation commands
 - Security boundaries for external actions
 

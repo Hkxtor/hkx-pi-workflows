@@ -1,7 +1,7 @@
 ---
 name: hkx-frontend-design-direction
-description: Set an OMP-specific frontend design direction for production UI work. Use when building or improving websites, dashboards, applications, components, landing pages, visual tools, or any web UI that needs stronger product-specific design judgment.
-origin: ECC-converted-for-OMP
+description: Set product-specific frontend design direction (layout language, hierarchy, visual intent) before implementation. Use when building or improving web UI that needs stronger design judgment. Not token systems (design-system), React patterns (frontend-patterns), micro-polish (make-interfaces-feel-better), WCAG audits (accessibility), or post-deploy browser QA (browser-qa).
+origin: ECC-converted-for-Pi
 ---
 
 # Frontend Design Direction
@@ -9,8 +9,8 @@ origin: ECC-converted-for-OMP
 Use this skill when the work is not just making UI function, but making it feel
 purposeful, polished, and appropriate to the product domain.
 
-Note: OMP does not bundle the upstream frontend-design skill; install from
-`anthropics/skills` if needed. This skill is the OMP-adapted design-direction
+Note: Pi does not bundle the upstream frontend-design skill; install from
+`anthropics/skills` if needed. This skill is the Pi-adapted design-direction
 guidance derived from community contributions.
 
 ## When to Use

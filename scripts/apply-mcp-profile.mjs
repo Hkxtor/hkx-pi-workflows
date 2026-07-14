@@ -1,9 +1,24 @@
+#!/usr/bin/env node
+/**
+ * Day-to-day MCP profile helper for @hkx/pi-workflows.
+ *
+ * npm entry: npm run mcp:apply-profile -- <profile...>
+ *
+ * Merges named templates from mcp-configs/templates/ into a pi MCP config:
+ * - --scope project (default) -> ./.pi/mcp.json
+ * - --scope user              -> ~/.pi/agent/mcp.json
+ * - --target <path>           -> explicit mcp.json path
+ *
+ * Additive merge only: existing servers remain unless overwritten by template keys.
+ * Use --list / --dry-run before writing when unsure.
+ */
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const schemaUrl = "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
+const schemaUrl =
+	"https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const templateRoot = path.join(repoRoot, "mcp-configs", "templates");
@@ -11,7 +26,8 @@ const manifestPath = path.join(templateRoot, "manifest.json");
 
 function expandHome(inputPath) {
 	if (inputPath === "~") return os.homedir();
-	if (inputPath.startsWith("~/")) return path.join(os.homedir(), inputPath.slice(2));
+	if (inputPath.startsWith("~/"))
+		return path.join(os.homedir(), inputPath.slice(2));
 	return inputPath;
 }
 
@@ -33,8 +49,8 @@ function usage(manifest) {
 
 Options:
   --list                  List available MCP template profiles
-  --scope project|user    Write to ./.omp/mcp.json or ~/.omp/agent/mcp.json (default: project)
-  --profile <name>        When scope=user, write to ~/.omp/profiles/<name>/agent/mcp.json
+  --scope project|user    Write to ./.pi/mcp.json or ~/.pi/agent/mcp.json (default: project)
+  --profile <name>        When scope=user, write to ~/.pi/profiles/<name>/agent/mcp.json
   --target <path>         Write to an explicit mcp.json path instead of a derived scope path
   --dry-run               Show the planned merge without writing
   --help                  Show this help
@@ -110,12 +126,19 @@ function parseArgs(argv) {
 function resolveTargetPath(options) {
 	if (options.target) return path.resolve(expandHome(options.target));
 	if (options.scope === "user" && options.profile) {
-		return path.join(os.homedir(), ".omp", "profiles", options.profile, "agent", "mcp.json");
+		return path.join(
+			os.homedir(),
+			".pi",
+			"profiles",
+			options.profile,
+			"agent",
+			"mcp.json",
+		);
 	}
 	if (options.scope === "user") {
-		return path.join(os.homedir(), ".omp", "agent", "mcp.json");
+		return path.join(os.homedir(), ".pi", "agent", "mcp.json");
 	}
-	return path.resolve(process.cwd(), ".omp", "mcp.json");
+	return path.resolve(process.cwd(), ".pi", "mcp.json");
 }
 
 async function main() {
@@ -131,12 +154,18 @@ async function main() {
 		return;
 	}
 	if (profiles.length === 0) {
-		throw new Error("At least one MCP template profile is required. Use --list to inspect available profiles.");
+		throw new Error(
+			"At least one MCP template profile is required. Use --list to inspect available profiles.",
+		);
 	}
 
-	const unknownProfiles = profiles.filter(profile => !manifest.profiles[profile]);
+	const unknownProfiles = profiles.filter(
+		(profile) => !manifest.profiles[profile],
+	);
 	if (unknownProfiles.length > 0) {
-		throw new Error(`Unknown MCP template profile(s): ${unknownProfiles.join(", ")}`);
+		throw new Error(
+			`Unknown MCP template profile(s): ${unknownProfiles.join(", ")}`,
+		);
 	}
 
 	const targetPath = resolveTargetPath(options);
@@ -145,10 +174,18 @@ async function main() {
 		mcpServers: {},
 	});
 
-	if (!targetConfig || typeof targetConfig !== "object" || Array.isArray(targetConfig)) {
+	if (
+		!targetConfig ||
+		typeof targetConfig !== "object" ||
+		Array.isArray(targetConfig)
+	) {
 		throw new Error(`Target file must contain a JSON object: ${targetPath}`);
 	}
-	if (!targetConfig.mcpServers || typeof targetConfig.mcpServers !== "object" || Array.isArray(targetConfig.mcpServers)) {
+	if (
+		!targetConfig.mcpServers ||
+		typeof targetConfig.mcpServers !== "object" ||
+		Array.isArray(targetConfig.mcpServers)
+	) {
 		targetConfig.mcpServers = {};
 	}
 	if (!targetConfig.$schema) {
@@ -165,7 +202,9 @@ async function main() {
 
 		const templatePath = path.join(templateRoot, profile.file);
 		const template = await readJson(templatePath);
-		for (const [serverName, serverConfig] of Object.entries(template.mcpServers ?? {})) {
+		for (const [serverName, serverConfig] of Object.entries(
+			template.mcpServers ?? {},
+		)) {
 			if (targetConfig.mcpServers[serverName] !== undefined) {
 				skippedServers.push(serverName);
 				continue;
@@ -174,9 +213,13 @@ async function main() {
 			addedServers.push(serverName);
 		}
 
-		if (Array.isArray(template.disabledServers) && template.disabledServers.length > 0) {
+		if (
+			Array.isArray(template.disabledServers) &&
+			template.disabledServers.length > 0
+		) {
 			const disabled = new Set(targetConfig.disabledServers ?? []);
-			for (const serverName of template.disabledServers) disabled.add(serverName);
+			for (const serverName of template.disabledServers)
+				disabled.add(serverName);
 			targetConfig.disabledServers = Array.from(disabled).sort();
 		}
 	}
@@ -184,24 +227,38 @@ async function main() {
 	if (options.dryRun) {
 		console.log(`Dry run target: ${targetPath}`);
 		console.log(`Profiles: ${profiles.join(", ")}`);
-		console.log(`Would add: ${addedServers.length > 0 ? addedServers.join(", ") : "(none)"}`);
-		console.log(`Would skip existing: ${skippedServers.length > 0 ? skippedServers.join(", ") : "(none)"}`);
+		console.log(
+			`Would add: ${addedServers.length > 0 ? addedServers.join(", ") : "(none)"}`,
+		);
+		console.log(
+			`Would skip existing: ${skippedServers.length > 0 ? skippedServers.join(", ") : "(none)"}`,
+		);
 		if (requiredEnv.size > 0) {
-			console.log(`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`);
+			console.log(
+				`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`,
+			);
 		}
 		return;
 	}
 
 	if (addedServers.length === 0) {
-		console.log(`No changes needed at ${targetPath}. All requested MCP template servers already exist.`);
+		console.log(
+			`No changes needed at ${targetPath}. All requested MCP template servers already exist.`,
+		);
 		if (requiredEnv.size > 0) {
-			console.log(`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`);
+			console.log(
+				`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`,
+			);
 		}
 		return;
 	}
 
 	await fs.mkdir(path.dirname(targetPath), { recursive: true });
-	await fs.writeFile(targetPath, `${JSON.stringify(targetConfig, null, 2)}\n`, "utf8");
+	await fs.writeFile(
+		targetPath,
+		`${JSON.stringify(targetConfig, null, 2)}\n`,
+		"utf8",
+	);
 
 	console.log(`Applied MCP template profiles to ${targetPath}`);
 	console.log(`Profiles: ${profiles.join(", ")}`);
@@ -210,11 +267,13 @@ async function main() {
 		console.log(`Skipped existing servers: ${skippedServers.join(", ")}`);
 	}
 	if (requiredEnv.size > 0) {
-		console.log(`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`);
+		console.log(
+			`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`,
+		);
 	}
 }
 
-main().catch(error => {
+main().catch((error) => {
 	console.error(error.message);
 	process.exit(1);
 });

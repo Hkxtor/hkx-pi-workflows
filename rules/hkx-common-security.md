@@ -1,5 +1,5 @@
 ---
-description: Security defaults for HKX OMP workflows.
+description: Security defaults for HKX Pi workflows.
 ---
 
 # HKX Common Security

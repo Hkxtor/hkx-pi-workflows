@@ -1,12 +1,12 @@
 ---
 name: hkx-strategic-compact
-description: OMP context hygiene guidance for compacting at phase boundaries while preserving plans, evidence, and next actions.
-origin: HKX-converted-for-OMP
+description: Pi context hygiene guidance for compacting at phase boundaries while preserving plans, evidence, and next actions.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Strategic Compact For OMP
+# HKX Strategic Compact For Pi
 
-Use this for long OMP sessions where context size, stale exploration, or phase changes can degrade correctness.
+Use this for long Pi sessions where context size, stale exploration, or phase changes can degrade correctness.
 
 Strategic compaction is a workflow decision, not an automatic trigger. Compact only after durable state has been written or summarized clearly enough to continue.
 
@@ -72,7 +72,7 @@ Context-size is the reliable signal. A few large file reads fill the window in v
 - Duplicate docs, examples, or tool output.
 - Long logs once the actionable failure line is captured.
 
-## OMP Guardrails
+## Pi Guardrails
 
 - Do not compact to avoid finishing a task.
 - Do not compact before reporting validation failures that need immediate action.

@@ -11,7 +11,7 @@ Run manual delivery checks before finishing a session. Triggers the `hkx-deliver
 
 | Check | Method | Impact |
 |---|---|---|
-| Learning capture | Glob `.omp/memory/growth-log/` for today's mtime | Warning if stale |
+| Learning capture | Glob `.pi/memory/growth-log/` for today's mtime | Warning if stale |
 | Build gate | `bun check`, `cargo check`, or equivalent | Must pass |
 | Test gate | Targeted test suite | Must pass |
 | Lint gate | Format/lint check | Must pass |
@@ -21,7 +21,7 @@ Run manual delivery checks before finishing a session. Triggers the `hkx-deliver
 
 ## Process
 
-1. Run each check using OMP tools.
+1. Run each check using Pi tools.
 2. Collect results into a report.
 3. Present the report and recommend READY or NOT READY.
 
@@ -43,4 +43,4 @@ Overall:            READY / NOT READY
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

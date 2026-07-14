@@ -1,10 +1,10 @@
 ---
 name: hkx-rust-patterns
-description: OMP Rust patterns for native crates, text/search/shell internals, async cancellation, FFI boundaries, unsafe code, and workspace lints. Use when editing crates/* or native build plumbing.
-origin: HKX-converted-for-OMP
+description: "Rust design patterns for Pi native crates: ownership, async cancellation, FFI/unsafe, text/search/shell internals, and workspace lints. Use when designing or editing crates/* or native build plumbing. Not general cargo workflow (rust-workflow) or test-authoring focus (rust-testing)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Rust Patterns For OMP
+# HKX Rust Patterns For Pi
 
 Use this for Rust code in `crates/*`, especially `crates/pi-natives` and the
 vendored brush crates. Match the workspace's Rust 2024 style and lint policy.
@@ -52,7 +52,7 @@ vendored brush crates. Match the workspace's Rust 2024 style and lint policy.
 - Put tests in the crate or module that owns the behavior.
 - Preserve workspace-level lints unless there is a local, justified allow.
 
-## OMP Build Surface
+## Pi Build Surface
 
 Native code affects:
 

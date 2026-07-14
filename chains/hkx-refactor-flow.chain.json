@@ -1,0 +1,58 @@
+{
+  "name": "hkx-refactor-flow",
+  "description": "Behavior-preserving refactor: explore hotspots, clean with refactor-cleaner, then dual review.",
+  "chain": [
+    {
+      "agent": "hkx.code-explorer",
+      "phase": "Research",
+      "label": "Map refactor surface",
+      "as": "context",
+      "output": "refactor/context.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Map the refactor surface for:\n\n{task}\n\nIdentify duplication, dead paths, boundary smells, tests that protect behavior, and safe cleanup units.\nDo not modify project/source files; write findings to the configured output artifact."
+    },
+    {
+      "agent": "hkx.planner",
+      "phase": "Planning",
+      "label": "Safe refactor plan",
+      "as": "plan",
+      "output": "refactor/plan.md",
+      "outputMode": "file-only",
+      "task": "Plan a behavior-preserving refactor for:\n\n{task}\n\nContext:\n{outputs.context}\n\nPrefer small reversible steps with validation after each unit. No feature changes.\nDo not modify project/source files."
+    },
+    {
+      "agent": "hkx.refactor-cleaner",
+      "phase": "Implementation",
+      "label": "Apply cleanup",
+      "as": "impl",
+      "output": "refactor/implementation.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Execute the behavior-preserving refactor for:\n\n{task}\n\nPlan:\n{outputs.plan}\n\nContext:\n{outputs.context}\n\nRules:\n- Sole writer for the active worktree.\n- Preserve behavior; delete only with evidence.\n- Keep diffs focused; validate after changes.\n\nReturn changed files, deletions, validation, and anything intentionally deferred."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Behavior review",
+          "as": "reviewGeneral",
+          "output": "refactor/review-general.md",
+          "outputMode": "file-only",
+          "task": "Review the refactor for behavior preservation and accidental scope creep.\n\nRequest:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Safety-net review",
+          "as": "reviewTests",
+          "output": "refactor/review-tests.md",
+          "outputMode": "file-only",
+          "task": "Review whether tests adequately protect the refactored behavior for:\n\n{task}\n\nImplementation:\n{outputs.impl}\n\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 2
+    }
+  ]
+}

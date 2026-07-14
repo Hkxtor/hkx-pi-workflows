@@ -1,12 +1,12 @@
 ---
 name: hkx-orch-pipeline
 description: Shared orchestration engine for the hkx-orch-* skill family. Defines the gated Research-Plan-TDD-Review-Commit pipeline, the size classifier, the agent map, and the two human gates that the operation skills delegate to. Not usually invoked directly.
-origin: HKX-converted-for-OMP
+origin: HKX-converted-for-Pi
 ---
 
 # HKX Orchestrator Pipeline (shared engine)
 
-The `hkx-orch-*` skills are thin wrappers. They classify the request, choose which phases of this pipeline run, and delegate each phase to an existing OMP agent or command. This file is that pipeline.
+The `hkx-orch-*` skills are thin wrappers. They classify the request, choose which phases of this pipeline run, and delegate each phase to an existing Pi agent or command. This file is that pipeline.
 
 > Invoke an operation skill (`hkx-orch-add-feature`, `hkx-orch-fix-defect`, …) rather than this engine directly.
 
@@ -80,7 +80,7 @@ Pull in `security-reviewer` when the diff touches any of: authentication or auth
 The pipeline carries no hidden state — the planning docs are the handoff:
 
 - `task_list` (from Plan) drives the Implement loop.
-- Larger work may also emit PRD / architecture / system_design under `.omp/prds/` or `docs/`.
+- Larger work may also emit PRD / architecture / system_design under `.pi/prds/` or `docs/`.
 - Review findings (CRITICAL / HIGH) must be resolved before Gate 2.
 
 ## Verification

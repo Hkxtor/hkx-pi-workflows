@@ -3,7 +3,7 @@ description: Scan agent, workflow, dependency, secret, and config surfaces for s
 argument-hint: "[path | blank for current project]"
 ---
 
-# HKX Security Scan For OMP
+# HKX Security Scan For Pi
 
 Scan target: `$ARGUMENTS`
 
@@ -14,9 +14,9 @@ Default target is the current project. This command is read-only unless the user
 Inspect:
 
 - Secrets in source, config, test fixtures, and docs
-- Agent guidance: `AGENTS.md`, `.omp/`, `.codex/`, `.gemini/`, `.opencode/`
-- OMP extension package files: `commands/`, `skills/`, `rules/`, `tools/`, `extensions/`
-- MCP config: `.omp/mcp.json`, `.mcp.json`, and user/project equivalents when in scope
+- Agent guidance: `AGENTS.md`, `.pi/`, `.codex/`, `.gemini/`, `.opencode/`
+- Pi extension package files: `commands/`, `skills/`, `rules/`, `tools/`, `extensions/`
+- MCP config: `.pi/mcp.json`, `.mcp.json`, and user/project equivalents when in scope
 - Shell commands embedded in workflow docs
 - Dependency manifests and lockfiles
 

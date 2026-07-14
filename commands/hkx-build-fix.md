@@ -3,14 +3,14 @@ description: Detect the project build system and incrementally fix build or type
 argument-hint: "[optional failing command]"
 ---
 
-# HKX Build Fix For OMP
+# HKX Build Fix For Pi
 
 Diagnose and fix build or type errors. Scope: `$ARGUMENTS`
 
 ## Rules
 
 - Prefer the repository's documented validation command.
-- For Oh My Pi itself, use `bun check`; do not use `tsc` directly.
+- In the pi codebase itself, use `bun check`; do not use `tsc` directly.
 - Fix one root cause at a time.
 - Re-run the failing command after each fix.
 - Stop and ask if the fix requires dependency installation, network access, or architecture changes.
@@ -20,7 +20,7 @@ Diagnose and fix build or type errors. Scope: `$ARGUMENTS`
 Choose the first matching command:
 
 | Project signal | Command |
-|---|---|
+| --- | --- |
 | `AGENTS.md` specifies validation | Use that command |
 | `package.json` with `check` | Package manager `check` |
 | `package.json` with `build` | Package manager `build` |

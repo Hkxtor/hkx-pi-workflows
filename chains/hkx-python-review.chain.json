@@ -1,0 +1,60 @@
+{
+  "name": "hkx-python-review",
+  "description": "Python-focused multi-angle review: python-reviewer + security + tests + silent failures, then synthesis.",
+  "chain": [
+    {
+      "parallel": [
+        {
+          "agent": "hkx.python-reviewer",
+          "phase": "Review",
+          "label": "Python idioms",
+          "as": "python",
+          "output": "python-review/python.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Python-focused review for:\n\n{task}\n\nFocus: PEP 8, Pythonic idioms, type hints, packaging, async correctness, performance, and maintainability of Python changes.\nInspect the actual staged/unstaged diff and related Python files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes."
+        },
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Review",
+          "label": "Security",
+          "as": "security",
+          "output": "python-review/security.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Security review of Python changes for:\n\n{task}\n\nFocus: injection, unsafe pickle/yaml/eval/exec, path traversal, secrets, authz gaps, SSRF, dependency risk, and sensitive data exposure in Python code paths.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Tests/regression",
+          "as": "tests",
+          "output": "python-review/tests.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Test coverage and regression-risk review for Python changes in:\n\n{task}\n\nFocus: pytest/unittest coverage of changed behavior, fixtures, edge cases, and flaky patterns.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "python-review/silent.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Hunt silent failures in Python changes for:\n\n{task}\n\nFocus: bare except, broad Exception catches, pass/log-only handlers, dangerous fallbacks, and success-by-default paths.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 4
+    },
+    {
+      "agent": "hkx.agent-evaluator",
+      "phase": "Synthesis",
+      "label": "Python verdict",
+      "as": "verdict",
+      "output": "python-review/verdict.md",
+      "outputMode": "file-only",
+      "task": "Synthesize a final Python review verdict. Deduplicate findings, keep only evidence-backed issues, and rank by severity.\n\nScope/request:\n{task}\n\nPython review:\n{outputs.python}\n\nSecurity review:\n{outputs.security}\n\nTest review:\n{outputs.tests}\n\nSilent-failure review:\n{outputs.silent}\n\nReturn:\n1. Final verdict: approve | request-changes | block\n2. CRITICAL/HIGH findings first, then actionable MEDIUM\n3. Deduped list with source angle tags\n4. Must-fix-now vs optional/defer\n5. Suggested validation commands (pytest, ruff, mypy, etc. only if relevant)\nDo not modify project/source files."
+    }
+  ]
+}

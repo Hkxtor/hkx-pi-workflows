@@ -1,15 +1,15 @@
 ---
-description: Recommend the best OMP model role or execution tier for the current task based on complexity, risk, and budget.
+description: Recommend the best Pi model role or execution tier for the current task based on complexity, risk, and budget.
 argument-hint: "[task description] [--budget low|med|high]"
 ---
 
-# HKX Model Route For OMP
+# HKX Model Route For Pi
 
-Recommend an OMP model route for: `$ARGUMENTS`
+Recommend an Pi model route for: `$ARGUMENTS`
 
 ## Routing Targets
 
-Use OMP model roles and runtime tiers, not Claude-specific product names:
+Use Pi model roles and runtime tiers, not Claude-specific product names:
 
 - `smol` — cheap classification, tiny transforms, low-risk mechanical work
 - `default` — normal implementation, edits, and day-to-day repo tasks

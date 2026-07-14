@@ -1,5 +1,5 @@
 ---
-description: OMP-native web performance guidance for Core Web Vitals, budgets, loading, media, fonts, motion, and verification.
+description: Pi-native web performance guidance for Core Web Vitals, budgets, loading, media, fonts, motion, and verification.
 ---
 
 # HKX Web Performance
@@ -34,7 +34,7 @@ Use this rule when editing web UI, routes, assets, styling, animation, or client
 - Avoid scroll-handler churn. Prefer IntersectionObserver, CSS scroll features, or well-bounded `requestAnimationFrame` work.
 - Keep React/Vue/Svelte state updates local to the component that needs them; avoid re-rendering full pages for interaction-only state.
 
-## OMP Verification Checklist
+## Pi Verification Checklist
 
 - Inspect the affected route or component path before optimizing; do not guess where cost lives.
 - Run the narrowest available check that covers the changed route, component, or asset pipeline.

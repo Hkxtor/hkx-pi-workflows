@@ -1,0 +1,68 @@
+{
+  "name": "hkx-feature-flow",
+  "description": "Net-new feature orchestration: explore codebase, plan implementation, TDD implement, then multi-angle review.",
+  "chain": [
+    {
+      "agent": "hkx.code-explorer",
+      "phase": "Research",
+      "label": "Explore codebase",
+      "as": "context",
+      "output": "feature/context.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Map the local codebase for this feature request:\n\n{task}\n\nTrace relevant entry points, modules, patterns, tests, and constraints.\nDo not modify project/source files; write findings to the configured output artifact.\n\nReturn:\n1. Relevant files and why\n2. Existing patterns to reuse\n3. Integration points and data flow\n4. Risks / unknowns\n5. Suggested thin-slice boundary"
+    },
+    {
+      "agent": "hkx.planner",
+      "phase": "Planning",
+      "label": "Implementation plan",
+      "as": "plan",
+      "output": "feature/plan.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Create an implementation-ready plan for:\n\n{task}\n\nUse this codebase context:\n{outputs.context}\n\nDo not modify project/source files.\n\nReturn Overview, Assumptions, Files/Areas, ordered Plan steps, Validation commands, and Risks. Keep steps thin and verifiable."
+    },
+    {
+      "agent": "hkx.tdd-guide",
+      "phase": "Implementation",
+      "label": "TDD implement",
+      "as": "impl",
+      "output": "feature/implementation.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Implement the approved thin slice for:\n\n{task}\n\nFollow this plan:\n{outputs.plan}\n\nContext:\n{outputs.context}\n\nRules:\n- You are the sole writer for the active worktree.\n- Prefer red-green-refactor.\n- Keep the diff narrowly scoped to the plan.\n- Run focused validation and report commands + results.\n- Escalate product/architecture decisions instead of inventing scope.\n\nReturn changed files, tests added/updated, validation results, and remaining gaps."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Correctness review",
+          "as": "reviewGeneral",
+          "output": "feature/review-general.md",
+          "outputMode": "file-only",
+          "task": "Review the implementation result for correctness and regressions.\n\nRequest:\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual post-implementation diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\nReturn severity-ranked findings with path:line evidence and a verdict."
+        },
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Review",
+          "label": "Security review",
+          "as": "reviewSecurity",
+          "output": "feature/review-security.md",
+          "outputMode": "file-only",
+          "task": "Security review of the implementation for:\n\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Test review",
+          "as": "reviewTests",
+          "output": "feature/review-tests.md",
+          "outputMode": "file-only",
+          "task": "Test coverage review for the implementation of:\n\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual diff and tests. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    }
+  ]
+}

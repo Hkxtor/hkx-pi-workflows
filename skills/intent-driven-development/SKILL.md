@@ -1,10 +1,10 @@
 ---
 name: hkx-intent-driven-development
-description: Turn ambiguous or high-risk OMP engineering requests into observable acceptance criteria before or alongside implementation.
-origin: HKX-converted-for-OMP
+description: Turn ambiguous or high-risk engineering requests into observable acceptance criteria before or during implementation. Use when success is unclear but the feature direction is already chosen. Not product-strategy diagnostics (product-lens), full capability SRS (product-capability), or multi-option decision councils (council).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Intent-Driven Development For OMP
+# HKX Intent-Driven Development For Pi
 
 Use this when a request needs clearer success conditions before code, config, data, or external systems are changed.
 

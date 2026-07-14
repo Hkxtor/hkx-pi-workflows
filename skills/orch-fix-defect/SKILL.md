@@ -1,7 +1,7 @@
 ---
 name: hkx-orch-fix-defect
-description: Orchestrate fixing a bug — reproduce it as a failing regression test, fix to green, review, and gated commit — by delegating each phase to the matching OMP agent. Use when existing behavior is broken or wrong.
-origin: HKX-converted-for-OMP
+description: Orchestrate fixing a bug — reproduce it as a failing regression test, fix to green, review, and gated commit — by delegating each phase to the matching Pi agent. Use when existing behavior is broken or wrong.
+origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-fix-defect

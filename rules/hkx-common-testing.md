@@ -1,5 +1,5 @@
 ---
-description: Testing defaults for HKX OMP workflows.
+description: Testing defaults for HKX Pi workflows.
 ---
 
 # HKX Common Testing

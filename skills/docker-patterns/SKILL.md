@@ -1,10 +1,10 @@
 ---
 name: hkx-docker-patterns
-description: Docker and Docker Compose operations for OMP projects: Dockerfile review, build context, non-root images, networking, volumes, health checks, and compose workflows.
-origin: HKX-converted-for-OMP
+description: "Docker and Docker Compose operations for Pi projects: Dockerfile review, build context, non-root images, networking, volumes, health checks, and compose workflows."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Docker Patterns For OMP
+# HKX Docker Patterns For Pi
 
 Use when creating, reviewing, or debugging Dockerfiles, Compose files, container
 networking, image builds, or local multi-service workflows.

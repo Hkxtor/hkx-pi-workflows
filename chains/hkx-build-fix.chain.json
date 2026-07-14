@@ -1,0 +1,39 @@
+{
+  "name": "hkx-build-fix",
+  "description": "Build/type failure recovery: minimal fix via build-error-resolver, then review residual risk.",
+  "chain": [
+    {
+      "agent": "hkx.build-error-resolver",
+      "phase": "Fix",
+      "label": "Unblock build",
+      "as": "fix",
+      "output": "build/fix.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Fix build/type errors for:\n\n{task}\n\nRules:\n- Sole writer for the active worktree.\n- Minimal diffs only; no architecture changes.\n- Re-run the failing build/typecheck and report remaining errors.\n- Prefer local evidence over broad rewrites.\n\nReturn root causes, changed files, commands run, and remaining failures."
+    },
+    {
+      "parallel": [
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Review",
+          "label": "Minimal-fix review",
+          "as": "review",
+          "output": "build/review.md",
+          "outputMode": "file-only",
+          "task": "Review the build fix for overreach and latent breakage.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.typescript-reviewer",
+          "phase": "Review",
+          "label": "TS safety",
+          "as": "tsReview",
+          "output": "build/ts-review.md",
+          "outputMode": "file-only",
+          "task": "If the change touches TypeScript/JavaScript, review type-safety and async correctness of the build fix.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nIf no TS/JS was changed, say so and exit early. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 2
+    }
+  ]
+}

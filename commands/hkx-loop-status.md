@@ -1,21 +1,21 @@
 ---
-description: Inspect the status of a managed OMP loop using local checkpoints, plans, validation evidence, and recent progress signals.
+description: Inspect the status of a managed Pi loop using local checkpoints, plans, validation evidence, and recent progress signals.
 argument-hint: "[optional goal or loop name]"
 ---
 
-# HKX Loop Status For OMP
+# HKX Loop Status For Pi
 
 Inspect the current loop state for: `$ARGUMENTS`
 
-This command is OMP-native and does **not** rely on Claude transcript scanning
+This command is Pi-native and does **not** rely on Claude transcript scanning
 or ECC external CLIs.
 
 ## Evidence Sources
 
 Look for status signals in this order:
 
-1. `.omp/checkpoints.log`
-2. relevant `.omp/plans/*.md` loop runbooks
+1. `.pi/checkpoints.log`
+2. relevant `.pi/plans/*.md` loop runbooks
 3. recent validation evidence the loop claims to depend on
 4. current git diff / changed files for signs of stalled progress
 5. explicit notes in the current session

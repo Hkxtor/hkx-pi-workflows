@@ -1,10 +1,10 @@
 ---
 name: hkx-documentation-lookup
-description: OMP workflow for resolving and querying current library, framework, SDK, API, CLI, and cloud-service documentation through configured docs MCP tools.
-origin: HKX-converted-for-OMP
+description: Resolve current library, framework, SDK, API, CLI, or cloud-service docs via configured docs MCP tools. Use when the answer depends on version-specific external product behavior. Not for general web research, market diligence, or repo-local business logic.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Documentation Lookup For OMP
+# HKX Documentation Lookup For Pi
 
 Use when the answer depends on current behavior of a library, framework, SDK, API, CLI tool, cloud service, or version-specific migration path.
 

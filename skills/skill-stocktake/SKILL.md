@@ -1,7 +1,7 @@
 ---
 name: hkx-skill-stocktake
-description: Audit an OMP skill and command portfolio for overlap, staleness, weak descriptions, and missing discoverability. Use for periodic quality reviews of local workflow surfaces.
-origin: ECC-converted-for-OMP
+description: "Audit skill/command portfolio quality: overlap, staleness, weak descriptions, and discoverability. Use for periodic skill conflicts/stocktake reviews. Not workspace inventory, automation inventory, security scan, or delete-cleanup (config-gc)—propose merge/retire only; never delete without approval."
+origin: ECC-converted-for-Pi
 ---
 
 # Skill Stocktake
@@ -13,9 +13,9 @@ quality, overlap, and continued usefulness.
 
 Audit whichever of these surfaces actually exist in the current environment:
 
-- project `.omp/skills/`
+- project `.pi/skills/`
 - project `.agent/skills/` or `.agents/skills/`
-- user `~/.omp/agent/skills/`
+- user `~/.pi/agent/skills/`
 - package-local `skills/` when reviewing an extension repo
 - sibling command surfaces when command/skill overlap matters
 
@@ -72,3 +72,7 @@ Return:
 5. `Top Next Moves`
 
 Never delete or archive skills without explicit user approval.
+
+## Related Routing
+
+For primary-vs-secondary skill choice in this package, see `docs/skill-routing.md` (research, security, UI, product, config, session quality, and related families).

@@ -1,5 +1,5 @@
 ---
-description: OMP-native research, plan, TDD, review, verify, and handoff workflow for HKX tasks.
+description: Pi-native research, plan, TDD, review, verify, and handoff workflow for HKX tasks.
 ---
 
 # HKX Common Development Workflow
@@ -15,7 +15,7 @@ Use this rule for non-trivial feature, bug fix, refactor, prompt, command, skill
 
 2. **Plan**
    - Restate the requirement, affected files, order of work, validation commands, and risks.
-   - For broad work, decompose and use OMP-native agents for independent read-only discovery or review.
+   - For broad work, decompose and use Pi-native agents for independent read-only discovery or review.
    - Ask only when the missing choice materially changes the outcome.
 
 3. **Test first where behavior changes**
@@ -39,6 +39,6 @@ Use this rule for non-trivial feature, bug fix, refactor, prompt, command, skill
 
 ## Defaults
 
-- Use structured OMP tools over shell equivalents.
+- Use structured Pi tools over shell equivalents.
 - Treat external mutation, publishing, deploying, merging, and destructive operations as approval-gated.
 - Keep generated workflow artifacts free of private host state and credentials.

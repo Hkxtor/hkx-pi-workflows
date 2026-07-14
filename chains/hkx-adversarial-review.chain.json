@@ -1,0 +1,65 @@
+{
+  "name": "hkx-adversarial-review",
+  "description": "Strong multi-agent adversarial review of a diff/PR using language-aware plus security/test/silent-failure angles, then synthesis.",
+  "chain": [
+    {
+      "parallel": [
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Adversarial",
+          "label": "General",
+          "as": "general",
+          "output": "adv/general.md",
+          "outputMode": "file-only",
+          "task": "Adversarial general review for:\n\n{task}\n\nAssume the change is guilty until proven safe. Hunt regressions, incomplete migrations, and weak invariants.\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Adversarial",
+          "label": "Security",
+          "as": "security",
+          "output": "adv/security.md",
+          "outputMode": "file-only",
+          "task": "Adversarial security review for:\n\n{task}\n\nLook for exploit paths, trust-boundary mistakes, and secret leakage. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Adversarial",
+          "label": "Tests",
+          "as": "tests",
+          "output": "adv/tests.md",
+          "outputMode": "file-only",
+          "task": "Adversarial test-quality review for:\n\n{task}\n\nChallenge whether tests actually prove the new behavior and would catch regressions. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Adversarial",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "adv/silent.md",
+          "outputMode": "file-only",
+          "task": "Adversarial silent-failure review for:\n\n{task}\n\nHunt swallowed errors and success-by-default paths. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.typescript-reviewer",
+          "phase": "Adversarial",
+          "label": "TS/JS",
+          "as": "lang",
+          "output": "adv/lang.md",
+          "outputMode": "file-only",
+          "task": "If the change includes TypeScript/JavaScript, perform an adversarial language review for:\n\n{task}\n\nIf no TS/JS files changed, say so briefly and stop. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 5
+    },
+    {
+      "agent": "hkx.agent-evaluator",
+      "phase": "Synthesis",
+      "label": "Final adversarial verdict",
+      "as": "verdict",
+      "output": "adv/verdict.md",
+      "outputMode": "file-only",
+      "task": "Synthesize the adversarial reviews into one actionable verdict. Deduplicate aggressively and keep only evidence-backed findings.\n\nTarget:\n{task}\n\nGeneral:\n{outputs.general}\n\nSecurity:\n{outputs.security}\n\nTests:\n{outputs.tests}\n\nSilent failures:\n{outputs.silent}\n\nLanguage:\n{outputs.lang}\n\nReturn:\n1. Verdict: approve | request-changes | block\n2. Must-fix list with severity and path:line\n3. Optional improvements\n4. Explicit ignore/defer list with reasons\nDo not modify project/source files."
+    }
+  ]
+}

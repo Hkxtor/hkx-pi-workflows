@@ -1,7 +1,7 @@
 ---
 name: hkx-loop-design-check
-description: Design a goal-oriented agent loop, and review it for the ways loops go wrong — spinning and burning tokens, Goodhart-gaming the verifier, or running a wrong answer to completion. Two actions: (1) WRITE a loop — gate whether to build it, define a machine-decidable goal, pick the loop type, pick a skeleton; (2) REVIEW a loop — run it past five failure modes plus decidability, boundaries, fallback, judge independence, and keep-judgment-with-the-human red lines. Use when designing an autonomous agent loop, or when you already have one and worry it will spin, cheat, or run a wrong answer to the end. Complements the mechanism-layer skills (parallel-execution-optimizer, agent-introspection-debugging) by covering the judgment layer they don't.
-origin: HKX-converted-for-OMP
+description: "Judgment-layer design and review of autonomous agent loops: decidable goals, loop type, skeletons, and failure modes (spin, Goodhart, wrong-answer-to-completion). Use when designing or reviewing a loop contract. Not runtime failure debugging (agent-introspection-debugging) or parallel lane mechanics (parallel-execution-optimizer)—those are mechanism-layer complements."
+origin: HKX-converted-for-Pi
 ---
 
 # Loop Design + Review
@@ -67,7 +67,7 @@ The whole loop rides on the comparator's "is it done yet?" **The comparator can 
 
 > Rule of thumb: clear "done" test → servo; must keep maintaining, no endpoint → regulator; must "happen on time" → wrap a regulator in schedule.
 
-For OMP, the loop body runs through the agent harness's `task`/`eval`/`parallel` primitives — but those are *mechanism*. Pick the type before wiring.
+For Pi, the loop body runs through the agent harness's `task`/`eval`/`parallel` primitives — but those are *mechanism*. Pick the type before wiring.
 
 ### Step 3 · Pick a skeleton
 
@@ -85,7 +85,7 @@ Three disciplines: ① the problem column is human-write-only, the result column
 
 Three iron rules (all bet on the judge): ① **the judge must be independent** — not the same agent as Build (grading your own homework always inflates); ② **deterministic rules** — pytest / reconciliation diff / type check / diff, never "looks right"; ③ **Build may not edit the acceptance conditions to pass**. Three failed retries → escalate to a human.
 
-For OMP, plan/build/judge map to separate `task` agents — never let one agent both build and judge.
+For Pi, plan/build/judge map to separate `task` agents — never let one agent both build and judge.
 
 ### Step 4 · Add damping (against oscillation / runaway)
 
@@ -93,7 +93,7 @@ Retry cap, hard stop, human flips the last switch = damping. **Negative feedback
 
 ### Step 5 · Land in three stages (don't go fully automatic on day one)
 
-① **Run it once by hand** (forces you to state exactly "how the judge decides") → ② harden into an OMP `task` workflow (a main agent loops, dispatching plan/build/judge) → ③ hang it on a schedule for full automation.
+① **Run it once by hand** (forces you to state exactly "how the judge decides") → ② harden into an Pi `task` workflow (a main agent loops, dispatching plan/build/judge) → ③ hang it on a schedule for full automation.
 
 ---
 
@@ -143,4 +143,4 @@ The naive loop and the reviewed loop differ by four lines of constraint — and 
 ---
 
 > Lineage: Wiener's two-level feedback (*The Human Use of Human Beings*, 1950) for the judgment/execution split and red lines; the plan/build/judge pattern from Anatoli's *Loops explained* and Addy's *Loop Engineering*.
-> Mechanism layer (how to wire the loop architecture within the OMP harness): see `parallel-execution-optimizer` and `agent-introspection-debugging`. This skill does not re-implement mechanism; it covers goal definition and runaway prevention only.
+> Mechanism layer (how to wire the loop architecture within the Pi harness): see `parallel-execution-optimizer` and `agent-introspection-debugging`. This skill does not re-implement mechanism; it covers goal definition and runaway prevention only.

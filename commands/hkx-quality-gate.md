@@ -3,7 +3,7 @@ description: Run project validation gates and summarize build, type, lint, test,
 argument-hint: "[optional scope or command]"
 ---
 
-# HKX Quality Gate For OMP
+# HKX Quality Gate For Pi
 
 Run quality gates for: `$ARGUMENTS`
 

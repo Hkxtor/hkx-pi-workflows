@@ -1,7 +1,7 @@
 ---
 name: hkx-skill-comply
 description: Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines.
-origin: ECC-converted-for-OMP
+origin: ECC-converted-for-Pi
 ---
 
 # skill-comply: Automated Compliance Measurement
@@ -17,7 +17,7 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 ## Supported Targets
 
 - **Skills** (`skills/*/SKILL.md`): Workflow skills like search-first, TDD guides
-- **Rules** (`rules/*.md` or `.omp/rules/*.md`): Mandatory rules like testing.md, security.md, git-workflow.md
+- **Rules** (`rules/*.md` or `.pi/rules/*.md`): Mandatory rules like testing.md, security.md, git-workflow.md
 - **Agent definitions** (`agents/*.md`): Whether an agent gets invoked when expected (internal workflow verification not yet supported)
 
 ## When to Activate
@@ -29,11 +29,11 @@ Measures whether coding agents actually follow skills, rules, or agent definitio
 
 ## Usage
 
-This skill uses ECC's skill-comply scripts. In OMP, configure the python environment and run `python -m scripts.run <path>` from the skill directory.
+This skill uses ECC's skill-comply scripts. In Pi, configure the python environment and run `python -m scripts.run <path>` from the skill directory.
 
 ```bash
 # Full run
-python -m scripts.run .omp/rules/common/testing.md
+python -m scripts.run .pi/rules/common/testing.md
 
 # Dry run (no cost, spec + scenarios only)
 python -m scripts.run --dry-run skills/search-first/SKILL.md

@@ -1,11 +1,11 @@
 ---
-description: Audit the local OMP harness surface — prompts, skills, commands, MCP, extensions, and safety layers — and return a prioritized scorecard with next moves.
+description: Audit the local Pi harness surface — prompts, skills, commands, MCP, extensions, and safety layers — and return a prioritized scorecard with next moves.
 argument-hint: "[repo|skills|commands|agents|mcp|extensions|all]"
 ---
 
-# HKX Harness Audit For OMP
+# HKX Harness Audit For Pi
 
-Run an OMP-native harness audit for: `$ARGUMENTS`
+Run an Pi-native harness audit for: `$ARGUMENTS`
 
 Default scope is `repo`.
 
@@ -25,9 +25,9 @@ Default scope is `repo`.
 
 This command is advisory, not a deterministic ECC script wrapper.
 
-Use OMP-native evidence:
+Use Pi-native evidence:
 
-- `AGENTS.md`, `APPEND_SYSTEM.md`, `.omp/settings.json`, and `.mcp.json`
+- `AGENTS.md`, `APPEND_SYSTEM.md`, `.pi/settings.json`, and `.mcp.json`
 - `commands/`, `skills/`, `rules/`, `extensions/`, `agents/`
 - README and conversion-map accuracy
 - validator coverage and package consistency

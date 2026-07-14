@@ -1,7 +1,7 @@
 ---
 name: hkx-orch-change-feature
 description: Orchestrate altering an existing, working feature to new desired behavior — update its tests to the new spec, change the implementation to match, review, and gated commit. Use when behavior is not broken but should be different.
-origin: HKX-converted-for-OMP
+origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-change-feature

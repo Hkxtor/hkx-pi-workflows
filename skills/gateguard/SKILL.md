@@ -1,10 +1,10 @@
 ---
 name: hkx-gateguard
-description: OMP fact-forcing pre-action gate that requires concrete repository evidence before risky edits, new files, commands, or destructive actions.
-origin: HKX-converted-for-OMP
+description: Pi fact-forcing pre-action gate that requires concrete repository evidence before risky edits, new files, commands, or destructive actions.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX GateGuard For OMP
+# HKX GateGuard For Pi
 
 Use this as an operator discipline before actions where guessing would damage code, data, config, or external systems.
 
@@ -65,9 +65,9 @@ Before running <action>:
 5. What evidence will confirm success?
 ```
 
-## OMP Tooling
+## Pi Tooling
 
-Use OMP tools to gather facts:
+Use Pi tools to gather facts:
 
 - `find` for file presence and naming patterns.
 - `search` for imports, references, configs, and docs.

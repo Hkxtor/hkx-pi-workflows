@@ -1,0 +1,60 @@
+{
+  "name": "hkx-rust-review",
+  "description": "Rust-focused multi-angle review: rust-reviewer + security + tests + silent failures, then synthesis.",
+  "chain": [
+    {
+      "parallel": [
+        {
+          "agent": "hkx.rust-reviewer",
+          "phase": "Review",
+          "label": "Rust idioms",
+          "as": "rust",
+          "output": "rust-review/rust.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Rust-focused review for:\n\n{task}\n\nFocus: ownership/lifetimes, error handling, unsafe boundaries, idiomatic APIs, async cancellation, performance, and crate design.\nInspect the actual staged/unstaged diff and related Rust files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes."
+        },
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Review",
+          "label": "Security",
+          "as": "security",
+          "output": "rust-review/security.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Security review of Rust changes for:\n\n{task}\n\nFocus: unsafe blocks, FFI boundaries, integer/overflow assumptions, path traversal, secrets, authz gaps, panic-as-control-flow in security paths, and sensitive data exposure.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Tests/regression",
+          "as": "tests",
+          "output": "rust-review/tests.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Test coverage and regression-risk review for Rust changes in:\n\n{task}\n\nFocus: unit/integration tests, property tests if present, edge cases, and whether changed behavior is locked by cargo test coverage.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "rust-review/silent.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Hunt silent failures in Rust changes for:\n\n{task}\n\nFocus: discarded Results (let _ =, .ok()), unwrap/expect in non-test paths, map_err that erases context, and fallbacks that hide real failures.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 4
+    },
+    {
+      "agent": "hkx.agent-evaluator",
+      "phase": "Synthesis",
+      "label": "Rust verdict",
+      "as": "verdict",
+      "output": "rust-review/verdict.md",
+      "outputMode": "file-only",
+      "task": "Synthesize a final Rust review verdict. Deduplicate findings, keep only evidence-backed issues, and rank by severity.\n\nScope/request:\n{task}\n\nRust review:\n{outputs.rust}\n\nSecurity review:\n{outputs.security}\n\nTest review:\n{outputs.tests}\n\nSilent-failure review:\n{outputs.silent}\n\nReturn:\n1. Final verdict: approve | request-changes | block\n2. CRITICAL/HIGH findings first, then actionable MEDIUM\n3. Deduped list with source angle tags\n4. Must-fix-now vs optional/defer\n5. Suggested validation commands (cargo test, cargo clippy, cargo fmt --check, etc. only if relevant)\nDo not modify project/source files."
+    }
+  ]
+}

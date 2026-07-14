@@ -1,10 +1,10 @@
 ---
 name: hkx-safety-guard
-description: OMP operator guardrails for destructive commands, scoped writes, production systems, migrations, deployments, and autonomous agent loops.
-origin: HKX-converted-for-OMP
+description: Pi operator guardrails for destructive commands, scoped writes, production systems, migrations, deployments, and autonomous agent loops.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Safety Guard For OMP
+# HKX Safety Guard For Pi
 
 Use when work can destroy data, rewrite history, publish artifacts, mutate external systems, deploy, migrate, or let agents operate with broad write authority.
 
@@ -31,7 +31,7 @@ Constrain writes to an explicitly named directory, package, or file set. Reading
 
 Combine careful mode with freeze mode for production, migration, release, billing, auth, or autonomous-loop tasks.
 
-## OMP Implementation Pattern
+## Pi Implementation Pattern
 
 - Put the guardrail in the plan and todos before edits.
 - Use dedicated tools instead of shell where possible.

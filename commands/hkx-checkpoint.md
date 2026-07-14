@@ -1,9 +1,9 @@
 ---
-description: Create, compare, or list lightweight OMP workflow checkpoints with verification notes.
+description: Create, compare, or list lightweight Pi workflow checkpoints with verification notes.
 argument-hint: "create <name> | verify <name> | list | clear [--keep=N]"
 ---
 
-# HKX Checkpoint For OMP
+# HKX Checkpoint For Pi
 
 Checkpoint request: `$ARGUMENTS`
 
@@ -11,7 +11,7 @@ Use checkpoints to preserve long-task state at meaningful phase boundaries. A ch
 
 ## Storage
 
-Use `.omp/checkpoints.log` unless the repository already documents another OMP checkpoint path. Create `.omp/` only when writing a checkpoint.
+Use `.pi/checkpoints.log` unless the repository already documents another Pi checkpoint path. Create `.pi/` only when writing a checkpoint.
 
 Each entry should be line-oriented and easy to diff:
 
@@ -26,14 +26,14 @@ YYYY-MM-DDTHH:mm:ssZ | <name> | sha:<short-or-unknown> | verification:<summary> 
 1. Summarize the current task phase and changed surfaces.
 2. Record the current git SHA if available with a read-only command; use `unknown` if unavailable.
 3. Run only the verification the user requested or the narrow repo validation that is clearly relevant.
-4. Append one checkpoint line to `.omp/checkpoints.log`.
+4. Append one checkpoint line to `.pi/checkpoints.log`.
 5. Report the checkpoint name, verification status, and next safe action.
 
 Do not automatically commit, stash, push, reset, tag, or create branches.
 
 ### `verify <name>`
 
-1. Read `.omp/checkpoints.log`.
+1. Read `.pi/checkpoints.log`.
 2. Find the named checkpoint.
 3. Compare current observed state with the entry:
    - changed surfaces,

@@ -3,7 +3,7 @@ description: Identify meaningful coverage gaps and add tests that protect observ
 argument-hint: "[scope]"
 ---
 
-# HKX Test Coverage For OMP
+# HKX Test Coverage For Pi
 
 Improve test coverage for: `$ARGUMENTS`
 

@@ -1,16 +1,16 @@
 ---
 name: hkx-cost-report
-description: Generate a local cost report from OMP cost-tracking data.
+description: Generate a local cost report from Pi cost-tracking data.
 argument-hint: "[csv]"
 ---
 
-# /hkx-cost-report - OMP Cost Report
+# /hkx-cost-report - Pi Cost Report
 
-Generate a local cost report from OMP cost-tracking data, summarizing spend by day, model, and session.
+Generate a local cost report from Pi cost-tracking data, summarizing spend by day, model, and session.
 
 ## Where the Data Lives
 
-OMP cost tracking data is stored locally. The exact path depends on the OMP setup — check your OMP configuration for the metrics log location (commonly under `~/.omp/` or a configured metrics directory).
+Pi cost tracking data is stored locally. The exact path depends on the Pi setup — check your Pi configuration for the metrics log location (commonly under `~/.pi/` or a configured metrics directory).
 
 Each row is a cumulative snapshot per session. The report takes the latest row per session and sums across sessions (summing every row would multiply-count).
 
@@ -22,7 +22,7 @@ Row schema:
 
 ## What This Command Does
 
-1. Check that the OMP cost metrics file exists. If it does not, tell the user the tracker is not set up yet.
+1. Check that the Pi cost metrics file exists. If it does not, tell the user the tracker is not set up yet.
 2. Reduce rows to the latest snapshot per session and aggregate.
 3. Present a compact report, or export recent rows as CSV when the argument is `csv`.
 
@@ -35,7 +35,7 @@ Row schema:
 
 ## Report Process
 
-1. Locate the cost metrics file (check OMP config or common locations).
+1. Locate the cost metrics file (check Pi config or common locations).
 2. If missing, report that the tracker is not configured.
 3. Read and parse JSON lines from the file.
 4. For each session, keep only the latest snapshot by timestamp.
@@ -69,4 +69,4 @@ Rely on the precomputed `estimated_cost_usd` values written by the tracker; do n
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

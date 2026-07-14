@@ -1,10 +1,10 @@
 ---
 name: hkx-hexagonal-architecture
-description: Design or refactor OMP services with ports-and-adapters boundaries across TypeScript, Rust, Python, and Go without leaking framework or infrastructure details.
-origin: HKX-converted-for-OMP
+description: Design or refactor Pi services with ports-and-adapters boundaries across TypeScript, Rust, Python, and Go without leaking framework or infrastructure details.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Hexagonal Architecture For OMP
+# HKX Hexagonal Architecture For Pi
 
 Use when domain/application logic is tangled with web frameworks, databases, SDKs, CLIs, queues, MCP tools, or UI/TUI adapters, and the change needs durable testable boundaries.
 

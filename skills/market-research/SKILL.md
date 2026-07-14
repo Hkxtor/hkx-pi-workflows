@@ -1,10 +1,10 @@
 ---
 name: hkx-market-research
-description: Conduct market research, competitive analysis, investor due diligence, and industry intelligence with source attribution and decision-oriented summaries. Use when the user wants market sizing, competitor comparisons, fund research, technology scans, or research that informs business decisions.
-origin: HKX-converted-for-OMP
+description: "Business market research: competitive analysis, market sizing, investor/fund diligence, and decision-oriented industry intelligence with sources. Use only for commercial/competitive/business questions. Not for general technical research (research-ops/deep-research), library docs (documentation-lookup), or pre-coding reuse checks (search-first)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Market Research For OMP
+# HKX Market Research For Pi
 
 Produce research that supports decisions, not research theater.
 
@@ -86,7 +86,7 @@ Before delivering:
 
 ## Tools
 
-Use OMP tools for research:
+Use Pi tools for research:
 
 - `web_search` — built-in web search for quick fact-checking
 - `read` — fetch full content from promising URLs

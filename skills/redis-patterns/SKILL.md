@@ -1,7 +1,7 @@
 ---
 name: hkx-redis-patterns
-description: Redis data structure patterns, caching strategies, distributed locks, rate limiting, and connection management for production applications (compact OMP version).
-origin: ECC-converted-for-OMP
+description: Redis data structure patterns, caching strategies, distributed locks, rate limiting, and connection management for production applications (compact Pi version).
+origin: ECC-converted-for-Pi
 ---
 
 # Redis Patterns
@@ -190,4 +190,4 @@ r = Redis(connection_pool=pool)
 
 - Skill: `postgres-patterns` — relational data patterns
 - Skill: `database-migrations` — schema versioning
-- Agent: `database-reviewer` — full database review workflow (OMP agent, if available)
+- Agent: `database-reviewer` — full database review workflow (Pi agent, if available)

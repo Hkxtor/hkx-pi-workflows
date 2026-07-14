@@ -1,17 +1,17 @@
 ---
 name: hkx-repo-scan
-description: Local repository inventory and source ownership audit for OMP projects. Use before major refactors, onboarding, legacy cleanup, dependency review, or architecture reorganization.
-origin: HKX-converted-for-OMP
+description: Local repository inventory and ownership audit before major refactors, legacy cleanup, dependency review, or architecture reorganization. Use for structural inventory evidence. Not newcomer onboarding guides (codebase-onboarding) or production-readiness risk audits (production-audit).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Repo Scan For OMP
+# HKX Repo Scan For Pi
 
 Use this to understand a repository's real surface before changing architecture,
 ownership, dependencies, or large modules.
 
 ## Scope
 
-This OMP conversion is local-evidence first. It does not install or run external
+This Pi conversion is local-evidence first. It does not install or run external
 repo-scan tooling by default. If the user wants a third-party scanner, present
 the command and request approval before downloading or executing it.
 

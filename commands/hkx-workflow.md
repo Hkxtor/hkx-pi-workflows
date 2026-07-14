@@ -1,15 +1,15 @@
 ---
-description: Run an OMP-native HKX development workflow: research, plan, execute, verify, and review.
+description: "Run an Pi-native HKX development workflow: research, plan, execute, verify, and review."
 argument-hint: "[task description]"
 ---
 
-# HKX Workflow For OMP
+# HKX Workflow For Pi
 
 Run a structured development workflow for: `$ARGUMENTS`
 
 ## Operating Model
 
-You are the orchestrator. Keep the main session as the only writer. Use OMP-native tools and in-process agents for research, design, and review. Do not call external wrapper CLIs or assume any non-OMP session store.
+You are the orchestrator. Keep the main session as the only writer. Use Pi-native tools and in-process agents for research, design, and review. Do not call external wrapper CLIs or assume any non-Pi session store.
 
 Use this sequence:
 
@@ -26,10 +26,10 @@ If `$ARGUMENTS` is empty, ask for the task before doing work.
 
 Gather local evidence first:
 
-- Read `AGENTS.md` and relevant `.omp/` guidance when present.
+- Read `AGENTS.md` and relevant `.pi/` guidance when present.
 - Search for existing implementations, tests, commands, skills, and docs in the affected area.
 - Identify naming, error handling, logging, data access, and test patterns.
-- If the work spans multiple subsystems, use OMP `eval` helpers when available:
+- If the work spans multiple subsystems, use Pi `eval` helpers when available:
   - `agent(...)` for focused subsystem reads
   - `parallel(...)` for independent exploration
 
@@ -84,7 +84,7 @@ Record commands and results.
 Review the diff before final response:
 
 - Confirm no unrelated files changed.
-- Confirm OMP-specific paths are used.
+- Confirm Pi-specific paths are used.
 - Confirm no stale source-tool instructions remain.
 - Summarize changes, validation, and residual risks.
 

@@ -1,10 +1,10 @@
 ---
 name: hkx-project-flow-ops
-description: Project-flow operations for OMP repos: classify issues and PRs into merge, fix, rebuild, close, or park; coordinate public GitHub state with internal execution notes.
-origin: HKX-converted-for-OMP
+description: "Project-flow operations for Pi repos: classify issues and PRs into merge, fix, rebuild, close, or park; coordinate public GitHub state with internal execution notes."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Project Flow Ops For OMP
+# HKX Project Flow Ops For Pi
 
 Use when the problem is backlog and execution coordination, not direct coding.
 

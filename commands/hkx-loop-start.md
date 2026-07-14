@@ -1,9 +1,9 @@
 ---
-description: Design and stage a managed autonomous loop with OMP-native safety defaults, checkpoints, and explicit stop conditions.
+description: Design and stage a managed autonomous loop with Pi-native safety defaults, checkpoints, and explicit stop conditions.
 argument-hint: "[goal] [--pattern sequential|watchdog|review|continuous] [--mode safe|fast]"
 ---
 
-# HKX Loop Start For OMP
+# HKX Loop Start For Pi
 
 Design and stage a managed loop for: `$ARGUMENTS`
 
@@ -33,13 +33,13 @@ Before proposing or launching the loop:
 - define an explicit stop condition;
 - define rollback or pause behavior;
 - identify what the loop may **not** mutate without approval;
-- confirm what evidence will be written to `.omp/checkpoints.log` or a plan artifact.
+- confirm what evidence will be written to `.pi/checkpoints.log` or a plan artifact.
 
 ## Workflow
 
 1. Use `hkx-loop-design-check` to decide whether the task deserves a loop at all.
 2. Use `loop-operator` to define checkpoints, escalation triggers, and intervention rules.
-3. If the loop is substantial, write a runbook under `.omp/plans/`.
+3. If the loop is substantial, write a runbook under `.pi/plans/`.
 4. Return the staged loop plan, not an unbounded autonomous launch.
 
 ## Output Contract

@@ -1,7 +1,7 @@
 ---
 name: hkx-regex-vs-llm-structured-text
-description: Choose regex or LLM for structured-text parsing using a hybrid default: start with deterministic parsing for the common case, then escalate only low-confidence edge cases.
-origin: ECC-converted-for-OMP
+description: "Choose regex or LLM for structured-text parsing using a hybrid default: start with deterministic parsing for the common case, then escalate only low-confidence edge cases."
+origin: ECC-converted-for-Pi
 ---
 
 # Regex vs LLM for Structured Text

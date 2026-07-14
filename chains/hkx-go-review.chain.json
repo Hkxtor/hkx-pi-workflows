@@ -1,0 +1,60 @@
+{
+  "name": "hkx-go-review",
+  "description": "Go-focused multi-angle review: go-reviewer + security + tests + silent failures, then synthesis.",
+  "chain": [
+    {
+      "parallel": [
+        {
+          "agent": "hkx.go-reviewer",
+          "phase": "Review",
+          "label": "Go idioms",
+          "as": "go",
+          "output": "go-review/go.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Go-focused review for:\n\n{task}\n\nFocus: idiomatic Go, concurrency safety, error handling, interfaces, context usage, performance, and module boundaries.\nInspect the actual staged/unstaged diff and related Go files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes."
+        },
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Review",
+          "label": "Security",
+          "as": "security",
+          "output": "go-review/security.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Security review of Go changes for:\n\n{task}\n\nFocus: injection, unsafe, path traversal, secrets, authz gaps, SSRF, TLS/misconfig, race-prone security checks, and sensitive data exposure.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Tests/regression",
+          "as": "tests",
+          "output": "go-review/tests.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Test coverage and regression-risk review for Go changes in:\n\n{task}\n\nFocus: table-driven tests, concurrency tests, edge cases, and whether changed behavior is locked by go test coverage.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "go-review/silent.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Hunt silent failures in Go changes for:\n\n{task}\n\nFocus: ignored errors (`_ =`, empty if err != nil), partial success paths, log-only failures, and context cancellation ignored.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 4
+    },
+    {
+      "agent": "hkx.agent-evaluator",
+      "phase": "Synthesis",
+      "label": "Go verdict",
+      "as": "verdict",
+      "output": "go-review/verdict.md",
+      "outputMode": "file-only",
+      "task": "Synthesize a final Go review verdict. Deduplicate findings, keep only evidence-backed issues, and rank by severity.\n\nScope/request:\n{task}\n\nGo review:\n{outputs.go}\n\nSecurity review:\n{outputs.security}\n\nTest review:\n{outputs.tests}\n\nSilent-failure review:\n{outputs.silent}\n\nReturn:\n1. Final verdict: approve | request-changes | block\n2. CRITICAL/HIGH findings first, then actionable MEDIUM\n3. Deduped list with source angle tags\n4. Must-fix-now vs optional/defer\n5. Suggested validation commands (go test, go vet, staticcheck, etc. only if relevant)\nDo not modify project/source files."
+    }
+  ]
+}

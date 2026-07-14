@@ -1,7 +1,7 @@
 ---
 name: hkx-prompt-optimizer
-description: Analyze a draft prompt, identify missing context and workflow gaps, match it to OMP commands/skills/agents, and output a stronger prompt the user can paste.
-origin: ECC-converted-for-OMP
+description: Analyze a draft prompt, identify missing context and workflow gaps, match it to Pi commands/skills/agents, and output a stronger prompt the user can paste.
+origin: ECC-converted-for-Pi
 ---
 
 # Prompt Optimizer
@@ -33,7 +33,7 @@ This is advisory only. Do **not** implement the task while inside this skill.
    - validation expectations
    - risks and constraints
    - what must stay out of scope
-4. map the task to the right OMP components:
+4. map the task to the right Pi components:
    - commands
    - skills
    - agents
@@ -45,7 +45,7 @@ Return:
 
 1. `Prompt Diagnosis`
 2. `Missing Context`
-3. `Recommended OMP Components`
+3. `Recommended Pi Components`
 4. `Optimized Prompt`
 
 ## Optimization Rules

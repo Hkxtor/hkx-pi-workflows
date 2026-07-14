@@ -1,10 +1,10 @@
 ---
 name: hkx-rust-testing
-description: Rust testing patterns for OMP crates, native bindings, text/search behavior, async cancellation, and platform-sensitive native builds. Use when adding or fixing Rust behavior.
-origin: HKX-converted-for-OMP
+description: Rust testing patterns for Pi crates, native bindings, async cancellation, and platform-sensitive builds. Use when adding or fixing Rust tests/regressions. Not general implementation workflow (rust-workflow) or non-test design patterns (rust-patterns).
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Rust Testing For OMP
+# HKX Rust Testing For Pi
 
 Use this when Rust behavior changes in `crates/*` or when TypeScript/native
 integration depends on Rust output.
@@ -26,10 +26,10 @@ Choose the narrowest useful level:
 - exact parse result or normalized output
 - error kind and user-facing message
 - cancellation leaves no stuck task
-- search/find ordering when callers depend on it
+- content or path search ordering when callers depend on it
 - Unicode width, path, or shell escaping behavior
 - native ABI returns stable structures to TypeScript
-- vendored brush behavior remains compatible with OMP expectations
+- vendored brush behavior remains compatible with Pi expectations
 
 ## Test Style
 

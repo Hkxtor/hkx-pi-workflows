@@ -1,20 +1,20 @@
 ---
-description: Restate requirements, ground in OMP code patterns, create an implementation plan, and wait for confirmation.
+description: Restate requirements, ground in Pi code patterns, create an implementation plan, and wait for confirmation.
 argument-hint: "[feature description | path/to/*.prd.md]"
 ---
 
-# HKX Plan For OMP
+# HKX Plan For Pi
 
 Create an implementation plan for: `$ARGUMENTS`
 
-Do not write code during this command. If a plan artifact is needed, use `.omp/plans/`.
+Do not write code during this command. If a plan artifact is needed, use `.pi/plans/`.
 
 ## Input Modes
 
 | Input | Mode | Behavior |
 |---|---|---|
 | Empty | Clarification | Ask what should be planned |
-| `path/to/name.prd.md` | PRD artifact | Read PRD, choose the next pending milestone, write `.omp/plans/{name}.plan.md` |
+| `path/to/name.prd.md` | PRD artifact | Read PRD, choose the next pending milestone, write `.pi/plans/{name}.plan.md` |
 | Any other markdown path | Reference | Read as context and produce an inline plan |
 | Free text | Conversational | Produce an inline plan |
 
@@ -65,7 +65,7 @@ Use this format:
 ## Acceptance
 - [ ] Tasks complete
 - [ ] Validation passes
-- [ ] OMP patterns mirrored
+- [ ] Pi patterns mirrored
 ````
 
 ## Confirmation

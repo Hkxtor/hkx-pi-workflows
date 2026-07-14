@@ -1,0 +1,47 @@
+{
+  "name": "hkx-security-scan",
+  "description": "Security-focused parallel scan: security-reviewer + silent-failure-hunter + code-reviewer, then synthesis.",
+  "chain": [
+    {
+      "parallel": [
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Scan",
+          "label": "Security",
+          "as": "security",
+          "output": "security/security.md",
+          "outputMode": "file-only",
+          "task": "Perform a security scan for:\n\n{task}\n\nInspect the relevant code/diff deeply. Focus on auth, input validation, secrets, injection, unsafe defaults, and data exposure.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Scan",
+          "label": "Failure hiding",
+          "as": "silent",
+          "output": "security/silent.md",
+          "outputMode": "file-only",
+          "task": "Scan for security-relevant silent failures in:\n\n{task}\n\nFocus on auth failures ignored, permission checks bypassed by catch/fallback, and error paths that look successful.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+        },
+        {
+          "agent": "hkx.code-reviewer",
+          "phase": "Scan",
+          "label": "High-risk correctness",
+          "as": "general",
+          "output": "security/general.md",
+          "outputMode": "file-only",
+          "task": "Review high-risk correctness issues adjacent to security for:\n\n{task}\n\nFocus only on issues that can become security or data-integrity failures. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+        }
+      ],
+      "concurrency": 3
+    },
+    {
+      "agent": "hkx.agent-evaluator",
+      "phase": "Synthesis",
+      "label": "Security verdict",
+      "as": "verdict",
+      "output": "security/verdict.md",
+      "outputMode": "file-only",
+      "task": "Synthesize a security verdict from the parallel scans. Deduplicate and rank by exploitability/impact.\n\nTarget:\n{task}\n\nSecurity:\n{outputs.security}\n\nSilent failures:\n{outputs.silent}\n\nGeneral high-risk:\n{outputs.general}\n\nReturn:\n1. Overall risk: low | medium | high | critical\n2. Must-fix findings with path:line\n3. Recommended mitigations\n4. Residual risk / out-of-scope notes\nDo not modify project/source files."
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 ---
 name: hkx-bun-runtime
-description: OMP Bun and TypeScript runtime patterns. Use when editing package scripts, TypeScript, tests, workers, file IO, process execution, builds, or Bun-vs-Node decisions.
-origin: HKX-converted-for-OMP
+description: Pi Bun and TypeScript runtime patterns. Use when editing package scripts, TypeScript, tests, workers, file IO, process execution, builds, or Bun-vs-Node decisions.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Bun Runtime For OMP
+# HKX Bun Runtime For Pi
 
-OMP is a Bun-first TypeScript monorepo. Use Bun APIs when they are clearer or
+Pi is a Bun-first TypeScript monorepo. Use Bun APIs when they are clearer or
 faster, and fall back to `node:*` APIs only where Bun has no equivalent.
 
 ## Commands

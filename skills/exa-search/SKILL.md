@@ -1,10 +1,10 @@
 ---
 name: hkx-exa-search
-description: Neural search via Exa MCP for web, code, and company research. Use when the user needs web search, code examples, company intel, people lookup, or AI-powered deep research with Exa's neural search engine.
-origin: HKX-converted-for-OMP
+description: Exa MCP tool skill for neural web/code/company/people search calls. Use when a research workflow already chose Exa and you need web_search_exa or get_code_context_exa. Not a standalone research router or cited-report author—route goals through research-ops; use documentation-lookup for SDK/API docs and market-research for business diligence.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Exa Search For OMP
+# HKX Exa Search For Pi
 
 > **Drift-prone skill.** Exa MCP tool names, parameters, and account limits can
 > change. Confirm the exposed tool surface and current Exa docs before relying
@@ -36,7 +36,7 @@ Exa MCP server must be configured. Add to `.mcp.json` at project root:
 }
 ```
 
-Or add to `~/.omp/.mcp.json` for global availability.
+Or add to `~/.pi/.mcp.json` for global availability.
 
 Get an API key at [exa.ai](https://exa.ai).
 

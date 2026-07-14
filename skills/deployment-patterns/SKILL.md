@@ -1,10 +1,10 @@
 ---
 name: hkx-deployment-patterns
-description: Deployment and release operations for OMP projects: CI/CD, rollout strategy, health checks, rollback, artifacts, env config, and production readiness gates.
-origin: HKX-converted-for-OMP
+description: "Deployment and release operations for Pi projects: CI/CD, rollout strategy, health checks, rollback, artifacts, env config, and production readiness gates."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Deployment Patterns For OMP
+# HKX Deployment Patterns For Pi
 
 Use when setting up or reviewing deploys, release pipelines, health checks,
 rollbacks, artifact publishing, or production runtime configuration.

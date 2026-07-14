@@ -1,10 +1,10 @@
 ---
 name: hkx-e2e-testing
-description: End-to-end testing workflow for OMP projects: Playwright/browser checks, CLI smoke tests, install tests, critical journeys, artifacts, and flaky-test triage.
-origin: HKX-converted-for-OMP
+description: "Author and triage end-to-end tests: Playwright/browser journeys, CLI/install smoke, artifacts, and flakes. Use when writing or fixing E2E coverage. Not ad-hoc post-deploy browser QA (browser-qa) or production canary watches (canary-watch)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX E2E Testing For OMP
+# HKX E2E Testing For Pi
 
 Use for user-visible workflow tests: web apps, dashboards, CLI flows, browser
 automation, install methods, release smoke checks, or multi-service flows.
@@ -49,7 +49,7 @@ await expect(page.getByText("Saved")).toBeVisible();
 
 ## CLI and Install Pattern
 
-For OMP-like CLI packages:
+For Pi-like CLI packages:
 
 - run the built command, not only internal functions
 - test `--help`, `--version`, smoke startup, and one critical command

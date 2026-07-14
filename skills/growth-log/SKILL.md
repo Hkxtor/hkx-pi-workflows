@@ -1,7 +1,7 @@
 ---
 name: hkx-growth-log
 description: Use after a complex task, failure, or when reviewing what was learned. Teaches how to write growth logs that extract reusable patterns — not diary entries. Works with any note-taking system (Markdown, Notion, Obsidian, plain text).
-origin: HKX-converted-for-OMP
+origin: HKX-converted-for-Pi
 ---
 
 # Growth Log
@@ -123,4 +123,4 @@ Task completes → session-end check: was the learning file touched today?
   → Fresh (file touched): this skill ensures the content is useful
 ```
 
-For OMP, that session-end prompt can be a reminder rule, a final-phase checklist item, or the user's manual "let's capture what I learned" beat — not a harness hook the agent can silence.
+For Pi, that session-end prompt can be a reminder rule, a final-phase checklist item, or the user's manual "let's capture what I learned" beat — not a harness hook the agent can silence.

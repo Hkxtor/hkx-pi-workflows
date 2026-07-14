@@ -3,11 +3,11 @@ description: Generate or refresh token-lean architecture codemaps from local rep
 argument-hint: "[area | blank for repo-wide scan]"
 ---
 
-# HKX Update Codemaps For OMP
+# HKX Update Codemaps For Pi
 
 Codemap target: `$ARGUMENTS`
 
-Generate compact architecture maps that help future OMP agents understand the repo without re-reading large source trees.
+Generate compact architecture maps that help future Pi agents understand the repo without re-reading large source trees.
 
 ## Output Location
 

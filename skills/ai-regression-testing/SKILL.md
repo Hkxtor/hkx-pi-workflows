@@ -1,15 +1,15 @@
 ---
 name: hkx-ai-regression-testing
-description: Write regression tests for OMP agent, provider, tool-call, streaming, mock-model, sandbox, and fallback behavior. Use when AI-assisted changes could miss their own blind spots.
-origin: HKX-converted-for-OMP
+description: Write regression tests for Pi agent, provider, tool-call, streaming, mock-model, sandbox, and fallback behavior. Use when AI-assisted changes could miss their own blind spots.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX AI Regression Testing For OMP
+# HKX AI Regression Testing For Pi
 
 Use this when changing behavior that an AI agent is likely to misreview with the
 same assumptions it used while writing the code.
 
-## High-Risk OMP Areas
+## High-Risk Pi Areas
 
 - provider conversion in `packages/ai/`
 - agent loop behavior in `packages/agent/`
@@ -65,7 +65,7 @@ it("maps auth failure to a credential-disabled event", async () => {
 - Use `pytest`.
 - Prefer `async def test_*` with pytest-asyncio auto mode.
 - Match existing `httpx.MockTransport` style in `python/robomp`.
-- Keep integration tests gated by `ROBOMP_INTEGRATION=1`.
+- Keep integration tests gated by `ROBPi_INTEGRATION=1`.
 
 ## Rust Pattern
 

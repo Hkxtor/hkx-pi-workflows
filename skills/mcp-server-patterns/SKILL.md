@@ -1,12 +1,12 @@
 ---
 name: hkx-mcp-server-patterns
-description: MCP server operations and design for OMP projects: tools, resources, prompts, schemas, stdio/http transports, idempotency, errors, security, and current-doc verification.
-origin: HKX-converted-for-OMP
+description: "MCP server operations and design for Pi projects: tools, resources, prompts, schemas, stdio/http transports, idempotency, errors, security, and current-doc verification."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX MCP Server Patterns For OMP
+# HKX MCP Server Patterns For Pi
 
-Use when building, reviewing, debugging, or operating MCP servers that OMP or
+Use when building, reviewing, debugging, or operating MCP servers that Pi or
 other clients will consume.
 
 ## Preflight

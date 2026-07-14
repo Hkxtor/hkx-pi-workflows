@@ -1,10 +1,10 @@
 ---
 name: hkx-accessibility
-description: Accessibility implementation and audit workflow for OMP UI, dashboards, web apps, forms, keyboard navigation, focus management, ARIA, and WCAG 2.2 AA checks.
-origin: HKX-converted-for-OMP
+description: "Accessibility implementation and audit for Pi UI: keyboard, focus, ARIA, semantics, and WCAG 2.2 AA. Use when building or reviewing interactive UI for a11y. Not visual polish-only passes, design-system tokens, or full post-deploy browser QA suites (browser-qa may cover a11y as one phase)."
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Accessibility For OMP
+# HKX Accessibility For Pi
 
 Use when building or reviewing interactive UI, forms, dashboards, browser flows,
 or design-system components.

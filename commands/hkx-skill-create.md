@@ -87,4 +87,4 @@ analyzed_commits: {count}
 
 ---
 
-*Part of HKX OMP Workflows*
+*Part of HKX Pi Workflows*

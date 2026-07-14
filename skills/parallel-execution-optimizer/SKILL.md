@@ -1,10 +1,10 @@
 ---
 name: hkx-parallel-execution-optimizer
-description: Plan and run OMP parallel reads, agents, checks, and independent work lanes without sacrificing correctness.
-origin: HKX-converted-for-OMP
+description: Plan and run Pi parallel reads, agents, checks, and independent work lanes without sacrificing correctness.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Parallel Execution Optimizer For OMP
+# HKX Parallel Execution Optimizer For Pi
 
 Use this when speed comes from independent work: repo inspection, file reads, API checks, browser checks, focused validation lanes, or multi-agent implementation across disjoint files.
 

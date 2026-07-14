@@ -3,7 +3,7 @@ description: Refresh repository documentation from local source-of-truth files w
 argument-hint: "[doc-area | blank for changed docs inventory]"
 ---
 
-# HKX Update Docs For OMP
+# HKX Update Docs For Pi
 
 Documentation target: `$ARGUMENTS`
 
@@ -20,7 +20,7 @@ Inspect only relevant local sources:
 | `scripts/validate.mjs`, CI configs, test configs | validation and quality gate docs |
 | route files, tool definitions, command files, exported APIs | user-facing API or command references |
 | env examples and sanitized config templates | configuration docs without secrets |
-| `docs/conversion-map.md` | HKX-to-OMP migration status |
+| `docs/conversion-map.md` | HKX-to-Pi migration status |
 
 ## Workflow
 
@@ -57,4 +57,4 @@ Next verification:
 - Do not document behavior that was not observed in files, tests, configs, or user-supplied product artifacts.
 - Do not include secrets, private paths, tokens, credentials, or production examples.
 - Do not run broad formatters or doc generators unless the repo already defines that exact workflow and it is needed.
-- Keep docs OMP-native; remove HKX-specific wrapper, install, and session-store assumptions rather than preserving them.
+- Keep docs Pi-native; remove HKX-specific wrapper, install, and session-store assumptions rather than preserving them.

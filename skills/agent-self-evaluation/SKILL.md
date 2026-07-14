@@ -1,7 +1,7 @@
 ---
 name: hkx-agent-self-evaluation
-description: Use after completing any non-trivial task. The agent self-rates its output on 5 axes — accuracy, completeness, clarity, actionability, conciseness — with concrete evidence per criterion. Produces a structured 1-5 scorecard with specific improvement suggestions.
-origin: HKX-converted-for-OMP
+description: Optional 5-axis self-scorecard (accuracy, completeness, clarity, actionability, conciseness) with concrete evidence after non-trivial work. Use after delivery-gate when a quality reflection is requested or useful. Not a substitute for running tests (verification-loop) or delivery hygiene (delivery-gate).
+origin: HKX-converted-for-Pi
 ---
 
 # Agent Self-Evaluation
@@ -15,14 +15,14 @@ After completing a complex task, the agent pauses to rate its own output against
 - After a debugging session that involved 3+ attempts.
 - After producing a design document, architecture decision, or written analysis.
 - When the user asks "how good was that?" or "rate yourself".
-- At the end of any session, as a deliberate closing beat (an OMP reminder rule or manual checkpoint — not a harness hook).
+- At the end of any session, as a deliberate closing beat (an Pi reminder rule or manual checkpoint — not a harness hook).
 
 ## Core Concepts
 
 ### The 5 Evaluation Axes
 
 | Axis | Question | What it catches |
-|---|---|---|
+| --- | --- | --- |
 | **Accuracy** | Are the facts, claims, and outputs correct? | Hallucinations, wrong API names, incorrect syntax, false statements |
 | **Completeness** | Did it cover everything the user asked for? | Missed edge cases, unhandled error paths, forgotten requirements, skipped subtasks |
 | **Clarity** | Is the explanation understandable and well-structured? | Confusing explanations, jargon without definition, missing context, rambling |
@@ -214,8 +214,8 @@ FAIL: "Score: 3. I don't like Python decorators."
 - `verification-loop` — Systematic verification of outputs against expected results.
 - `security-review` — Security-focused code review checklist.
 
-## OMP Notes
+## Pi Notes
 
-- For Oh My Pi itself, prefer `bun check` for verification outputs cited as evidence.
+- For the pi codebase itself, prefer `bun check` for verification outputs cited as evidence.
 - Pair with the `agent-evaluator` agent when the user wants an independent second-party assessment rather than self-evaluation.
 - Do not commit unless the user asks.

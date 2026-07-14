@@ -1,10 +1,10 @@
 ---
 name: hkx-git-workflow
-description: OMP-safe Git workflow patterns for branch strategy, commits, PRs, conflict resolution, releases, and history-sensitive operations.
-origin: HKX-converted-for-OMP
+description: Pi-safe Git workflow patterns for branch strategy, commits, PRs, conflict resolution, releases, and history-sensitive operations.
+origin: HKX-converted-for-Pi
 ---
 
-# HKX Git Workflow For OMP
+# HKX Git Workflow For Pi
 
 Use when preparing commits or PRs, resolving conflicts, choosing branch strategy,
 writing release notes, or reviewing git operations with user-impacting risk.
@@ -20,7 +20,7 @@ writing release notes, or reviewing git operations with user-impacting risk.
 
 | Strategy | Use When | Notes |
 | --- | --- | --- |
-| GitHub flow | Most OMP repos and continuous delivery | Branch from `main`, PR, merge after checks |
+| GitHub flow | Most Pi repos and continuous delivery | Branch from `main`, PR, merge after checks |
 | Trunk-based | Strong CI and feature flags | Short-lived branches or guarded direct commits |
 | GitFlow | Scheduled or regulated releases | Higher overhead; use only when release cadence needs it |
 
