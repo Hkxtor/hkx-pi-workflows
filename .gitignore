@@ -6,6 +6,9 @@ node_modules/
 .pi/
 .pi-subagents/
 
+# Local-only smoke / scratch tests not part of the package
+scripts/_smoke/
+
 # Secrets and local env (keep examples trackable)
 .env
 .env.*

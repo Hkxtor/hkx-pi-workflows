@@ -31,6 +31,55 @@ function expandHome(inputPath) {
 	return inputPath;
 }
 
+const PLACEHOLDER_PATTERN = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
+
+/**
+ * Resolve ${VAR} references in a server config (env/headers/args) against
+ * the current process environment. Returns { config, missing, placeholders }.
+ */
+function resolveEnvVarsInServer(server) {
+	const resolve = (value) => {
+		if (typeof value !== "string") return value;
+		return value.replace(/\$\{([A-Z_][A-Z0-9_]*)\}/g, (match, name) => {
+			const envValue = process.env[name];
+			return envValue === undefined ? match : envValue;
+		});
+	};
+
+	const resolved = structuredClone(server);
+	const placed = [];
+	const missing = new Set();
+
+	if (resolved.env) {
+		for (const [key, value] of Object.entries(resolved.env)) {
+			const out = resolve(value);
+			if (typeof out === "string") {
+				if (PLACEHOLDER_PATTERN.test(out)) placed.push(key);
+				if (out.includes("${") && /\$\{([A-Z_][A-Z0-9_]*)\}/.test(out)) {
+					missing.add(key);
+				}
+			}
+			resolved.env[key] = out;
+		}
+	}
+	if (resolved.headers) {
+		for (const [key, value] of Object.entries(resolved.headers)) {
+			const out = resolve(value);
+			if (typeof out === "string") {
+				if (PLACEHOLDER_PATTERN.test(out)) placed.push(key);
+				if (out.includes("${") && /\$\{([A-Z_][A-Z0-9_]*)\}/.test(out)) {
+					missing.add(key);
+				}
+			}
+			resolved.headers[key] = out;
+		}
+	}
+	if (Array.isArray(resolved.args)) {
+		resolved.args = resolved.args.map((arg) => resolve(arg));
+	}
+	return { config: resolved, missing: Array.from(missing), placeholders: placed };
+}
+
 async function readJson(filePath, fallback) {
 	try {
 		return JSON.parse(await fs.readFile(filePath, "utf8"));
@@ -194,6 +243,8 @@ async function main() {
 
 	const addedServers = [];
 	const skippedServers = [];
+	const placeholderServers = [];
+	const unresolvedEnv = new Set();
 	const requiredEnv = new Set();
 
 	for (const profileName of profiles) {
@@ -209,7 +260,15 @@ async function main() {
 				skippedServers.push(serverName);
 				continue;
 			}
-			targetConfig.mcpServers[serverName] = serverConfig;
+			const { config: resolved, missing, placeholders } =
+				resolveEnvVarsInServer(serverConfig);
+			for (const envVar of resolved.requiresEnv ?? [])
+				requiredEnv.add(envVar);
+			for (const m of missing) unresolvedEnv.add(m);
+			if (placeholders.length > 0) {
+				placeholderServers.push(`${serverName} (${placeholders.join(", ")})`);
+			}
+			targetConfig.mcpServers[serverName] = resolved;
 			addedServers.push(serverName);
 		}
 
@@ -224,6 +283,36 @@ async function main() {
 		}
 	}
 
+	// Validate: required env vars must be present in the runtime environment.
+	const missingRequiredEnv = Array.from(requiredEnv).filter(
+		(name) => !process.env[name],
+	);
+	if (missingRequiredEnv.length > 0) {
+		const msg =
+			`Missing required environment variables: ${missingRequiredEnv.sort().join(", ")}. ` +
+			"Export them before applying this profile, or run with --dry-run to preview.";
+		if (options.dryRun) {
+			console.warn(`Warning: ${msg}`);
+		} else {
+			throw new Error(msg);
+		}
+	}
+
+	// Validate: never persist unresolved placeholders or unreplaced ${VAR}
+	if (!options.dryRun && placeholderServers.length > 0) {
+		throw new Error(
+			"Refusing to write placeholder token slots: " +
+				`${placeholderServers.join("; ")}. ` +
+				"Templates must use ${VAR} references backed by real environment values.",
+		);
+	}
+	if (!options.dryRun && unresolvedEnv.size > 0) {
+		throw new Error(
+			`Unresolved \${VAR} references in env/headers: ${Array.from(unresolvedEnv).sort().join(", ")}. ` +
+				"Set these in your environment before applying, or run with --dry-run.",
+		);
+	}
+
 	if (options.dryRun) {
 		console.log(`Dry run target: ${targetPath}`);
 		console.log(`Profiles: ${profiles.join(", ")}`);
@@ -236,6 +325,16 @@ async function main() {
 		if (requiredEnv.size > 0) {
 			console.log(
 				`Required env vars: ${Array.from(requiredEnv).sort().join(", ")}`,
+			);
+		}
+		if (placeholderServers.length > 0) {
+			console.warn(
+				`Placeholder token slots in: ${placeholderServers.join("; ")} (would be refused on write)`,
+			);
+		}
+		if (unresolvedEnv.size > 0) {
+			console.warn(
+				`Unresolved \${VAR} refs: ${Array.from(unresolvedEnv).sort().join(", ")} (would be refused on write)`,
 			);
 		}
 		return;

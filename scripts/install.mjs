@@ -57,11 +57,17 @@ async function pathExists(p) {
 	}
 }
 
-async function linkOrCopy(src, dest) {
+async function linkOrCopy(src, dest, { copyOnly = false } = {}) {
 	try {
 		await fs.rm(dest, { force: true, recursive: true });
 	} catch {
 		// ignore
+	}
+
+	if (copyOnly) {
+		await fs.cp(src, dest, { recursive: true });
+		console.log(`Copied: ${dest} <- ${src}`);
+		return;
 	}
 
 	try {
@@ -346,6 +352,7 @@ async function installPermissionSystemConfig() {
 async function main() {
 	console.log(`Installing Pi Workflows globally to ${piHome}...`);
 	const packageAssetRoot = path.join(piHome, "hkx-pi-workflows");
+	const failed = [];
 
 	await ensureDir(path.join(piHome, "extensions"));
 	await ensureDir(path.join(piHome, "commands"));
@@ -449,7 +456,15 @@ async function main() {
 	// MCP
 	const mcpSrc = path.join(repoRoot, ".mcp.json");
 	if (await pathExists(mcpSrc)) {
-		await mergeMcpConfig(mcpSrc, path.join(piHome, "mcp.json"));
+		try {
+			await mergeMcpConfig(mcpSrc, path.join(piHome, "mcp.json"));
+		} catch (err) {
+			failed.push("merge mcp config");
+			console.error(`MCP merge failed: ${err.message}`);
+			console.error(
+				"Resolve the error above before relying on ~/.pi/agent/mcp.json. Tokens were not modified.",
+			);
+		}
 	}
 
 	// Managed global agent settings (packages + portable defaults)
@@ -478,9 +493,13 @@ async function main() {
 	}
 
 	// MCP templates + helper
+	// mcp-configs is copied (not symlinked) so editing the installed copy
+	// does not accidentally propagate local edits back into the repo tree.
 	const mcpConfigs = path.join(repoRoot, "mcp-configs");
 	if (await pathExists(mcpConfigs)) {
-		await linkOrCopy(mcpConfigs, path.join(packageAssetRoot, "mcp-configs"));
+		await linkOrCopy(mcpConfigs, path.join(packageAssetRoot, "mcp-configs"), {
+			copyOnly: true,
+		});
 	}
 	const applyProfile = path.join(repoRoot, "scripts", "apply-mcp-profile.mjs");
 	if (await pathExists(applyProfile)) {
@@ -491,13 +510,25 @@ async function main() {
 	}
 
 	// Install/update packages listed in ~/.pi/agent/settings.json
-	await updatePiExtensions();
+	const piUpdateOk = await updatePiExtensions();
+	if (!piUpdateOk) failed.push("pi update --extensions");
 
 	// After packages are installed: ensure extension config dir exists and
 	// write the managed overlay (first install often has no config yet).
-	await installPermissionSystemConfig();
+	const permissionConfigOk = await installPermissionSystemConfig();
+	if (!permissionConfigOk) failed.push("pi-permission-system config");
 
-	console.log("Global installation to ~/.pi/agent completed successfully!");
+	if (failed.length > 0) {
+		console.error(
+			`\nInstall completed with ${failed.length} non-fatal issue(s): ${failed.join(", ")}`,
+		);
+		console.error(
+			"Review the warnings above. Surfaces that did succeed are usable, but do not trust the install as clean.",
+		);
+		process.exitCode = 1;
+	} else {
+		console.log("Global installation to ~/.pi/agent completed successfully!");
+	}
 	console.log("Agents: ~/.pi/agent/agents/hkx/*.md  (runtime: hkx.<name>)");
 	console.log("Chains: ~/.pi/agent/chains/hkx-*.chain.json");
 	console.log(
