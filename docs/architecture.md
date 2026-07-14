@@ -199,7 +199,7 @@ The repository is the source of truth for all package surfaces:
 
 - `agents/`
 - `chains/`
-- `commands/`
+- `commands/` (slash prompt templates; mapped as `pi.prompts`)
 - `skills/`
 - `rules/`
 - `extensions/`
@@ -207,15 +207,49 @@ The repository is the source of truth for all package surfaces:
 - `GLOBAL_AGENTS.md`
 - `APPEND_SYSTEM.md`
 - `.mcp.json` and `mcp-configs/`
+- `package.json` dual-path manifest (`pi` + `pi-subagents`)
 
-### Global install layout
+### Dual install paths
 
-`npm run install-global` installs or syncs those surfaces into `~/.pi/agent/`.
+This package supports two complementary install modes:
+
+| Path | Entry | What it does |
+| --- | --- | --- |
+| **A — Official Pi Package** | `pi install git:git@github.com:Hkxtor/hkx-pi-workflows` (or HTTPS / local path) | Registers the package in settings and loads **native package resources** only |
+| **B — Full operator install** | `npm run install-global` from a checkout | Syncs every surface into `~/.pi/agent/`, including overlays pi package install cannot express |
+
+#### Path A — package-native resources
+
+Declared in `package.json`:
+
+```json
+{
+  "pi": {
+    "extensions": ["./extensions/..."],
+    "skills": ["./skills"],
+    "prompts": ["./commands"]
+  },
+  "pi-subagents": {
+    "agents": ["./agents"],
+    "chains": ["./chains"]
+  }
+}
+```
+
+- Pi loads `extensions` / `skills` / `prompts` from the `pi` block.
+- `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
+- Agents/chains require **pi-subagents** to already be installed.
+- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings overlays, or permission config overlays.
+
+#### Path B — global operator layout
+
+`npm run install-global` installs or syncs surfaces into `~/.pi/agent/`.
 
 Important mappings:
 
 - `agents/*.md` → `~/.pi/agent/agents/hkx/*.md`
 - `chains/*.chain.json` → `~/.pi/agent/chains/`
+- `commands/*.md` → `~/.pi/agent/commands/` **and** `~/.pi/agent/prompts/`
 - `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json`
 - then: `pi update --extensions` for packages listed in settings
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing)
@@ -227,8 +261,8 @@ Important mappings:
 Package scripts fall into two buckets:
 
 1. **Day-to-day npm scripts**
-   - `npm run install-global` — sync package surfaces + merge agent settings + update pi packages
-   - `npm run validate` — enforce package surface contracts
+   - `npm run install-global` — Path B: sync package surfaces + merge agent settings + update pi packages
+   - `npm run validate` — enforce package surface contracts **and** dual-path manifest shape
    - `npm run mcp:apply-profile` — merge MCP templates into a pi MCP config
 
 2. **Maintenance-only helpers**
@@ -236,7 +270,7 @@ Package scripts fall into two buckets:
    - currently: `scripts/convert-agents-to-pi.mjs` for bulk-importing older agent definitions
    - not part of install/runtime and intentionally not exposed as npm scripts
 
-Prefer authoring new package surfaces in the current pi-native shape. Use conversion helpers only when importing older definitions.
+Prefer authoring new package surfaces in the current pi-native shape. Use conversion helpers only when importing older definitions. Keep Path A and Path B documentation in sync whenever install behavior changes.
 
 ## Tooling Architecture
 

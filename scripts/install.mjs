@@ -1,13 +1,22 @@
 #!/usr/bin/env node
 /**
- * Day-to-day package installer for @hkx/pi-workflows.
+ * Full-operator package installer for @hkx/pi-workflows.
  *
  * npm entry: npm run install-global
+ *
+ * Dual install model:
+ * - `pi install git:...` / `pi install npm:...` loads official package resources
+ *   declared in package.json (`pi` + `pi-subagents`). That path does NOT run
+ *   this script and does not write rules, MCP, GLOBAL_AGENTS, or settings overlays.
+ * - `npm run install-global` (this file) is the complete operator path: it syncs
+ *   every surface into ~/.pi/agent, including overlays that pi package install
+ *   cannot express.
  *
  * Syncs package surfaces into ~/.pi/agent for pi / pi-subagents discovery:
  * - agents/*.md              -> ~/.pi/agent/agents/hkx/*.md   (runtime: hkx.<name>)
  * - chains/*                 -> ~/.pi/agent/chains/
- * - commands/ skills/ rules/ -> ~/.pi/agent/{commands,skills,rules}/
+ * - commands/ skills/ rules/ -> ~/.pi/agent/{commands,prompts,skills,rules}/
+ *   (commands/ is also linked into prompts/ for current pi slash discovery)
  * - package.json pi.extensions -> ~/.pi/agent/extensions/
  * - configs/agent-settings.json
  *                            -> deep-merge into ~/.pi/agent/settings.json
@@ -21,7 +30,7 @@
  *                            -> ~/.pi/agent/extensions/pi-permission-system/config.json
  *                              (after package update; creates the extension dir if missing)
  *
- * This is the normal operator install path. It does not run migration helpers.
+ * This is the full operator install path. It does not run migration helpers.
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -224,6 +233,7 @@ async function main() {
 
 	await ensureDir(path.join(piHome, "extensions"));
 	await ensureDir(path.join(piHome, "commands"));
+	await ensureDir(path.join(piHome, "prompts"));
 	await ensureDir(path.join(piHome, "skills"));
 	await ensureDir(path.join(piHome, "rules"));
 	await ensureDir(path.join(piHome, "agents", "hkx"));
@@ -239,7 +249,7 @@ async function main() {
 		console.warn("Could not parse package.json:", err.message);
 	}
 
-	// Extensions
+	// Extensions (same set as package.json pi.extensions)
 	const extensions = pkg.pi?.extensions ?? [];
 	for (const ext of extensions) {
 		const srcPath = path.resolve(repoRoot, ext);
@@ -253,15 +263,18 @@ async function main() {
 		);
 	}
 
-	// Commands
+	// Commands / prompt templates
+	// Repo keeps commands/ on disk; package.json maps it as pi.prompts for
+	// `pi install`. Global install links into both commands/ and prompts/ so
+	// slash discovery works on current pi (prompts/) and any residual tools
+	// still looking at commands/.
 	const commandsDir = path.join(repoRoot, "commands");
 	if (await pathExists(commandsDir)) {
 		for (const cmd of await fs.readdir(commandsDir)) {
 			if (cmd.endsWith(".md")) {
-				await linkOrCopy(
-					path.join(commandsDir, cmd),
-					path.join(piHome, "commands", cmd),
-				);
+				const src = path.join(commandsDir, cmd);
+				await linkOrCopy(src, path.join(piHome, "commands", cmd));
+				await linkOrCopy(src, path.join(piHome, "prompts", cmd));
 			}
 		}
 	}

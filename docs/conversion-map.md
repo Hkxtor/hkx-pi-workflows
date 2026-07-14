@@ -7,27 +7,42 @@ It is not a step-by-step migration log. Treat package metadata, installed surfac
 ## Package Identity
 
 - npm package: `@hkx/pi-workflows`
-- package runtime name: `hkx-pi-workflows`
+- package runtime name / repo: `hkx-pi-workflows`
 - primary target: `pi` / `pi-subagents`
-- global install root: `~/.pi/agent/`
+- official package keywords: includes `pi-package`
+- git install example: `pi install git:git@github.com:Hkxtor/hkx-pi-workflows`
+- global install root (Path B): `~/.pi/agent/`
 
 Note: your local checkout directory name may differ from the package/runtime name. Package metadata and installed surfaces are the source of truth.
 
+## Dual install paths
+
+| Path | How | Loads |
+| --- | --- | --- |
+| **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents/chains when pi-subagents is installed |
+| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings merge, managed packages update, permission overlay |
+
+Manifest shape (authoritative):
+
+- `package.json` → `pi.{extensions,skills,prompts}`
+- `package.json` → `pi-subagents.{agents,chains}`
+- Repo directory stays `commands/`; it is **not** renamed to `prompts/`, but is declared as prompts for Path A.
+
 ## What the Package Ships
 
-| Surface | Count | In repo | Installed target |
-| --- | ---: | --- | --- |
-| agents | 25 | `agents/` | `~/.pi/agent/agents/hkx/*.md` |
-| chains | 15 | `chains/` | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands | 30 | `commands/` | `~/.pi/agent/commands/` |
-| skills | 91 | `skills/` | `~/.pi/agent/skills/` |
-| rules | 17 | `rules/` | `~/.pi/agent/rules/` |
-| extensions | 2 | `extensions/` | `~/.pi/agent/extensions/` |
-| permission config overlay | 1 | `configs/pi-permission-system/config.json` | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
-| agent settings | 1 | `configs/agent-settings.json` | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
-| global AGENTS source | 1 | `GLOBAL_AGENTS.md` | `~/.pi/agent/AGENTS.md` |
-| global system append source | 1 | `APPEND_SYSTEM.md` | `~/.pi/agent/APPEND_SYSTEM.md` |
-| MCP defaults/templates | several | `.mcp.json`, `mcp-configs/` | defaults merge into `~/.pi/agent/mcp.json`; templates/catalog copy to `~/.pi/agent/hkx-pi-workflows/mcp-configs/` |
+| Surface | Count | In repo | Path A | Path B target |
+| --- | ---: | --- | --- | --- |
+| agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
+| chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
+| commands / prompts | 30 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| skills | 91 | `skills/` | yes | `~/.pi/agent/skills/` |
+| rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
+| extensions | 2 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
+| agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
+| global AGENTS source | 1 | `GLOBAL_AGENTS.md` | no | `~/.pi/agent/AGENTS.md` |
+| global system append source | 1 | `APPEND_SYSTEM.md` | no | `~/.pi/agent/APPEND_SYSTEM.md` |
+| MCP defaults/templates | several | `.mcp.json`, `mcp-configs/` | no | defaults merge into `~/.pi/agent/mcp.json`; templates/catalog copy to `~/.pi/agent/hkx-pi-workflows/mcp-configs/` |
 
 ## Source Provenance Model
 

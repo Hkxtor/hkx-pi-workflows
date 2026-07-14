@@ -3,22 +3,47 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pi-native core workflow package adapted from Everything Claude Code.",
+  "description": "Pi-native core workflow package: subagents, chains, prompt templates, skills, rules, extensions, and MCP templates.",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "pi-subagents",
+    "workflows",
+    "agents",
+    "skills"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hkxtor/hkx-pi-workflows.git"
+  },
+  "homepage": "https://github.com/Hkxtor/hkx-pi-workflows#readme",
+  "bugs": {
+    "url": "https://github.com/Hkxtor/hkx-pi-workflows/issues"
+  },
   "scripts": {
     "validate": "node scripts/validate.mjs",
     "install-global": "node scripts/install.mjs",
     "mcp:apply-profile": "node scripts/apply-mcp-profile.mjs"
   },
   "pi": {
-    "name": "hkx-pi-workflows",
     "extensions": [
       "./extensions/hkx-language-quality.ts",
       "./extensions/hkx-gateguard.ts"
     ],
-    "commands": "./commands",
-    "skills": "./skills",
-    "rules": "./rules",
-    "agents": "./agents",
-    "chains": "./chains"
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./commands"
+    ]
+  },
+  "pi-subagents": {
+    "agents": [
+      "./agents"
+    ],
+    "chains": [
+      "./chains"
+    ]
   }
 }

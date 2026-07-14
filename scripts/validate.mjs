@@ -6,6 +6,7 @@
  *
  * Enforces the package contract for:
  * - required docs / metadata files
+ * - package.json dual-path manifest (pi + pi-subagents)
  * - agents frontmatter and pi-native tools allowlist
  * - chains presence and basic shape
  * - rejection of superseded tool aliases (grep/find/search, lsp/ast_grep/ast_edit)
@@ -180,6 +181,53 @@ async function main() {
 			"package.json still has omp block — remove for pi-native package",
 		);
 
+	// Official pi package resources (pi install / package gallery)
+	const pi = pkg.pi && typeof pkg.pi === "object" ? pkg.pi : {};
+	const keywords = Array.isArray(pkg.keywords) ? pkg.keywords : [];
+	if (!keywords.includes("pi-package")) {
+		errors.push('package.json keywords must include "pi-package"');
+	}
+	for (const key of ["extensions", "skills", "prompts"]) {
+		if (!Array.isArray(pi[key]) || pi[key].length === 0) {
+			errors.push(`package.json pi.${key} must be a non-empty array`);
+		}
+	}
+	// Superseded / non-native top-level pi keys (use prompts + pi-subagents instead)
+	for (const banned of ["commands", "agents", "chains", "rules", "name"]) {
+		if (Object.hasOwn(pi, banned)) {
+			errors.push(
+				`package.json pi.${banned} is not a native pi package field — use pi.prompts / pi-subagents / install-global instead`,
+			);
+		}
+	}
+	if (
+		Array.isArray(pi.prompts) &&
+		!pi.prompts.some((p) => String(p).includes("commands"))
+	) {
+		errors.push(
+			'package.json pi.prompts should reference "./commands" (repo keeps commands/ on disk)',
+		);
+	}
+
+	// pi-subagents discovery (agents/chains from installed packages)
+	const piSub =
+		pkg["pi-subagents"] && typeof pkg["pi-subagents"] === "object"
+			? pkg["pi-subagents"]
+			: null;
+	if (!piSub) {
+		errors.push(
+			'package.json missing "pi-subagents" block for agents/chains discovery',
+		);
+	} else {
+		for (const key of ["agents", "chains"]) {
+			if (!Array.isArray(piSub[key]) || piSub[key].length === 0) {
+				errors.push(
+					`package.json pi-subagents.${key} must be a non-empty array`,
+				);
+			}
+		}
+	}
+
 	// External extension config overlay (managed by this package, not shipped as TS)
 	const permissionConfigPath = path.join(
 		root,
@@ -347,13 +395,14 @@ async function main() {
 		}
 	}
 
-	// commands / skills / rules — frontmatter only
+	// commands (prompt templates) / skills / rules — frontmatter only
+	// On disk the directory remains commands/; package.json maps it as pi.prompts.
 	for (const dir of ["commands", "skills", "rules"]) {
 		const files = await collectMdFiles(path.join(root, dir));
 		for (const filePath of files) {
 			const relativePath = path.relative(root, filePath);
 			const text = await fs.readFile(filePath, "utf8");
-			// skills often use name+description; commands description; rules description
+			// skills often use name+description; commands/prompts description; rules description
 			errors.push(...requireFrontmatter(relativePath, text, ["description"]));
 		}
 	}
@@ -363,7 +412,7 @@ async function main() {
 		process.exit(1);
 	}
 	console.log(
-		`validate ok: ${agentFiles.length} agents, ${chainFiles.length} chains, package @hkx/pi-workflows`,
+		`validate ok: ${agentFiles.length} agents, ${chainFiles.length} chains, package @hkx/pi-workflows (pi + pi-subagents)`,
 	);
 }
 

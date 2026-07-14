@@ -10,17 +10,18 @@ This repository maintains a **pi-native workflow package**: portable subagents, 
 
 Included surfaces:
 
-- `agents/` — pi-subagents definitions (`package: hkx`)
-- `chains/` — saved pi-subagents chains
-- `commands/` — markdown command surfaces for pi discovery
-- `skills/` — skill folders
-- `rules/` — repo/session rules
-- `extensions/` — pi TypeScript extensions
-- `configs/` — managed overlays: external extension configs + global agent settings (`agent-settings.json`)
-- `GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md`
-- `APPEND_SYSTEM.md` — source for global `~/.pi/agent/APPEND_SYSTEM.md`
-- `.mcp.json` and `mcp-configs/` — MCP defaults and templates
+- `agents/` — pi-subagents definitions (`package: hkx`); declared in `package.json` `pi-subagents.agents`
+- `chains/` — saved pi-subagents chains; declared in `package.json` `pi-subagents.chains`
+- `commands/` — slash prompt templates on disk; declared as `pi.prompts` (not a native `pi.commands` field)
+- `skills/` — skill folders; declared in `pi.skills`
+- `rules/` — repo/session rules (Path B / `install-global` only; not a native pi package resource)
+- `extensions/` — pi TypeScript extensions; declared in `pi.extensions`
+- `configs/` — managed overlays: external extension configs + global agent settings (`agent-settings.json`) (Path B only)
+- `GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (Path B only)
+- `APPEND_SYSTEM.md` — source for global `~/.pi/agent/APPEND_SYSTEM.md` (Path B only)
+- `.mcp.json` and `mcp-configs/` — MCP defaults and templates (Path B only)
 - `scripts/` — day-to-day package scripts (`install`, `validate`, `mcp:apply-profile`) plus maintenance-only helpers
+- `package.json` dual-path manifest: official `pi` resources + `pi-subagents` agents/chains
 
 Keep this package intentionally small. It should stay focused on a useful core workflow set, not become a giant mirror of every possible domain pack.
 
@@ -32,7 +33,8 @@ Keep this package intentionally small. It should stay focused on a useful core w
 4. Prefer compact workflow guidance over long tutorial text.
 5. Verify with `npm run validate` after changing package surfaces or install scripts.
 6. Before creating a new surface, check `docs/architecture.md` for layer boundaries, `docs/conversion-map.md` for the current stable package map, and `docs/skill-routing.md` when skill families may overlap.
-7. When changing what gets installed globally, also check `scripts/install.mjs`, `README.md`, `configs/agent-settings.json` (if packages/settings change), and the installed target paths under `~/.pi/agent/`.
+7. When changing what gets installed, also check `package.json` (`pi` / `pi-subagents`), `scripts/install.mjs`, `scripts/validate.mjs`, `README.md` dual-path section, `configs/agent-settings.json` (if packages/settings change), and the installed target paths under `~/.pi/agent/`.
+8. Keep dual install paths honest: Path A is `pi install` (official package resources only); Path B is `npm run install-global` (full operator overlays). Do not claim Path A installs rules/MCP/GLOBAL_AGENTS.
 
 ## Surface Conventions
 
@@ -53,8 +55,18 @@ Keep this package intentionally small. It should stay focused on a useful core w
 ### Commands / Skills / Rules
 
 - Keep guidance concise and operator-friendly.
-- Command files keep the `hkx-` prefix.
+- Command files keep the `hkx-` prefix and live under `commands/`.
+- In `package.json`, map commands as `pi.prompts: ["./commands"]` — never invent `pi.commands`.
+- Rules are Path B only; do not put `rules` under the official `pi` manifest.
 - Avoid placeholder text and fake workflows.
+
+### package.json dual-path contract
+
+- `keywords` must include `pi-package`.
+- Official pi resources only: `pi.extensions`, `pi.skills`, `pi.prompts` (and optional themes).
+- Agents/chains: top-level `pi-subagents.agents` / `pi-subagents.chains` (discovered by pi-subagents from installed packages).
+- Do not put `agents`, `chains`, `commands`, `rules`, or a custom `pi.name` under `pi` — validate rejects them.
+- Path A consumers need `pi-subagents` installed separately for agents/chains.
 
 ### Extensions
 
@@ -79,9 +91,10 @@ Keep this package intentionally small. It should stay focused on a useful core w
 ### Scripts
 
 - Day-to-day npm entry points:
-  - `npm run install-global` → `scripts/install.mjs`
-  - `npm run validate` → `scripts/validate.mjs`
+  - `npm run install-global` → `scripts/install.mjs` (Path B full operator install)
+  - `npm run validate` → `scripts/validate.mjs` (includes dual-path manifest checks)
   - `npm run mcp:apply-profile` → `scripts/apply-mcp-profile.mjs`
+- Official package install (Path A) is `pi install git:...` / `pi install npm:...` and does not run `install.mjs`.
 - Maintenance-only helpers stay as direct `node scripts/...` invocations and must **not** be promoted into `package.json` scripts unless they become part of the normal operator path.
 - `scripts/convert-agents-to-pi.mjs` is a bulk import helper for older agent definitions. Prefer authoring new agents already in the current pi-native format.
 - When changing install targets or required package files, update `scripts/install.mjs` and/or `scripts/validate.mjs` together with docs.

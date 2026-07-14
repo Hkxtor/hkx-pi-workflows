@@ -8,7 +8,8 @@ Use this page when you need to decide **which doc to open**, not when you need t
 
 | Question | Open |
 | --- | --- |
-| How do I install or use the package day to day? | `../README.md` |
+| How do I install or use the package day to day? | `../README.md` (dual path: `pi install` vs `install-global`) |
+| What does official `pi install` load vs full operator install? | `../README.md` dual-path table + `architecture.md` Discovery and Install Model |
 | Where does a new surface belong (command vs skill vs agent vs chain vs extension)? | `architecture.md` |
 | What currently ships in this package? | `conversion-map.md` |
 | Which skill should win when several could match? | `skill-routing.md` |
@@ -86,9 +87,15 @@ These files live at the package root, but they complete the documentation set:
 
 Day-to-day package scripts live in `package.json`:
 
-- `npm run install-global` — sync surfaces, merge `configs/agent-settings.json`, run `pi update --extensions`
-- `npm run validate`
+- `npm run install-global` — Path B full operator install (sync surfaces, merge settings, `pi update --extensions`)
+- `npm run validate` — surface contracts + dual-path manifest (`pi` + `pi-subagents`)
 - `npm run mcp:apply-profile`
+
+Official package install (Path A) is **not** an npm script:
+
+```bash
+pi install git:git@github.com:Hkxtor/hkx-pi-workflows
+```
 
 Maintenance-only helpers stay as direct `node scripts/...` invocations. The current bulk-import helper is:
 
