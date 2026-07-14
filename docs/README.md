@@ -8,8 +8,8 @@ Use this page when you need to decide **which doc to open**, not when you need t
 
 | Question | Open |
 | --- | --- |
-| How do I install or use the package day to day? | `../README.md` (dual path: `pi install` vs `install-global`) |
-| What does official `pi install` load vs full operator install? | `../README.md` dual-path table + `architecture.md` Discovery and Install Model |
+| How do I install or use the package day to day? | `../README.md` or `../README.zh-CN.md` (dual path: `pi install` vs `install-global`) |
+| What does official `pi install` load vs full operator install? | `../README.md` / `../README.zh-CN.md` dual-path table + `architecture.md` Discovery and Install Model |
 | Where does a new surface belong (command vs skill vs agent vs chain vs extension)? | `architecture.md` |
 | What currently ships in this package? | `conversion-map.md` |
 | Which skill should win when several could match? | `skill-routing.md` |
@@ -69,14 +69,15 @@ These files live at the package root, but they complete the documentation set:
 
 | File | Role |
 | --- | --- |
-| `../README.md` | Operator-facing homepage and installation guide |
+| `../README.md` | Operator-facing homepage and installation guide (English) |
+| `../README.zh-CN.md` | Operator-facing homepage and installation guide (Chinese) |
 | `../AGENTS.md` | Repository maintenance rules for this package |
 | `../GLOBAL_AGENTS.md` | Source for the installed global development handbook (`~/.pi/agent/AGENTS.md`) |
 | `../APPEND_SYSTEM.md` | Source for the installed global system-level tool discipline (`~/.pi/agent/APPEND_SYSTEM.md`) |
 
 ## Recommended Reading Order
 
-1. `../README.md` — install and common workflows
+1. `../README.md` or `../README.zh-CN.md` — install and common workflows
 2. `architecture.md` — how the package is layered
 3. `conversion-map.md` — what currently ships
 4. `skill-routing.md` — which skill to prefer when families overlap

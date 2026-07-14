@@ -107,7 +107,8 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 ### Documentation map
 
-- `README.md` is the package homepage and installation guide.
+- `README.md` is the package homepage and installation guide (English).
+- `README.zh-CN.md` is the Chinese operator homepage; keep install facts aligned with `README.md`.
 - `docs/README.md` is the documentation index and routing guide.
 - `docs/architecture.md` explains layer boundaries and placement decisions.
 - `docs/conversion-map.md` is the stable package surface map.

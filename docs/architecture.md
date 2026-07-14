@@ -345,7 +345,8 @@ The package aims to be:
 
 ## Related Docs
 
-- `README.md` — package homepage and installation guide
+- `README.md` — package homepage and installation guide (English)
+- `README.zh-CN.md` — package homepage and installation guide (Chinese)
 - `docs/README.md` — documentation index and routing guide
 - `docs/conversion-map.md` — current package surface map
 - `docs/skill-routing.md` — primary skill choice when families overlap

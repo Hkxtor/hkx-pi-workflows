@@ -1,5 +1,7 @@
 # HKX Pi Workflows
 
+[English](./README.md) | [中文](./README.zh-CN.md)
+
 A pi-native workflow pack adapted from HKX / Everything Claude Code ideas.
 
 It provides a compact core set of:
@@ -218,6 +220,7 @@ npm run validate
 
 ## Related Docs
 
+- `README.zh-CN.md` — Chinese operator homepage (same dual-path install model)
 - `docs/README.md` — documentation index and routing guide
 - `docs/architecture.md` — package layering and surface boundaries
 - `docs/conversion-map.md` — current package surface map
