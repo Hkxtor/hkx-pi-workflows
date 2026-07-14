@@ -23,7 +23,9 @@
  *                              (managed keys only: packages + portable defaults)
  * - GLOBAL_AGENTS.md         -> ~/.pi/agent/AGENTS.md
  * - APPEND_SYSTEM.md         -> ~/.pi/agent/APPEND_SYSTEM.md
- * - .mcp.json                -> merge into ~/.pi/agent/mcp.json
+ * - .mcp.json                -> safe-merge into ~/.pi/agent/mcp.json
+ *                              (hard-fail on corrupt dest; preserve env/headers;
+ *                               backup before write; never wipe user tokens)
  * - mcp-configs/             -> ~/.pi/agent/hkx-pi-workflows/mcp-configs/ (reference)
  * - then: pi update --extensions (install/update packages listed in settings)
  * - configs/pi-permission-system/config.json
@@ -71,34 +73,148 @@ async function linkOrCopy(src, dest) {
 	}
 }
 
+/**
+ * Merge package MCP defaults into an existing user mcp.json without wiping secrets.
+ *
+ * Safety rules (P0):
+ * - Source parse failure → abort (caller / main exits non-zero).
+ * - Destination exists but JSON.parse fails → hard-fail (never rewrite as empty).
+ * - Same-name servers: dest env/headers win so install cannot clobber user tokens.
+ * - Existing dest file is backed up before write.
+ */
+function isPlainObject(value) {
+	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergeSecretMaps(srcMap, destMap) {
+	// Dest keys always win (preserve real tokens). Src only fills missing keys.
+	return {
+		...(isPlainObject(srcMap) ? srcMap : {}),
+		...(isPlainObject(destMap) ? destMap : {}),
+	};
+}
+
+function mergeServerConfig(destServer, srcServer) {
+	if (!isPlainObject(destServer)) {
+		return structuredClone(srcServer);
+	}
+	if (!isPlainObject(srcServer)) {
+		return structuredClone(destServer);
+	}
+
+	const merged = { ...destServer };
+	for (const [key, value] of Object.entries(srcServer)) {
+		if (key === "env" || key === "headers") continue;
+		// Do not overwrite user-owned fields when dest already set.
+		if (merged[key] === undefined) {
+			merged[key] = value;
+		}
+	}
+
+	if (srcServer.env !== undefined || destServer.env !== undefined) {
+		merged.env = mergeSecretMaps(srcServer.env, destServer.env);
+	}
+	if (srcServer.headers !== undefined || destServer.headers !== undefined) {
+		merged.headers = mergeSecretMaps(srcServer.headers, destServer.headers);
+	}
+	return merged;
+}
+
+function mergeMcpServers(destServers, srcServers) {
+	const dest = isPlainObject(destServers) ? destServers : {};
+	const src = isPlainObject(srcServers) ? srcServers : {};
+	const out = { ...dest };
+	const added = [];
+	const preserved = [];
+
+	for (const [name, srcServer] of Object.entries(src)) {
+		if (out[name] === undefined) {
+			out[name] = structuredClone(srcServer);
+			added.push(name);
+		} else {
+			out[name] = mergeServerConfig(out[name], srcServer);
+			preserved.push(name);
+		}
+	}
+
+	return { servers: out, added, preserved };
+}
+
 async function mergeMcpConfig(srcPath, destPath) {
 	let srcContent;
 	try {
 		const rawSrc = await fs.readFile(srcPath, "utf-8");
 		srcContent = JSON.parse(rawSrc);
 	} catch (err) {
-		console.error(`Failed to read source MCP config: ${err.message}`);
-		return;
+		throw new Error(
+			`Failed to read source MCP config ${srcPath}: ${err.message}`,
+		);
+	}
+	if (!isPlainObject(srcContent)) {
+		throw new Error(`Source MCP config must be a JSON object: ${srcPath}`);
+	}
+	if (!isPlainObject(srcContent.mcpServers)) {
+		srcContent.mcpServers = {};
 	}
 
+	const destExists = await pathExists(destPath);
 	let destContent = {
 		mcpServers: {},
 	};
 
-	try {
-		const rawDest = await fs.readFile(destPath, "utf-8");
-		destContent = JSON.parse(rawDest);
-	} catch {
-		// init
+	if (destExists) {
+		let rawDest;
+		try {
+			rawDest = await fs.readFile(destPath, "utf-8");
+		} catch (err) {
+			throw new Error(
+				`Failed to read destination MCP config ${destPath}: ${err.message}`,
+			);
+		}
+		try {
+			destContent = JSON.parse(rawDest);
+		} catch (err) {
+			// Hard-fail: never rewrite a corrupt user mcp.json as {}.
+			throw new Error(
+				`Destination MCP config is invalid JSON (${destPath}): ${err.message}. ` +
+					"Fix or remove it before re-running install-global (refusing to wipe tokens).",
+			);
+		}
+		if (!isPlainObject(destContent)) {
+			throw new Error(
+				`Destination MCP config must be a JSON object: ${destPath}`,
+			);
+		}
+		if (!isPlainObject(destContent.mcpServers)) {
+			destContent.mcpServers = {};
+		}
+
+		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const backupPath = `${destPath}.bak.${stamp}`;
+		await fs.copyFile(destPath, backupPath);
+		console.log(`Backed up MCP config: ${backupPath}`);
 	}
 
-	destContent.mcpServers = {
-		...destContent.mcpServers,
-		...srcContent.mcpServers,
-	};
+	const { servers, added, preserved } = mergeMcpServers(
+		destContent.mcpServers,
+		srcContent.mcpServers,
+	);
+	destContent.mcpServers = servers;
+
+	// Carry optional package-level keys only when dest lacks them.
+	for (const key of Object.keys(srcContent)) {
+		if (key === "mcpServers") continue;
+		if (destContent[key] === undefined) {
+			destContent[key] = srcContent[key];
+		}
+	}
 
 	await fs.writeFile(destPath, JSON.stringify(destContent, null, 2), "utf-8");
 	console.log(`Merged MCP configuration: ${destPath}`);
+	console.log(`  added servers: ${added.length ? added.join(", ") : "(none)"}`);
+	console.log(
+		`  preserved existing (env/headers kept): ${preserved.length ? preserved.join(", ") : "(none)"}`,
+	);
 }
 
 /** Deep-merge objects; arrays are replaced by source (not concatenated). */
