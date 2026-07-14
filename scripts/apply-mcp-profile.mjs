@@ -34,13 +34,45 @@ function expandHome(inputPath) {
 const PLACEHOLDER_PATTERN = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
 
 /**
- * Resolve ${VAR} references in a server config (env/headers/args) against
- * the current process environment. Returns { config, missing, placeholders }.
+ * Shared charset for env-var names referenced via ${VAR} in MCP templates.
+ * POSIX env-var names allow [A-Za-z_][A-Za-z0-9_]*; MCP configs commonly
+ * also use kebab-case (e.g. `x-browser-use-api-key`), so hyphen is allowed
+ * after the first char. Digits are allowed after the first char. The first
+ * char cannot be a digit (shells reject those names).
+ *
+ * resolver and detector MUST use this single source of truth so the
+ * detector never depends on the resolver having matched a particular name
+ * class -- a still-present `${...}` is rejected by the detector regardless
+ * of whether the name inside is well-formed (see hasUnresolvedRef).
+ */
+const ENV_VAR_NAME = "[A-Za-z_][A-Za-z0-9_-]*";
+const ENV_VAR_REF = new RegExp(`\\$\{(${ENV_VAR_NAME})}`, "g");
+
+/**
+ * True iff `value` still contains an unresolved ${VAR} reference after
+ * resolution. Charset-independent: catches BOTH well-formed names the
+ * resolver left (because the env var was unset) AND anything else still
+ * shaped like ${...} (e.g. names outside the charset that the resolver
+ * could not substitute). This is the structural guard against MF-1: the
+ * detector no longer mirrors the resolver's charset, so a name outside the
+ * shared class can never silently slip past the missing/unresolved guard.
+ */
+function hasUnresolvedRef(value) {
+	return typeof value === "string" && value.includes("${");
+}
+
+/**
+ * Resolve ${VAR} references in a server config (env/headers/args/command)
+ * against the current process environment. Returns { config, missing, placeholders }.
+ *
+ * `missing` lists the config keys (env/headers) or arg indices (args)
+ * whose resolved value still contains an unresolved ${VAR} reference.
+ * `placeholders` lists keys/indices whose value matches PLACEHOLDER_PATTERN.
  */
 function resolveEnvVarsInServer(server) {
 	const resolve = (value) => {
 		if (typeof value !== "string") return value;
-		return value.replace(/\$\{([A-Z_][A-Z0-9_]*)\}/g, (match, name) => {
+		return value.replace(ENV_VAR_REF, (match, name) => {
 			const envValue = process.env[name];
 			return envValue === undefined ? match : envValue;
 		});
@@ -50,32 +82,37 @@ function resolveEnvVarsInServer(server) {
 	const placed = [];
 	const missing = new Set();
 
+	const check = (key, out) => {
+		if (typeof out !== "string") return;
+		if (PLACEHOLDER_PATTERN.test(out)) placed.push(key);
+		if (hasUnresolvedRef(out)) missing.add(key);
+	};
+
 	if (resolved.env) {
 		for (const [key, value] of Object.entries(resolved.env)) {
 			const out = resolve(value);
-			if (typeof out === "string") {
-				if (PLACEHOLDER_PATTERN.test(out)) placed.push(key);
-				if (out.includes("${") && /\$\{([A-Z_][A-Z0-9_]*)\}/.test(out)) {
-					missing.add(key);
-				}
-			}
+			check(key, out);
 			resolved.env[key] = out;
 		}
 	}
 	if (resolved.headers) {
 		for (const [key, value] of Object.entries(resolved.headers)) {
 			const out = resolve(value);
-			if (typeof out === "string") {
-				if (PLACEHOLDER_PATTERN.test(out)) placed.push(key);
-				if (out.includes("${") && /\$\{([A-Z_][A-Z0-9_]*)\}/.test(out)) {
-					missing.add(key);
-				}
-			}
+			check(key, out);
 			resolved.headers[key] = out;
 		}
 	}
 	if (Array.isArray(resolved.args)) {
-		resolved.args = resolved.args.map((arg) => resolve(arg));
+		resolved.args = resolved.args.map((arg, i) => {
+			const out = resolve(arg);
+			check(`args[${i}]`, out);
+			return out;
+		});
+	}
+	if (typeof resolved.command === "string") {
+		const out = resolve(resolved.command);
+		check("command", out);
+		resolved.command = out;
 	}
 	return {
 		config: resolved,

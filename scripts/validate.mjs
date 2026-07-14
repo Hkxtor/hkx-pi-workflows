@@ -132,6 +132,126 @@ function parseToolsList(raw) {
 		.filter(Boolean);
 }
 
+// Shared env-var name charset. MUST match `ENV_VAR_NAME` in
+// scripts/apply-mcp-profile.mjs so the lint catches any `${VAR}` reference
+// the resolver would silently skip. Keep them in sync; if one changes, the
+// other must change too. (See MF-1 / SV-1 in the adversarial review.)
+const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+const ENV_REF_GLOBAL = /\$\{([^}]+)\}/g;
+// Pre-fix placeholder literals that must NEVER ship in catalog entries after
+// the P1 hardening. Templates must use ${VAR} backed by real env values.
+const PLACEHOLDER_LITERAL = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
+
+async function collectJsonFiles(dir) {
+	const out = [];
+	async function walk(d) {
+		let ents;
+		try {
+			ents = await fs.readdir(d, { withFileTypes: true });
+		} catch {
+			return;
+		}
+		for (const e of ents) {
+			const p = path.join(d, e.name);
+			if (e.isDirectory()) await walk(p);
+			else if (e.name.endsWith(".json")) out.push(p);
+		}
+	}
+	await walk(dir);
+	return out;
+}
+
+/**
+ * Lint every JSON file under mcp-configs/ for the catalog-level invariants
+ * that close MF-1's recurrence path (SV-1 / silent-failure F2):
+ *   - every `${VAR}` reference must match the resolver's shared charset, so it
+ *     is actually substitutable (otherwise the resolver would leave it literal);
+ *   - every `requiresEnv` entry must be paired with a matching `${VAR}`
+ *     reference somewhere in the same server's config (env/headers/args), so
+ *     the required-env guard is not redundant decoration;
+ *   - no `YOUR_*_HERE` / `REPLACE_ME` / angle-bracket placeholder literals
+ *     may ship in catalog values (the P1 hardening removed these and made
+ *     `apply-mcp-profile` refuse to persist them).
+ */
+function lintMcpServerEntry(relativePath, serverName, server, errors) {
+	if (!server || typeof server !== "object") return;
+	const refs = new Set();
+	const scanValue = (where, v) => {
+		if (typeof v === "string") {
+			for (const m of v.matchAll(ENV_REF_GLOBAL)) {
+				const name = m[1];
+				refs.add(name);
+				if (!ENV_VAR_NAME_PATTERN.test(name)) {
+					errors.push(
+						`${relativePath}: server ${JSON.stringify(serverName)} references \${${name}} at ${where}, which does not match the resolver charset [A-Za-z_][A-Za-z0-9_-]*. The resolver would leave it literal; fix the name or widen ENV_VAR_NAME in apply-mcp-profile.mjs.`,
+				);
+				}
+				if (PLACEHOLDER_LITERAL.test(name)) {
+					errors.push(
+						`${relativePath}: server ${JSON.stringify(serverName)} references a placeholder-looking name \${${name}} at ${where}. Use a real env-var name backed by requiresEnv.`,
+				);
+				}
+			}
+			if (PLACEHOLDER_LITERAL.test(v)) {
+				errors.push(
+					`${relativePath}: server ${JSON.stringify(serverName)} has a placeholder literal at ${where}: ${JSON.stringify(v)}. Catalog values must use ${VAR} references, not YOUR_*_HERE/REPLACE_ME.`,
+				);
+			}
+		} else if (Array.isArray(v)) {
+			v.forEach((item, i) => scanValue(`${where}[${i}]`, item));
+		} else if (v && typeof v === "object") {
+			for (const [k, val] of Object.entries(v))
+				scanValue(`${where}.${k}`, val);
+		}
+	};
+	for (const field of ["env", "headers"]) {
+		if (server[field] && typeof server[field] === "object")
+			scanValue(field, server[field]);
+	}
+	if (Array.isArray(server.args)) scanValue("args", server.args);
+	if (typeof server.command === "string") scanValue("command", server.command);
+	if (typeof server.url === "string") scanValue("url", server.url);
+
+	const requiresEnv = Array.isArray(server.requiresEnv) ? server.requiresEnv : [];
+	for (const name of requiresEnv) {
+		if (!ENV_VAR_NAME_PATTERN.test(name)) {
+			errors.push(
+				`${relativePath}: server ${JSON.stringify(serverName)} declares requiresEnv entry ${JSON.stringify(name)} which does not match the resolver charset [A-Za-z_][A-Za-z0-9_-]*.`,
+			);
+		}
+		if (!refs.has(name)) {
+			errors.push(
+				`${relativePath}: server ${JSON.stringify(serverName)} declares requiresEnv entry ${JSON.stringify(name)} but no matching \${${name}} reference appears in its env/headers/args.`,
+			);
+		}
+	}
+}
+
+async function lintMcpConfigs(errors) {
+	const dir = path.join(root, "mcp-configs");
+	let files;
+	try {
+		files = await collectJsonFiles(dir);
+	} catch {
+		return; // missing-dir is already flagged by requiredFiles
+	}
+	for (const file of files) {
+		const relativePath = path.relative(root, file);
+		let obj;
+		try {
+			obj = JSON.parse(await fs.readFile(file, "utf8"));
+		} catch (err) {
+			errors.push(`${relativePath}: invalid JSON: ${err.message}`);
+			continue;
+		}
+		const servers = obj && typeof obj === "object" && obj.mcpServers;
+		if (!servers || typeof servers !== "object") continue;
+		for (const [name, srv] of Object.entries(servers)) {
+			lintMcpServerEntry(relativePath, name, srv, errors);
+		}
+	}
+}
+
 async function collectMdFiles(dir) {
 	const out = [];
 	async function walk(d) {
@@ -406,6 +526,11 @@ async function main() {
 			errors.push(...requireFrontmatter(relativePath, text, ["description"]));
 		}
 	}
+
+	// mcp-configs catalog invariants (MF-1 recurrence guard): every ${VAR}
+	// reference must match the resolver charset and be paired with requiresEnv;
+	// no placeholder literals may ship in catalog values.
+	await lintMcpConfigs(errors);
 
 	if (errors.length) {
 		for (const e of errors) console.error(e);
