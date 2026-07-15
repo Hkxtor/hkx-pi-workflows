@@ -50,7 +50,10 @@ const start = installSrc.indexOf("function isPlainObject");
 let end = installSrc.indexOf("function runCommand");
 while (end > start) {
 	const prev = installSrc.slice(end - 1, end);
-	if (/\s/.test(prev)) { end--; continue; }
+	if (/\s/.test(prev)) {
+		end--;
+		continue;
+	}
 	break;
 }
 const helperCode = installSrc.slice(start, end).trimEnd();

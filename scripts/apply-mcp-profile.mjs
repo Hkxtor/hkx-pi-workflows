@@ -150,8 +150,34 @@ function resolveEnvVarsInServer(server) {
 		check("url", template, out);
 		resolved.url = out;
 	}
+
+	// MF-5: catalog-only metadata keys (requiresEnv, and any other non-schema
+	// keys added later in the catalog) must NOT leak into the user's persisted
+	// mcp.json at mcpServers[<name>]. Carry catalog metadata out under a
+	// separate `requiresEnv` field so the caller can still aggregate required
+	// env vars into the pre-write requiredEnv gate, while the persisted config
+	// is built from an explicit runtime-key allowlist.
+	const catalogRequiresEnv = Array.isArray(resolved.requiresEnv)
+		? resolved.requiresEnv
+		: [];
+	const SCHEMA_KEYS = [
+		"command",
+		"args",
+		"env",
+		"headers",
+		"type",
+		"url",
+		"description",
+		"disabled",
+	];
+	const persisted = {};
+	for (const k of SCHEMA_KEYS) {
+		if (Object.hasOwn(resolved, k)) persisted[k] = resolved[k];
+	}
+
 	return {
-		config: resolved,
+		config: persisted,
+		requiresEnv: catalogRequiresEnv,
 		missing: Array.from(missing),
 		placeholders: placed,
 	};
@@ -330,7 +356,7 @@ async function main() {
 
 		const templatePath = path.join(templateRoot, profile.file);
 		const template = await readJson(templatePath);
-		for (const [serverName, serverConfig] of Object.entries(
+		for (const [serverName, rawServerConfig] of Object.entries(
 			template.mcpServers ?? {},
 		)) {
 			if (targetConfig.mcpServers[serverName] !== undefined) {
@@ -338,16 +364,17 @@ async function main() {
 				continue;
 			}
 			const {
-				config: resolved,
+				config: serverConfig,
+				requiresEnv: serverRequiresEnv,
 				missing,
 				placeholders,
-			} = resolveEnvVarsInServer(serverConfig);
-			for (const envVar of resolved.requiresEnv ?? []) requiredEnv.add(envVar);
+			} = resolveEnvVarsInServer(rawServerConfig);
+			for (const envVar of serverRequiresEnv ?? []) requiredEnv.add(envVar);
 			for (const m of missing) unresolvedEnv.add(m);
 			if (placeholders.length > 0) {
 				placeholderServers.push(`${serverName} (${placeholders.join(", ")})`);
 			}
-			targetConfig.mcpServers[serverName] = resolved;
+			targetConfig.mcpServers[serverName] = serverConfig;
 			addedServers.push(serverName);
 		}
 

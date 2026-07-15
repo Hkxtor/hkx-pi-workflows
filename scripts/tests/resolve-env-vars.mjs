@@ -431,6 +431,93 @@ function check(name, cond, detail) {
 	);
 }
 
+// ---------------------------------------------------------------------------
+// Case T (MF-5 red): catalog-only metadata `requiresEnv` must NOT be
+// persisted into the user's mcp.json. Pre-fix structuredClone(server)
+// carried it through, so the written config leaked the catalog lint key.
+// ---------------------------------------------------------------------------
+{
+	ctx.process.env = { K: "v" };
+	const r = resolveEnvVarsInServer({
+		command: "npx",
+		env: { K: "${K}" },
+		requiresEnv: ["K"],
+		description: "some server",
+	});
+	check(
+		"T: requiresEnv stripped from persisted config",
+		!Object.hasOwn(r.config, "requiresEnv"),
+		`config still has requiresEnv=${JSON.stringify(r.config.requiresEnv)} (MF-5 metadata leak)`,
+	);
+	check(
+		"T: description kept on persisted config",
+		Object.hasOwn(r.config, "description"),
+		`config lost description=${JSON.stringify(r.config.description)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case U (MF-5 red/guard): schema keys survive strip — command/args/env/
+// headers/url/type must all be present in the persisted config. The strip
+// must remove catalog metadata, not runtime fields.
+// ---------------------------------------------------------------------------
+{
+	ctx.process.env = { TOKEN: "tok", URL_TOK: "u" };
+	const r = resolveEnvVarsInServer({
+		command: "npx",
+		args: ["-y", "mcp", "--token", "${TOKEN}"],
+		env: { K: "${TOKEN}" },
+		headers: { Auth: "Bearer ${TOKEN}" },
+		type: "http",
+		url: "https://example.com/mcp?k=${URL_TOK}",
+		description: "schema-key guard",
+		requiresEnv: ["TOKEN", "URL_TOK"],
+	});
+	const schemaKeys = ["command", "args", "env", "headers", "type", "url", "description"];
+	const kept = schemaKeys.filter((k) => Object.hasOwn(r.config, k));
+	check(
+		"U: schema keys (command/args/env/headers/type/url/description) preserved",
+		kept.length === schemaKeys.length,
+		`missing=${schemaKeys.filter((k)=>!Object.hasOwn(r.config,k)).join(",")}`,
+	);
+	check(
+		"U: requiresEnv stripped even with multiple schema keys",
+		!Object.hasOwn(r.config, "requiresEnv"),
+		`config still has requiresEnv=${JSON.stringify(r.config.requiresEnv)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case V (MF-5 guard): the resolveEnvVarsInServer exposed resolve metadata
+// (`missing`, `placeholders`) is still accurate after the strip — stripping
+// requiresEnv must not swallow detection facts. Use the catalog-supabase
+// shape: args has an unresolved ref and env carries a placeholder template.
+// ---------------------------------------------------------------------------
+{
+	ctx.process.env = { FILLED: "x" };
+	const r = resolveEnvVarsInServer({
+		command: "cmd",
+		args: ["--ref", "${UNSET_REF}"],
+		env: { K: "${FILLED}", P: "YOUR_TOKEN_HERE" },
+		requiresEnv: ["UNSET_REF", "FILLED"],
+	});
+	check(
+		"V: strip does not swallow missing facts",
+		r.missing.includes("args[1]"),
+		`missing=${JSON.stringify(r.missing)}`,
+	);
+	check(
+		"V: strip does not swallow placeholder facts",
+		r.placeholders.includes("P"),
+		`placeholders=${JSON.stringify(r.placeholders)}`,
+	);
+	check(
+		"V: strip removes requiresEnv regardless of missing/placeholder状态",
+		!Object.hasOwn(r.config, "requiresEnv"),
+		`config still has requiresEnv=${JSON.stringify(r.config.requiresEnv)}`,
+	);
+}
+
 for (const p of pass) console.log("ok:", p);
 if (fail.length === 0) {
 	console.log(`ALL ${pass.length} RESOLVE-ENV-VARS CHECKS PASS`);
