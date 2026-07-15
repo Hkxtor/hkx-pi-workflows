@@ -93,7 +93,14 @@ vm.runInContext(
 );
 const mergeMcpConfig = ctx.__mergeMcpConfig;
 
-async function run(srcContent, initDest = null) {
+// M5: pin a frozen empty env so Cases A–D do not depend on the runner's
+// process.env (e.g. a CI step that happens to export UNSET_VAR / URL_TOKEN
+// would previously flip those cases from "throws" to "leaks a substituted
+// value"). Production mergeMcpConfig still defaults to process.env when
+// { env } is omitted.
+const FROZEN_ENV = Object.freeze(Object.create(null));
+
+async function run(srcContent, initDest = null, { env = FROZEN_ENV } = {}) {
 	const src = path.join(
 		tmpDir,
 		`src-${Math.random().toString(36).slice(2)}.json`,
@@ -111,7 +118,7 @@ async function run(srcContent, initDest = null) {
 	let threw = false;
 	let err = null;
 	try {
-		await mergeMcpConfig(src, dest);
+		await mergeMcpConfig(src, dest, { env });
 	} catch (e) {
 		threw = true;
 		err = e.message;

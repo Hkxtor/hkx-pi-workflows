@@ -9,10 +9,6 @@
  * directly — no vm slicing — because the module is side-effect-free and the
  * direct import exercises the actual module semantics.
  */
-import fs from "node:fs/promises";
-import path from "node:path";
-import os from "node:os";
-import { readFileSync } from "node:fs";
 import { resolveEnvVarsInServer } from "../lib/mcp-resolver.mjs";
 
 // Mutable test env; reset per case via TEST_ENV = {...} then passed as { env: TEST_ENV }.
@@ -413,27 +409,32 @@ function check(name, cond, detail) {
 }
 
 // ---------------------------------------------------------------------------
-// Case S (MF-3 red): error message must not claim only env/headers — must
-// mention args/command/url channels. Locks the main() refuse text shape.
-// Note: source uses template-literal \${ so the on-disk text contains a
-// backslash before ${; match the channel list, not the escape form.
+// Case S (M3 red / MF-1 structural guard): hasUnresolvedRef is charset-
+// independent by design. Out-of-charset refs (dot, leading digit, etc.) must
+// still be reported in missing[] and left literal — the resolver cannot
+// substitute them, so the structural backstop is the only guard. A mutation
+// that couples hasUnresolvedRef to ENV_VAR_NAME would silently drop these.
 // ---------------------------------------------------------------------------
 {
-	const srcText = readFileSync("scripts/apply-mcp-profile.mjs", "utf8");
-	// Pre-fix message (env/headers only) must be gone.
-	const badOnlyEnvHeaders = /Unresolved[^\n]*references in env\/headers:/.test(
-		srcText,
+	TEST_ENV = {};
+	const r = resolveEnvVarsInServer(
+		{ env: { K: "${BAD.NAME}", L: "${1bad}" } },
+		{ env: TEST_ENV },
 	);
-	// Channel-complete message must be present.
-	const good =
-		srcText.includes("references in env/headers/args/command/url:") ||
-		/Unresolved[^\n]*references:/.test(srcText);
 	check(
-		"S: refuse message covers args/command/url channels",
-		!badOnlyEnvHeaders && good,
-		badOnlyEnvHeaders
-			? "still says env/headers only"
-			: "missing channel-agnostic refuse message",
+		"S: out-of-charset ${BAD.NAME} kept literal",
+		r.config.env.K === "${BAD.NAME}",
+		`got ${JSON.stringify(r.config.env.K)}`,
+	);
+	check(
+		"S: out-of-charset ${BAD.NAME} reported in missing",
+		r.missing.includes("K"),
+		`missing=${JSON.stringify(r.missing)} (M3: hasUnresolvedRef charset-coupled?)`,
+	);
+	check(
+		"S: out-of-charset ${1bad} reported in missing",
+		r.missing.includes("L"),
+		`missing=${JSON.stringify(r.missing)}`,
 	);
 }
 
@@ -466,9 +467,12 @@ function check(name, cond, detail) {
 }
 
 // ---------------------------------------------------------------------------
-// Case U (MF-5 red/guard): schema keys survive strip — command/args/env/
-// headers/url/type must all be present in the persisted config. The strip
-// must remove catalog metadata, not runtime fields.
+// Case U (MF-5 red/guard + M6): schema keys survive strip — command/args/
+// env/headers/url/type/description/disabled must all be present in the
+// persisted config. The strip must remove catalog metadata, not runtime
+// fields. M6: `disabled` is in MCP_SCHEMA_KEYS but was previously unasserted
+// — a mutation removing it from the allowlist would silently re-enable a
+// disabled server without CI notice.
 // ---------------------------------------------------------------------------
 {
 	TEST_ENV = { TOKEN: "tok", URL_TOK: "u" };
@@ -481,6 +485,7 @@ function check(name, cond, detail) {
 			type: "http",
 			url: "https://example.com/mcp?k=${URL_TOK}",
 			description: "schema-key guard",
+			disabled: true,
 			requiresEnv: ["TOKEN", "URL_TOK"],
 		},
 		{ env: TEST_ENV },
@@ -493,12 +498,18 @@ function check(name, cond, detail) {
 		"type",
 		"url",
 		"description",
+		"disabled",
 	];
 	const kept = schemaKeys.filter((k) => Object.hasOwn(r.config, k));
 	check(
-		"U: schema keys (command/args/env/headers/type/url/description) preserved",
+		"U: schema keys (command/args/env/headers/type/url/description/disabled) preserved",
 		kept.length === schemaKeys.length,
 		`missing=${schemaKeys.filter((k) => !Object.hasOwn(r.config, k)).join(",")}`,
+	);
+	check(
+		"U: disabled:true preserved (M6)",
+		r.config.disabled === true,
+		`disabled=${JSON.stringify(r.config.disabled)}`,
 	);
 	check(
 		"U: requiresEnv stripped even with multiple schema keys",

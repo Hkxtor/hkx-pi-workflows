@@ -46,6 +46,8 @@ const requiredFiles = [
 	"scripts/tests/merge-agent-settings.mjs",
 	"scripts/tests/install-resolver-guards.mjs",
 	"scripts/tests/doc-skill-placeholder.mjs",
+	// M4: apply-mcp-profile.mjs::main() process-level refuse integration suite.
+	"scripts/tests/apply-mcp-profile.mjs",
 	// MF-6: shared resolver / placeholder / unresolved-ref SSOT used by both
 	// apply-mcp-profile.mjs and install.mjs. validate must fail if this module
 	// disappears (the two install paths would diverge again).

@@ -134,13 +134,15 @@ function mergeServerConfig(destServer, srcServer) {
 	return merged;
 }
 
-function mergeMcpServers(destServers, srcServers, { sourceLabel } = {}) {
+function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
 	// MF-6: every server that lands in ~/.pi/agent/mcp.json — whether newly
 	// added or preserved — must pass the same resolver/placeholder/unresolved
 	// guards that apply-mcp-profile enforces, so the install path cannot
 	// silently persist literal ${VAR} or YOUR_*_HERE from a future .mcp.json
 	// env/args/url/headers edit. scanServerForRefusal throws on unresolved
 	// or placeholder, mutates in-place, and returns an allowlist shape.
+	// M5: optional `env` is threaded through so tests can pin a frozen env
+	// and production can keep the default (process.env) when omitted.
 	const dest = isPlainObject(destServers) ? destServers : {};
 	const src = isPlainObject(srcServers) ? srcServers : {};
 	const out = { ...dest };
@@ -151,6 +153,7 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel } = {}) {
 		if (out[name] === undefined) {
 			const guardeded = scanServerForRefusal(name, structuredClone(srcServer), {
 				sourceLabel,
+				env,
 			});
 			out[name] = guardeded;
 			added.push(name);
@@ -166,6 +169,7 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel } = {}) {
 			// them; source-supplied new values pass the refuse guard.
 			const scanned = scanServerForRefusal(name, structuredClone(srcServer), {
 				sourceLabel,
+				env,
 			});
 			out[name] = mergeServerConfig(out[name], scanned);
 			preserved.push(name);
@@ -175,7 +179,7 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel } = {}) {
 	return { servers: out, added, preserved };
 }
 
-async function mergeMcpConfig(srcPath, destPath) {
+async function mergeMcpConfig(srcPath, destPath, { env } = {}) {
 	let srcContent;
 	try {
 		const rawSrc = await fs.readFile(srcPath, "utf-8");
@@ -228,7 +232,7 @@ async function mergeMcpConfig(srcPath, destPath) {
 	const { servers, added, preserved } = mergeMcpServers(
 		destContent.mcpServers,
 		srcContent.mcpServers,
-		{ sourceLabel: srcPath },
+		{ sourceLabel: srcPath, env },
 	);
 	destContent.mcpServers = servers;
 
