@@ -179,8 +179,9 @@ export function resolveEnvVarsInServer(server, { env } = {}) {
  * Returns the persisted-runtime-fields server object (catalog metadata
  * stripped via allowlist) for direct assignment into mcpServers[name].
  */
-export function scanServerForRefusal(serverName, server, { env } = {}) {
+export function scanServerForRefusal(serverName, server, { env, sourceLabel } = {}) {
 	const source = env ?? process.env;
+	const label = sourceLabel || ".mcp.json";
 	const resolve = (value) => {
 		if (typeof value !== "string") return value;
 		return value.replace(ENV_VAR_REF, (match, name) => {
@@ -192,7 +193,7 @@ export function scanServerForRefusal(serverName, server, { env } = {}) {
 	const failField = (channel, key, template, out) => {
 		if (isPlaceholderTemplate(template)) {
 			throw new Error(
-				`Refusing to write MCP server ${JSON.stringify(serverName)}: ${channel}${key ? ` ${JSON.stringify(key)}` : ""} placeholder template in .mcp.json. Replace ${JSON.stringify(template)} with a real \${VAR} reference backed by the operator's environment.`,
+				`Refusing to write MCP server ${JSON.stringify(serverName)}: ${channel}${key ? ` ${JSON.stringify(key)}` : ""} placeholder template in ${label}. Replace ${JSON.stringify(template)} with a real \${VAR} reference backed by the operator's environment.`,
 			);
 		}
 		if (hasUnresolvedRef(out)) {
@@ -200,7 +201,7 @@ export function scanServerForRefusal(serverName, server, { env } = {}) {
 				.map((m) => m[1])
 				.join(", ");
 			throw new Error(
-				`Refusing to write MCP server ${JSON.stringify(serverName)}: ${channel}${key ? ` ${JSON.stringify(key)}` : ""} has unresolved ${JSON.stringify(out)} in .mcp.json. Export ${JSON.stringify(names)} before running install-global.`,
+				`Refusing to write MCP server ${JSON.stringify(serverName)}: ${channel}${key ? ` ${JSON.stringify(key)}` : ""} has unresolved ${JSON.stringify(out)} in ${label}. Export ${JSON.stringify(names)} before running install-global.`,
 			);
 		}
 	};

@@ -289,6 +289,144 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 	);
 }
 
+// ---------------------------------------------------------------------------
+// Case F (M2 red): preserved server carries operator's OWN unresolved
+// ${VAR} in dest. The preserved-branch re-scan must NOT throw and block
+// forward progress — the operator's dest-owned value predates this install.
+//
+// Pre-fix: scanServerForRefusal(name, merged) runs over the FULL merged
+// server (dest keys win). If operator's dest has ${UNSET_VAR} on a field
+// the src doesn't set, the re-scan throws, blocking ALL MCP-config upgrades
+// indefinitely. main() catches it as a non-fatal issue, so the repo's
+// .mcp.json updates are silently skipped every subsequent install.
+//
+// Fix: scan only the keys the merge NEWLY added from the source. dest-owned
+// values that already existed must NOT be passed through the refuse guard.
+// ---------------------------------------------------------------------------
+{
+	const srcContent = {
+		mcpServers: {
+			mysrv: {
+				command: "npx",
+				args: ["--new-arg"],
+			},
+		},
+	};
+	const initDest = {
+		mcpServers: {
+			mysrv: {
+				command: "npx",
+				env: { TOKEN: "${UNSET_PRESERVED}" },
+			},
+		},
+	};
+	const { threw, err } = await run(srcContent, initDest);
+
+	// The merge must NOT throw on the operator's own unresolved dest ref.
+	check(
+		"F: preserved server with operator ${VAR} does NOT throw",
+		threw === false,
+		`threw=${threw} err=${JSON.stringify(err)} (M2: preserved-server forward-progress blocker)`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case G (M2 red): preserved server — source adds a NEW unresolved ${VAR}
+// on a field the dest does NOT own. This MUST still throw (the refuse guard
+// applies to source-new additions, which the install path introduced).
+// ---------------------------------------------------------------------------
+{
+	const srcContent = {
+		mcpServers: {
+			mysrv: {
+				command: "npx",
+				env: { NEW_KEY: "${SRC_UNSET_VAR}" },
+			},
+		},
+	};
+	const initDest = {
+		mcpServers: {
+			mysrv: {
+				command: "npx",
+				env: { EXISTING: "real-value" },
+			},
+		},
+	};
+	const { threw, out } = await run(srcContent, initDest);
+	const leaked = out ? scanForUnresolved(out.mcpServers, "") : [];
+
+	// Source-new unresolved ${VAR} must still be refused.
+	check(
+		"G: src-new ${VAR} on preserved server IS refused",
+		threw === true || leaked.length === 0,
+		`threw=${threw} leaked=${JSON.stringify(leaked)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case H (guard): preserved server with clean dest-owned + clean src-added
+// values must merge successfully without throwing.
+// ---------------------------------------------------------------------------
+{
+	const srcContent = {
+		mcpServers: {
+			mysrv: {
+				command: "npx",
+				args: ["--extra"],
+				env: { NEW_K: "new-real-value" },
+			},
+		},
+	};
+	const initDest = {
+		mcpServers: {
+			mysrv: {
+				command: "npx",
+				env: { EXISTING: "dest-real-value" },
+			},
+		},
+	};
+	const { threw, out } = await run(srcContent, initDest);
+	const ok =
+		threw === false &&
+		out !== null &&
+		out.mcpServers?.mysrv?.env?.EXISTING === "dest-real-value" &&
+		out.mcpServers?.mysrv?.env?.NEW_K === "new-real-value" &&
+		out.mcpServers?.mysrv?.args?.includes("--extra");
+	check(
+		"H: clean preserved + clean src-added merges successfully",
+		ok,
+		`threw=${threw} out=${JSON.stringify(out ?? null).slice(0, 150)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case I (M2 red): error message must distinguish source vs dest surface
+// when a source-new ${VAR} IS the offender. The throw message should NOT
+// hardcode `.mcp.json` regardless of which surface contributed the value.
+// We assert the error message names the source file path (srcPath) rather
+// than a hardcoded `.mcp.json` literal, OR at least does not falsely claim
+// `.mcp.json` when the source is a temp file.
+// ---------------------------------------------------------------------------
+{
+	const srcContent = {
+		mcpServers: {
+			badsrc: {
+				command: "npx",
+				env: { T: "${SRC_ONLY_UNSET}" },
+			},
+		},
+	};
+	const { threw, err } = await run(srcContent, {
+		mcpServers: { other: { command: "npx" } },
+	});
+
+	check(
+		"I: src-new ${VAR} refusal message does not hardcode .mcp.json",
+		threw === true && err !== null && !/in \.mcp\.json/.test(err),
+		`threw=${threw} err=${JSON.stringify(err)}`,
+	);
+}
+
 for (const p of pass) console.log("ok:", p);
 if (fail.length === 0) {
 	console.log(`ALL ${pass.length} MF-6 CHECKS PASS`);

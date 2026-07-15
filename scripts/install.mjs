@@ -134,7 +134,7 @@ function mergeServerConfig(destServer, srcServer) {
 	return merged;
 }
 
-function mergeMcpServers(destServers, srcServers) {
+function mergeMcpServers(destServers, srcServers, { sourceLabel } = {}) {
 	// MF-6: every server that lands in ~/.pi/agent/mcp.json — whether newly
 	// added or preserved — must pass the same resolver/placeholder/unresolved
 	// guards that apply-mcp-profile enforces, so the install path cannot
@@ -149,14 +149,25 @@ function mergeMcpServers(destServers, srcServers) {
 
 	for (const [name, srcServer] of Object.entries(src)) {
 		if (out[name] === undefined) {
-			const guardeded = scanServerForRefusal(name, structuredClone(srcServer));
+			const guardeded = scanServerForRefusal(name, structuredClone(srcServer), {
+				sourceLabel,
+			});
 			out[name] = guardeded;
 			added.push(name);
 		} else {
-			const merged = mergeServerConfig(out[name], srcServer);
-			// Re-scan a preserved server too — it may carry old placeholder /
-			// unresolved refs from a previous install that predate this guard.
-			out[name] = scanServerForRefusal(name, merged);
+			// M2: for a preserved server, scan ONLY the source-supplied
+			// values (those the merge is introducing). The operator's
+			// pre-existing dest-owned values (env/headers/args/command/url)
+			// are carried over via mergeServerConfig and are not re-checked:
+			// they predate this install (possibly from a pre-guard era) and
+			// checking them would throw on the operator's own ${VAR} refs,
+			// blocking ALL future MCP-config upgrades until they hand-fix
+			// their dest file. Dest-owned values stay as the operator wrote
+			// them; source-supplied new values pass the refuse guard.
+			const scanned = scanServerForRefusal(name, structuredClone(srcServer), {
+				sourceLabel,
+			});
+			out[name] = mergeServerConfig(out[name], scanned);
 			preserved.push(name);
 		}
 	}
@@ -212,18 +223,23 @@ async function mergeMcpConfig(srcPath, destPath) {
 		if (!isPlainObject(destContent.mcpServers)) {
 			destContent.mcpServers = {};
 		}
-
-		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-		const backupPath = `${destPath}.bak.${stamp}`;
-		await fs.copyFile(destPath, backupPath);
-		console.log(`Backed up MCP config: ${backupPath}`);
 	}
 
 	const { servers, added, preserved } = mergeMcpServers(
 		destContent.mcpServers,
 		srcContent.mcpServers,
+		{ sourceLabel: srcPath },
 	);
 	destContent.mcpServers = servers;
+
+	// M2: back up the existing dest ONLY after the merge scan passes,
+	// so a throw from mergeMcpServers does not leave a stale .bak.* file.
+	if (destExists) {
+		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const backupPath = `${destPath}.bak.${stamp}`;
+		await fs.copyFile(destPath, backupPath);
+		console.log(`Backed up MCP config: ${backupPath}`);
+	}
 
 	// Carry optional package-level keys only when dest lacks them.
 	for (const key of Object.keys(srcContent)) {
@@ -289,8 +305,32 @@ async function mergeAgentSettings(srcPath, destPath) {
 	let current = {};
 	try {
 		current = JSON.parse(await fs.readFile(destPath, "utf-8"));
-	} catch {
+	} catch (err) {
+		// M1: only ENOENT (first install) may fall through to {}
+		// gracefully. Any other failure (corrupt JSON, EACCES, EISDIR,
+		// EPERM, …) must NOT be swallowed — it would be followed by
+		// deepMerge({}, managed) → writeFile overwriting the operator's
+		// settings with managed-only content, silently wiping
+		// machine-local keys (shellPath, defaultProvider, etc.).
+		if (err.code !== "ENOENT") {
+			console.error(
+				`Failed to read existing agent settings (${destPath}): ${err.message}`,
+			);
+			return false;
+		}
 		// init empty — dest may not exist yet on first install
+	}
+
+	// M1 (silent-failure finding-1): a dest that parses as valid JSON but is
+	// NOT a plain object (e.g. `[]`, `null`, `"string"`, `123`, `true`) would
+	// be silently re-seeded to {} by deepMerge and then overwritten with
+	// managed-only content — wiping the operator's machine-local keys. Mirror
+	// the mergeMcpConfig dest guard (scripts/install.mjs:214).
+	if (!isPlainObject(current)) {
+		console.error(
+			`Destination agent settings must be a JSON object (${destPath})`,
+		);
+		return false;
 	}
 
 	const next = deepMerge(current, managed);
