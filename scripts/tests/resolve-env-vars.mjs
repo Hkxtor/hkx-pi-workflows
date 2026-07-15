@@ -61,7 +61,10 @@ const ctx = {
 	process: { env: {} },
 };
 vm.createContext(ctx);
-vm.runInContext(helperCode + "\nthis.__resolve = resolveEnvVarsInServer;\n", ctx);
+vm.runInContext(
+	helperCode + "\nthis.__resolve = resolveEnvVarsInServer;\n",
+	ctx,
+);
 const resolveEnvVarsInServer = ctx.__resolve;
 const pass = [];
 const fail = [];
@@ -77,9 +80,21 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = { MY_UPCASE: "real-value" };
 	const r = resolveEnvVarsInServer({ env: { K: "${MY_UPCASE}" } });
-	check("A: UPPER_SNAKE set -> substituted", r.config.env.K === "real-value", `got ${JSON.stringify(r.config.env.K)}`);
-	check("A: no missing", r.missing.length === 0, `missing=${JSON.stringify(r.missing)}`);
-	check("A: no placeholders", r.placeholders.length === 0, `placeholders=${JSON.stringify(r.placeholders)}`);
+	check(
+		"A: UPPER_SNAKE set -> substituted",
+		r.config.env.K === "real-value",
+		`got ${JSON.stringify(r.config.env.K)}`,
+	);
+	check(
+		"A: no missing",
+		r.missing.length === 0,
+		`missing=${JSON.stringify(r.missing)}`,
+	);
+	check(
+		"A: no placeholders",
+		r.placeholders.length === 0,
+		`placeholders=${JSON.stringify(r.placeholders)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -88,8 +103,16 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = {};
 	const r = resolveEnvVarsInServer({ env: { K: "${UPPERCASE_MISSING}" } });
-	check("B: UPPER_SNAKE unset -> literal kept", r.config.env.K === "${UPPERCASE_MISSING}", `got ${JSON.stringify(r.config.env.K)}`);
-	check("B: UPPER_SNAKE unset -> missing[K]", r.missing.includes("K"), `missing=${JSON.stringify(r.missing)}`);
+	check(
+		"B: UPPER_SNAKE unset -> literal kept",
+		r.config.env.K === "${UPPERCASE_MISSING}",
+		`got ${JSON.stringify(r.config.env.K)}`,
+	);
+	check(
+		"B: UPPER_SNAKE unset -> missing[K]",
+		r.missing.includes("K"),
+		`missing=${JSON.stringify(r.missing)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -97,9 +120,19 @@ function check(name, cond, detail) {
 // ---------------------------------------------------------------------------
 {
 	ctx.process.env = { x_browser_use_api_key: "lower-real" };
-	const r = resolveEnvVarsInServer({ headers: { "x-key": "${x_browser_use_api_key}" } });
-	check("C: lowercase set -> substituted", r.config.headers["x-key"] === "lower-real", `got ${JSON.stringify(r.config.headers["x-key"])}`);
-	check("C: lowercase set -> no missing", r.missing.length === 0, `missing=${JSON.stringify(r.missing)}`);
+	const r = resolveEnvVarsInServer({
+		headers: { "x-key": "${x_browser_use_api_key}" },
+	});
+	check(
+		"C: lowercase set -> substituted",
+		r.config.headers["x-key"] === "lower-real",
+		`got ${JSON.stringify(r.config.headers["x-key"])}`,
+	);
+	check(
+		"C: lowercase set -> no missing",
+		r.missing.length === 0,
+		`missing=${JSON.stringify(r.missing)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -107,8 +140,14 @@ function check(name, cond, detail) {
 // ---------------------------------------------------------------------------
 {
 	ctx.process.env = {};
-	const r = resolveEnvVarsInServer({ headers: { "x-key": "${x-browser-use-api-key}" } });
-	check("D: hyphenated unset -> missing[x-key]", r.missing.length > 0, `missing=${JSON.stringify(r.missing)} (silent leak!)`);
+	const r = resolveEnvVarsInServer({
+		headers: { "x-key": "${x-browser-use-api-key}" },
+	});
+	check(
+		"D: hyphenated unset -> missing[x-key]",
+		r.missing.length > 0,
+		`missing=${JSON.stringify(r.missing)} (silent leak!)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -116,9 +155,19 @@ function check(name, cond, detail) {
 // ---------------------------------------------------------------------------
 {
 	ctx.process.env = { "x-browser-use-api-key": "real-hyphen-token" };
-	const r = resolveEnvVarsInServer({ headers: { "x-key": "${x-browser-use-api-key}" } });
-	check("E: hyphenated set -> substituted", r.config.headers["x-key"] === "real-hyphen-token", `got ${JSON.stringify(r.config.headers["x-key"])}`);
-	check("E: hyphenated set -> no missing", r.missing.length === 0, `missing=${JSON.stringify(r.missing)}`);
+	const r = resolveEnvVarsInServer({
+		headers: { "x-key": "${x-browser-use-api-key}" },
+	});
+	check(
+		"E: hyphenated set -> substituted",
+		r.config.headers["x-key"] === "real-hyphen-token",
+		`got ${JSON.stringify(r.config.headers["x-key"])}`,
+	);
+	check(
+		"E: hyphenated set -> no missing",
+		r.missing.length === 0,
+		`missing=${JSON.stringify(r.missing)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -132,8 +181,16 @@ function check(name, cond, detail) {
 		requiresEnv: ["x-browser-use-api-key"],
 	});
 	const leaked = r.config.headers["x-browser-use-api-key"];
-	check("F: browser-use unset -> literal kept (NOT substituted)", leaked === "${x-browser-use-api-key}", `got ${JSON.stringify(leaked)}`);
-	check("F: browser-use unset -> detected as unresolved (headers key in missing)", r.missing.includes("x-browser-use-api-key"), `missing=${JSON.stringify(r.missing)} (silent leak!)`);
+	check(
+		"F: browser-use unset -> literal kept (NOT substituted)",
+		leaked === "${x-browser-use-api-key}",
+		`got ${JSON.stringify(leaked)}`,
+	);
+	check(
+		"F: browser-use unset -> detected as unresolved (headers key in missing)",
+		r.missing.includes("x-browser-use-api-key"),
+		`missing=${JSON.stringify(r.missing)} (silent leak!)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -141,9 +198,19 @@ function check(name, cond, detail) {
 // ---------------------------------------------------------------------------
 {
 	ctx.process.env = { FIRECRAWL_API_KEY: "fc-real" };
-	const r = resolveEnvVarsInServer({ env: { FIRECRAWL_API_KEY: "${FIRECRAWL_API_KEY}" } });
-	check("G: FIRECRAWL (UPPER_SNAKE, multi-segment) still substitutes", r.config.env.FIRECRAWL_API_KEY === "fc-real", `got ${JSON.stringify(r.config.env.FIRECRAWL_API_KEY)}`);
-	check("G: no missing", r.missing.length === 0, `missing=${JSON.stringify(r.missing)}`);
+	const r = resolveEnvVarsInServer({
+		env: { FIRECRAWL_API_KEY: "${FIRECRAWL_API_KEY}" },
+	});
+	check(
+		"G: FIRECRAWL (UPPER_SNAKE, multi-segment) still substitutes",
+		r.config.env.FIRECRAWL_API_KEY === "fc-real",
+		`got ${JSON.stringify(r.config.env.FIRECRAWL_API_KEY)}`,
+	);
+	check(
+		"G: no missing",
+		r.missing.length === 0,
+		`missing=${JSON.stringify(r.missing)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -157,8 +224,16 @@ function check(name, cond, detail) {
 		env: { OK: "${OK}" },
 	});
 	// args are resolved (good), but detection of unresolved refs in args was missing.
-	check("H: args resolved ${OK} substituted", r.config.args[2] === "--ok=v", `got ${JSON.stringify(r.config.args[2])}`);
-	check("H: args MISSING_ARG reported as unresolved", r.missing.includes("args[1]"), `missing=${JSON.stringify(r.missing)} (args channel unguarded)`);
+	check(
+		"H: args resolved ${OK} substituted",
+		r.config.args[2] === "--ok=v",
+		`got ${JSON.stringify(r.config.args[2])}`,
+	);
+	check(
+		"H: args MISSING_ARG reported as unresolved",
+		r.missing.includes("args[1]"),
+		`missing=${JSON.stringify(r.missing)} (args channel unguarded)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -169,8 +244,16 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = { MY_TOKEN: "REPLACE_ME" };
 	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } });
-	check("I: real secret REPLACE_ME substituted", r.config.env.K === "REPLACE_ME", `got ${JSON.stringify(r.config.env.K)}`);
-	check("I: real secret REPLACE_ME not flagged as placeholder", r.placeholders.length === 0, `placeholders=${JSON.stringify(r.placeholders)} (false-positive!)`);
+	check(
+		"I: real secret REPLACE_ME substituted",
+		r.config.env.K === "REPLACE_ME",
+		`got ${JSON.stringify(r.config.env.K)}`,
+	);
+	check(
+		"I: real secret REPLACE_ME not flagged as placeholder",
+		r.placeholders.length === 0,
+		`placeholders=${JSON.stringify(r.placeholders)} (false-positive!)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -179,7 +262,11 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = { MY_TOKEN: "YOUR_TOKEN_HERE" };
 	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } });
-	check("J: real secret YOUR_TOKEN_HERE not flagged", r.placeholders.length === 0, `placeholders=${JSON.stringify(r.placeholders)} (false-positive!)`);
+	check(
+		"J: real secret YOUR_TOKEN_HERE not flagged",
+		r.placeholders.length === 0,
+		`placeholders=${JSON.stringify(r.placeholders)} (false-positive!)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -189,7 +276,11 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = {};
 	const r = resolveEnvVarsInServer({ env: { K: "YOUR_TOKEN_HERE" } });
-	check("K: template YOUR_TOKEN_HERE detected as placeholder", r.placeholders.includes("K"), `placeholders=${JSON.stringify(r.placeholders)}`);
+	check(
+		"K: template YOUR_TOKEN_HERE detected as placeholder",
+		r.placeholders.includes("K"),
+		`placeholders=${JSON.stringify(r.placeholders)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -199,8 +290,14 @@ function check(name, cond, detail) {
 // ---------------------------------------------------------------------------
 {
 	ctx.process.env = {};
-	const r = resolveEnvVarsInServer({ headers: { Auth: "Bearer <REPLACE_ME>" } });
-	check("L: Bearer <REPLACE_ME> template detected as placeholder", r.placeholders.includes("Auth"), `placeholders=${JSON.stringify(r.placeholders)} (embedded miss!)`);
+	const r = resolveEnvVarsInServer({
+		headers: { Auth: "Bearer <REPLACE_ME>" },
+	});
+	check(
+		"L: Bearer <REPLACE_ME> template detected as placeholder",
+		r.placeholders.includes("Auth"),
+		`placeholders=${JSON.stringify(r.placeholders)} (embedded miss!)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -209,7 +306,11 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = {};
 	const r = resolveEnvVarsInServer({ env: { K: "prefix YOUR_TOKEN suffix" } });
-	check("M: prefix YOUR_TOKEN suffix template detected", r.placeholders.includes("K"), `placeholders=${JSON.stringify(r.placeholders)} (embedded miss!)`);
+	check(
+		"M: prefix YOUR_TOKEN suffix template detected",
+		r.placeholders.includes("K"),
+		`placeholders=${JSON.stringify(r.placeholders)} (embedded miss!)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -218,7 +319,12 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = { MY_TOKEN: "sk-live-real-not-a-placeholder" };
 	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } });
-	check("N: real non-placeholder secret not flagged", r.placeholders.length === 0 && r.config.env.K === "sk-live-real-not-a-placeholder", `placeholders=${JSON.stringify(r.placeholders)} out=${JSON.stringify(r.config.env.K)}`);
+	check(
+		"N: real non-placeholder secret not flagged",
+		r.placeholders.length === 0 &&
+			r.config.env.K === "sk-live-real-not-a-placeholder",
+		`placeholders=${JSON.stringify(r.placeholders)} out=${JSON.stringify(r.config.env.K)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -232,8 +338,16 @@ function check(name, cond, detail) {
 		command: "npx",
 		args: ["-y", "some-mcp", "--token", "${ONLY_IN_ARGS}"],
 	});
-	check("O: args-only unresolved kept literal", r.config.args[3] === "${ONLY_IN_ARGS}", `got ${JSON.stringify(r.config.args[3])}`);
-	check("O: args-only unresolved in missing", r.missing.includes("args[3]"), `missing=${JSON.stringify(r.missing)}`);
+	check(
+		"O: args-only unresolved kept literal",
+		r.config.args[3] === "${ONLY_IN_ARGS}",
+		`got ${JSON.stringify(r.config.args[3])}`,
+	);
+	check(
+		"O: args-only unresolved in missing",
+		r.missing.includes("args[3]"),
+		`missing=${JSON.stringify(r.missing)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -245,7 +359,11 @@ function check(name, cond, detail) {
 		command: "npx",
 		args: ["--auth", "Bearer <REPLACE_ME>"],
 	});
-	check("P: args-only placeholder detected", r.placeholders.includes("args[1]"), `placeholders=${JSON.stringify(r.placeholders)}`);
+	check(
+		"P: args-only placeholder detected",
+		r.placeholders.includes("args[1]"),
+		`placeholders=${JSON.stringify(r.placeholders)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -254,8 +372,16 @@ function check(name, cond, detail) {
 {
 	ctx.process.env = {};
 	const r = resolveEnvVarsInServer({ command: "${CMD_BIN}", args: [] });
-	check("Q: command unresolved in missing", r.missing.includes("command"), `missing=${JSON.stringify(r.missing)}`);
-	check("Q: command kept literal", r.config.command === "${CMD_BIN}", `got ${JSON.stringify(r.config.command)}`);
+	check(
+		"Q: command unresolved in missing",
+		r.missing.includes("command"),
+		`missing=${JSON.stringify(r.missing)}`,
+	);
+	check(
+		"Q: command kept literal",
+		r.config.command === "${CMD_BIN}",
+		`got ${JSON.stringify(r.config.command)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -268,8 +394,16 @@ function check(name, cond, detail) {
 		type: "http",
 		url: "https://example.com/mcp?token=${URL_TOKEN}",
 	});
-	check("R: url unresolved kept literal", r.config.url === "https://example.com/mcp?token=${URL_TOKEN}", `got ${JSON.stringify(r.config.url)}`);
-	check("R: url unresolved in missing", r.missing.includes("url"), `missing=${JSON.stringify(r.missing)} (url channel unguarded — MF-3 residual)`);
+	check(
+		"R: url unresolved kept literal",
+		r.config.url === "https://example.com/mcp?token=${URL_TOKEN}",
+		`got ${JSON.stringify(r.config.url)}`,
+	);
+	check(
+		"R: url unresolved in missing",
+		r.missing.includes("url"),
+		`missing=${JSON.stringify(r.missing)} (url channel unguarded — MF-3 residual)`,
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -281,7 +415,9 @@ function check(name, cond, detail) {
 {
 	const srcText = readFileSync("scripts/apply-mcp-profile.mjs", "utf8");
 	// Pre-fix message (env/headers only) must be gone.
-	const badOnlyEnvHeaders = /Unresolved[^\n]*references in env\/headers:/.test(srcText);
+	const badOnlyEnvHeaders = /Unresolved[^\n]*references in env\/headers:/.test(
+		srcText,
+	);
 	// Channel-complete message must be present.
 	const good =
 		srcText.includes("references in env/headers/args/command/url:") ||

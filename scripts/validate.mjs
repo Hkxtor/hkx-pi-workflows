@@ -309,14 +309,15 @@ async function main() {
 	// Pre-fix the suite lived only under gitignored scripts/_smoke/ and there
 	// was no scripts.test entry — ~62 of ~67 P1 behavior lines were unexercised
 	// in any versioned/CI path.
-	const scripts = pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : {};
+	const scripts =
+		pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : {};
 	if (typeof scripts.test !== "string" || scripts.test.trim().length === 0) {
 		errors.push(
-			'package.json scripts.test is required (MF-4: wire versioned smoke via `npm test`)',
+			"package.json scripts.test is required (MF-4: wire versioned smoke via `npm test`)",
 		);
 	} else if (!String(scripts.test).includes("scripts/tests")) {
 		errors.push(
-			'package.json scripts.test should invoke the versioned suite under scripts/tests/',
+			"package.json scripts.test should invoke the versioned suite under scripts/tests/",
 		);
 	}
 
