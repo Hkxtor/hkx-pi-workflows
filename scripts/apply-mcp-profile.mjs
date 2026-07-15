@@ -33,7 +33,13 @@ const schemaUrl =
 	"https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const templateRoot = path.join(repoRoot, "mcp-configs", "templates");
+// HKX_MCP_TEMPLATE_ROOT: test/operator override for template catalog root.
+// Default is the package mcp-configs/templates/. Integration tests (M4 H1)
+// pin a throwaway catalog so unresolved/placeholder refuse paths are
+// exercised without mutating the shipped templates.
+const templateRoot = process.env.HKX_MCP_TEMPLATE_ROOT
+	? path.resolve(process.env.HKX_MCP_TEMPLATE_ROOT)
+	: path.join(repoRoot, "mcp-configs", "templates");
 const manifestPath = path.join(templateRoot, "manifest.json");
 
 // Re-export for any external importers of the apply script. The canonical

@@ -33,6 +33,9 @@
  *                              (hard-fail on corrupt dest; preserve env/headers;
  *                               backup before write; never wipe user tokens)
  * - mcp-configs/             -> ~/.pi/agent/hkx-pi-workflows/mcp-configs/ (reference)
+ * - scripts/apply-mcp-profile.mjs + scripts/lib/mcp-resolver.mjs
+ *                            -> ~/.pi/agent/hkx-pi-workflows/scripts/
+ *                              (C1: resolver is a hard dependency of the helper)
  * - then: pi update --extensions (install/update packages listed in settings)
  * - configs/pi-permission-system/config.json
  *                            -> ~/.pi/agent/extensions/pi-permission-system/config.json
@@ -574,12 +577,29 @@ async function main() {
 			copyOnly: true,
 		});
 	}
+	// C1: apply-mcp-profile.mjs imports ./lib/mcp-resolver.mjs (MF-6 SSOT).
+	// Installing the helper alone leaves the installed copy with
+	// ERR_MODULE_NOT_FOUND. Always ship the resolver next to it under
+	// packageAssetRoot/scripts/lib/.
 	const applyProfile = path.join(repoRoot, "scripts", "apply-mcp-profile.mjs");
+	const mcpResolver = path.join(repoRoot, "scripts", "lib", "mcp-resolver.mjs");
 	if (await pathExists(applyProfile)) {
 		await linkOrCopy(
 			applyProfile,
 			path.join(packageAssetRoot, "scripts", "apply-mcp-profile.mjs"),
 		);
+		if (await pathExists(mcpResolver)) {
+			await ensureDir(path.join(packageAssetRoot, "scripts", "lib"));
+			await linkOrCopy(
+				mcpResolver,
+				path.join(packageAssetRoot, "scripts", "lib", "mcp-resolver.mjs"),
+			);
+		} else {
+			console.error(
+				`Missing shared resolver at ${mcpResolver}; installed apply-mcp-profile would fail to import.`,
+			);
+			failed.push("install apply-mcp-profile resolver");
+		}
 	}
 
 	// Install/update packages listed in ~/.pi/agent/settings.json
