@@ -254,6 +254,10 @@ function deepMerge(target, source) {
  * Managed keys from configs/agent-settings.json overwrite local values.
  * packages is replaced by the managed list (authoritative), not unioned.
  * Machine-local keys (shellPath, defaultProvider, …) are preserved when absent from source.
+ *
+ * Returns `true` on success, `false` on a read/parse failure. The caller must
+ * push a label into failed[] on `false` so the install path cannot silently
+ * claim success while agent settings failed to merge (MF-7).
  */
 async function mergeAgentSettings(srcPath, destPath) {
 	let managed;
@@ -261,14 +265,14 @@ async function mergeAgentSettings(srcPath, destPath) {
 		managed = JSON.parse(await fs.readFile(srcPath, "utf-8"));
 	} catch (err) {
 		console.error(`Failed to read agent settings: ${err.message}`);
-		return;
+		return false;
 	}
 
 	let current = {};
 	try {
 		current = JSON.parse(await fs.readFile(destPath, "utf-8"));
 	} catch {
-		// init empty
+		// init empty — dest may not exist yet on first install
 	}
 
 	const next = deepMerge(current, managed);
@@ -283,6 +287,7 @@ async function mergeAgentSettings(srcPath, destPath) {
 	console.log(
 		`Merged agent settings (${pkgCount} packages, managed keys): ${destPath}`,
 	);
+	return true;
 }
 
 function runCommand(command, args, options = {}) {
@@ -474,10 +479,16 @@ async function main() {
 		"agent-settings.json",
 	);
 	if (await pathExists(agentSettingsSrc)) {
-		await mergeAgentSettings(
+		const agentSettingsOk = await mergeAgentSettings(
 			agentSettingsSrc,
 			path.join(piHome, "settings.json"),
 		);
+		if (!agentSettingsOk) {
+			failed.push("merge agent settings");
+			console.error(
+				"Agent settings merge failed. Managed settings from configs/agent-settings.json were NOT applied.",
+			);
+		}
 	} else {
 		console.warn("Skip agent settings: configs/agent-settings.json not found");
 	}

@@ -43,6 +43,7 @@ const requiredFiles = [
 	"scripts/tests/run.mjs",
 	"scripts/tests/merge-contract.mjs",
 	"scripts/tests/resolve-env-vars.mjs",
+	"scripts/tests/merge-agent-settings.mjs",
 ];
 
 const allowedPiTools = new Set([
