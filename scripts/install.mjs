@@ -4,6 +4,12 @@
  *
  * npm entry: npm run install-global
  *
+ * MF-6: the .mcp.json -> ~/.pi/agent/mcp.json merge path routes each
+ * server through scripts/lib/mcp-resolver.mjs::scanServerForRefusal, the
+ * same SSOT used by scripts/apply-mcp-profile.mjs, so the install path
+ * cannot silently persist literal ${VAR} or YOUR_*_HERE templates once
+ * .mcp.json grows env/headers/args/url.
+ *
  * Dual install model:
  * - `pi install git:...` / `pi install npm:...` loads official package resources
  *   declared in package.json (`pi` + `pi-subagents`). That path does NOT run
@@ -38,6 +44,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { spawn } from "node:child_process";
+import process from "node:process";
+import { scanServerForRefusal } from "./lib/mcp-resolver.mjs";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -127,6 +135,12 @@ function mergeServerConfig(destServer, srcServer) {
 }
 
 function mergeMcpServers(destServers, srcServers) {
+	// MF-6: every server that lands in ~/.pi/agent/mcp.json — whether newly
+	// added or preserved — must pass the same resolver/placeholder/unresolved
+	// guards that apply-mcp-profile enforces, so the install path cannot
+	// silently persist literal ${VAR} or YOUR_*_HERE from a future .mcp.json
+	// env/args/url/headers edit. scanServerForRefusal throws on unresolved
+	// or placeholder, mutates in-place, and returns an allowlist shape.
 	const dest = isPlainObject(destServers) ? destServers : {};
 	const src = isPlainObject(srcServers) ? srcServers : {};
 	const out = { ...dest };
@@ -135,10 +149,14 @@ function mergeMcpServers(destServers, srcServers) {
 
 	for (const [name, srcServer] of Object.entries(src)) {
 		if (out[name] === undefined) {
-			out[name] = structuredClone(srcServer);
+			const guardeded = scanServerForRefusal(name, structuredClone(srcServer));
+			out[name] = guardeded;
 			added.push(name);
 		} else {
-			out[name] = mergeServerConfig(out[name], srcServer);
+			const merged = mergeServerConfig(out[name], srcServer);
+			// Re-scan a preserved server too — it may carry old placeholder /
+			// unresolved refs from a previous install that predate this guard.
+			out[name] = scanServerForRefusal(name, merged);
 			preserved.push(name);
 		}
 	}

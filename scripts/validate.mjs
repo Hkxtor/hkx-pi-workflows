@@ -44,6 +44,11 @@ const requiredFiles = [
 	"scripts/tests/merge-contract.mjs",
 	"scripts/tests/resolve-env-vars.mjs",
 	"scripts/tests/merge-agent-settings.mjs",
+	"scripts/tests/install-resolver-guards.mjs",
+	// MF-6: shared resolver / placeholder / unresolved-ref SSOT used by both
+	// apply-mcp-profile.mjs and install.mjs. validate must fail if this module
+	// disappears (the two install paths would diverge again).
+	"scripts/lib/mcp-resolver.mjs",
 ];
 
 const allowedPiTools = new Set([

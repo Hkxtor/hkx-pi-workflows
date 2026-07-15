@@ -4,6 +4,8 @@ import vm from "node:vm";
 import os from "node:os";
 import { readFileSync } from "node:fs";
 
+import { scanServerForRefusal } from "../lib/mcp-resolver.mjs";
+
 const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "hkx-merge-smoke-"));
 const installSrc = readFileSync("scripts/install.mjs", "utf8");
 const start = installSrc.indexOf("function isPlainObject");
@@ -20,6 +22,10 @@ const ctx = {
 			return false;
 		}
 	},
+	// MF-6: install.mjs::mergeMcpServers now calls scanServerForRefusal from
+	// the shared module; expose it on the vm ctx so the sliced mergeMcpServers
+	// body can resolve the global reference at call time.
+	scanServerForRefusal,
 	fs,
 	Error,
 	Date,

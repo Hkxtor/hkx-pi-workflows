@@ -1,71 +1,23 @@
 /**
- * Regression test for MF-1 (resolver charset mismatch).
+ * Regression test for MF-1 (resolver charset mismatch). Now also covers
+ * MF-2 (placeholder false-pos / embedded misses), MF-3 (args/command/url
+ * unresolved channels), and MF-5 (catalog metadata leak).
  *
- * Tickets: SV-1 / silent-failure F2 / typescript m2 / tests T7.
- *
- * The resolver `resolveEnvVarsInServer` previously used the strict regex
- * `/\$\{([A-Z_][A-Z0-9_]*)\}/g` for BOTH substitution AND unresolved-reference
- * detection. Any env-var name outside UPPER_SNAKE (lowercase, hyphenated,
- * dotted) was therefore:
- *   - left literally unchanged in the output value, AND
- *   - NOT added to `missing`/`unresolvedEnv` (same narrow detector charset),
- *   - NOT matched by PLACEHOLDER_PATTERN.
- *
- * Net effect: a reference like `${x-browser-use-api-key}` was written verbatim
- * into the user's mcp.json with exit 0 and zero warnings -- defeating the P1
- * hardening's "refuse to persist unresolved `${VAR}`" invariant.
- *
- * This test reproduces the bug via the same `vm`-based isolation the merge
- * smoke uses, so it does not import the running install path. It must FAIL on
- * the pre-fix code and PASS after MF-1 is closed.
- *
- * Run: node scripts/_smoke/resolve-env-vars.mjs
+ * The resolver is an ESM export in the shared module scripts/lib/mcp-resolver.mjs
+ * so both write paths (apply-mcp-profile.mjs and install.mjs::mergeMcpConfig)
+ * enforce the same invariants (MF-6 cross-path SSOT). This test imports it
+ * directly — no vm slicing — because the module is side-effect-free and the
+ * direct import exercises the actual module semantics.
  */
 import fs from "node:fs/promises";
 import path from "node:path";
-import vm from "node:vm";
 import os from "node:os";
 import { readFileSync } from "node:fs";
+import { resolveEnvVarsInServer } from "../lib/mcp-resolver.mjs";
 
-const src = readFileSync("scripts/apply-mcp-profile.mjs", "utf8");
-// Slice from the shared charset / placeholder helpers through resolveEnvVarsInServer.
-const startMarkers = [
-	"const ENV_VAR_NAME =",
-	"const PLACEHOLDER_EXACT",
-	"const PLACEHOLDER_PATTERN", // pre-MF-2 marker (compat)
-];
-let start = -1;
-for (const m of startMarkers) {
-	start = src.indexOf(m);
-	if (start !== -1) break;
-}
-const end = src.indexOf("async function readJson");
-if (start === -1 || end === -1 || end <= start) {
-	console.error("FAIL: could not locate resolveEnvVarsInServer slice");
-	process.exit(1);
-}
-const helperCode = src.slice(start, end);
+// Mutable test env; reset per case via TEST_ENV = {...} then passed as { env: TEST_ENV }.
+let TEST_ENV = {};
 
-const ctx = {
-	console,
-	structuredClone,
-	Error,
-	Object,
-	Array,
-	Set,
-	JSON,
-	RegExp,
-	Math,
-	Promise,
-	// process.env is read by the resolver; hand in an isolated copy.
-	process: { env: {} },
-};
-vm.createContext(ctx);
-vm.runInContext(
-	helperCode + "\nthis.__resolve = resolveEnvVarsInServer;\n",
-	ctx,
-);
-const resolveEnvVarsInServer = ctx.__resolve;
 const pass = [];
 const fail = [];
 
@@ -78,8 +30,8 @@ function check(name, cond, detail) {
 // Case A (baseline, already worked): UPPER_SNAKE var set -> substituted
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { MY_UPCASE: "real-value" };
-	const r = resolveEnvVarsInServer({ env: { K: "${MY_UPCASE}" } });
+	TEST_ENV = { MY_UPCASE: "real-value" };
+	const r = resolveEnvVarsInServer({ env: { K: "${MY_UPCASE}" } }, { env: TEST_ENV });
 	check(
 		"A: UPPER_SNAKE set -> substituted",
 		r.config.env.K === "real-value",
@@ -101,8 +53,8 @@ function check(name, cond, detail) {
 // Case B (baseline): UPPER_SNAKE var unset -> reported as missing
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
-	const r = resolveEnvVarsInServer({ env: { K: "${UPPERCASE_MISSING}" } });
+	TEST_ENV = {};
+	const r = resolveEnvVarsInServer({ env: { K: "${UPPERCASE_MISSING}" } }, { env: TEST_ENV });
 	check(
 		"B: UPPER_SNAKE unset -> literal kept",
 		r.config.env.K === "${UPPERCASE_MISSING}",
@@ -119,10 +71,10 @@ function check(name, cond, detail) {
 // Case C (MF-1 red): lowercase var SET -> MUST substitute (was: left literal)
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { x_browser_use_api_key: "lower-real" };
+	TEST_ENV = { x_browser_use_api_key: "lower-real" };
 	const r = resolveEnvVarsInServer({
 		headers: { "x-key": "${x_browser_use_api_key}" },
-	});
+	}, { env: TEST_ENV });
 	check(
 		"C: lowercase set -> substituted",
 		r.config.headers["x-key"] === "lower-real",
@@ -139,10 +91,10 @@ function check(name, cond, detail) {
 // Case D (MF-1 red): hyphenated var unset -> MUST report missing (was: silent)
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
+	TEST_ENV = {};
 	const r = resolveEnvVarsInServer({
 		headers: { "x-key": "${x-browser-use-api-key}" },
-	});
+	}, { env: TEST_ENV });
 	check(
 		"D: hyphenated unset -> missing[x-key]",
 		r.missing.length > 0,
@@ -154,10 +106,10 @@ function check(name, cond, detail) {
 // Case E (MF-1 red): hyphenated var SET -> MUST substitute (was: left literal)
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { "x-browser-use-api-key": "real-hyphen-token" };
+	TEST_ENV = { "x-browser-use-api-key": "real-hyphen-token" };
 	const r = resolveEnvVarsInServer({
 		headers: { "x-key": "${x-browser-use-api-key}" },
-	});
+	}, { env: TEST_ENV });
 	check(
 		"E: hyphenated set -> substituted",
 		r.config.headers["x-key"] === "real-hyphen-token",
@@ -175,11 +127,11 @@ function check(name, cond, detail) {
 // from mcp-servers.json:210 must not silently leak with zero signals.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {}; // unset
+	TEST_ENV = {}; // unset
 	const r = resolveEnvVarsInServer({
 		headers: { "x-browser-use-api-key": "${x-browser-use-api-key}" },
 		requiresEnv: ["x-browser-use-api-key"],
-	});
+	}, { env: TEST_ENV });
 	const leaked = r.config.headers["x-browser-use-api-key"];
 	check(
 		"F: browser-use unset -> literal kept (NOT substituted)",
@@ -197,10 +149,10 @@ function check(name, cond, detail) {
 // Case G (regression guard): a var the OLD regex matched must still resolve
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { FIRECRAWL_API_KEY: "fc-real" };
+	TEST_ENV = { FIRECRAWL_API_KEY: "fc-real" };
 	const r = resolveEnvVarsInServer({
 		env: { FIRECRAWL_API_KEY: "${FIRECRAWL_API_KEY}" },
-	});
+	}, { env: TEST_ENV });
 	check(
 		"G: FIRECRAWL (UPPER_SNAKE, multi-segment) still substitutes",
 		r.config.env.FIRECRAWL_API_KEY === "fc-real",
@@ -218,11 +170,11 @@ function check(name, cond, detail) {
 // missing too -- the old detector never inspected args at all.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { OK: "v" };
+	TEST_ENV = { OK: "v" };
 	const r = resolveEnvVarsInServer({
 		args: ["--flag", "${MISSING_ARG}", "--ok=${OK}"],
 		env: { OK: "${OK}" },
-	});
+	}, { env: TEST_ENV });
 	// args are resolved (good), but detection of unresolved refs in args was missing.
 	check(
 		"H: args resolved ${OK} substituted",
@@ -242,8 +194,8 @@ function check(name, cond, detail) {
 // template, not post-substitution on the resolved secret.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { MY_TOKEN: "REPLACE_ME" };
-	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } });
+	TEST_ENV = { MY_TOKEN: "REPLACE_ME" };
+	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } }, { env: TEST_ENV });
 	check(
 		"I: real secret REPLACE_ME substituted",
 		r.config.env.K === "REPLACE_ME",
@@ -260,8 +212,8 @@ function check(name, cond, detail) {
 // Case J (MF-2 red / B2): real secret YOUR_TOKEN_HERE must not be refused.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { MY_TOKEN: "YOUR_TOKEN_HERE" };
-	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } });
+	TEST_ENV = { MY_TOKEN: "YOUR_TOKEN_HERE" };
+	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } }, { env: TEST_ENV });
 	check(
 		"J: real secret YOUR_TOKEN_HERE not flagged",
 		r.placeholders.length === 0,
@@ -274,8 +226,8 @@ function check(name, cond, detail) {
 // (whole-string YOUR_*_HERE form, pre-substitution).
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
-	const r = resolveEnvVarsInServer({ env: { K: "YOUR_TOKEN_HERE" } });
+	TEST_ENV = {};
+	const r = resolveEnvVarsInServer({ env: { K: "YOUR_TOKEN_HERE" } }, { env: TEST_ENV });
 	check(
 		"K: template YOUR_TOKEN_HERE detected as placeholder",
 		r.placeholders.includes("K"),
@@ -289,10 +241,10 @@ function check(name, cond, detail) {
 // whole-string placeholders and missed realistic header forms.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
+	TEST_ENV = {};
 	const r = resolveEnvVarsInServer({
 		headers: { Auth: "Bearer <REPLACE_ME>" },
-	});
+	}, { env: TEST_ENV });
 	check(
 		"L: Bearer <REPLACE_ME> template detected as placeholder",
 		r.placeholders.includes("Auth"),
@@ -304,8 +256,8 @@ function check(name, cond, detail) {
 // Case M (MF-2 red / T8): "prefix YOUR_TOKEN suffix" template form.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
-	const r = resolveEnvVarsInServer({ env: { K: "prefix YOUR_TOKEN suffix" } });
+	TEST_ENV = {};
+	const r = resolveEnvVarsInServer({ env: { K: "prefix YOUR_TOKEN suffix" } }, { env: TEST_ENV });
 	check(
 		"M: prefix YOUR_TOKEN suffix template detected",
 		r.placeholders.includes("K"),
@@ -317,8 +269,8 @@ function check(name, cond, detail) {
 // Case N (MF-2 guard): ${VAR} template with real non-placeholder secret OK.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { MY_TOKEN: "sk-live-real-not-a-placeholder" };
-	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } });
+	TEST_ENV = { MY_TOKEN: "sk-live-real-not-a-placeholder" };
+	const r = resolveEnvVarsInServer({ env: { K: "${MY_TOKEN}" } }, { env: TEST_ENV });
 	check(
 		"N: real non-placeholder secret not flagged",
 		r.placeholders.length === 0 &&
@@ -333,11 +285,11 @@ function check(name, cond, detail) {
 // Catalog supabase uses --project-ref=${SUPABASE_PROJECT_REF} in args.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
+	TEST_ENV = {};
 	const r = resolveEnvVarsInServer({
 		command: "npx",
 		args: ["-y", "some-mcp", "--token", "${ONLY_IN_ARGS}"],
-	});
+	}, { env: TEST_ENV });
 	check(
 		"O: args-only unresolved kept literal",
 		r.config.args[3] === "${ONLY_IN_ARGS}",
@@ -354,11 +306,11 @@ function check(name, cond, detail) {
 // Case P (MF-3 red): placeholder ONLY in args must surface in placeholders.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
+	TEST_ENV = {};
 	const r = resolveEnvVarsInServer({
 		command: "npx",
 		args: ["--auth", "Bearer <REPLACE_ME>"],
-	});
+	}, { env: TEST_ENV });
 	check(
 		"P: args-only placeholder detected",
 		r.placeholders.includes("args[1]"),
@@ -370,8 +322,8 @@ function check(name, cond, detail) {
 // Case Q (MF-3 red): unresolved ${VAR} in command must surface as missing.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
-	const r = resolveEnvVarsInServer({ command: "${CMD_BIN}", args: [] });
+	TEST_ENV = {};
+	const r = resolveEnvVarsInServer({ command: "${CMD_BIN}", args: [] }, { env: TEST_ENV });
 	check(
 		"Q: command unresolved in missing",
 		r.missing.includes("command"),
@@ -389,11 +341,11 @@ function check(name, cond, detail) {
 // HTTP MCP servers commonly put tokens in url query strings.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = {};
+	TEST_ENV = {};
 	const r = resolveEnvVarsInServer({
 		type: "http",
 		url: "https://example.com/mcp?token=${URL_TOKEN}",
-	});
+	}, { env: TEST_ENV });
 	check(
 		"R: url unresolved kept literal",
 		r.config.url === "https://example.com/mcp?token=${URL_TOKEN}",
@@ -437,13 +389,13 @@ function check(name, cond, detail) {
 // carried it through, so the written config leaked the catalog lint key.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { K: "v" };
+	TEST_ENV = { K: "v" };
 	const r = resolveEnvVarsInServer({
 		command: "npx",
 		env: { K: "${K}" },
 		requiresEnv: ["K"],
 		description: "some server",
-	});
+	}, { env: TEST_ENV });
 	check(
 		"T: requiresEnv stripped from persisted config",
 		!Object.hasOwn(r.config, "requiresEnv"),
@@ -462,7 +414,7 @@ function check(name, cond, detail) {
 // must remove catalog metadata, not runtime fields.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { TOKEN: "tok", URL_TOK: "u" };
+	TEST_ENV = { TOKEN: "tok", URL_TOK: "u" };
 	const r = resolveEnvVarsInServer({
 		command: "npx",
 		args: ["-y", "mcp", "--token", "${TOKEN}"],
@@ -472,13 +424,21 @@ function check(name, cond, detail) {
 		url: "https://example.com/mcp?k=${URL_TOK}",
 		description: "schema-key guard",
 		requiresEnv: ["TOKEN", "URL_TOK"],
-	});
-	const schemaKeys = ["command", "args", "env", "headers", "type", "url", "description"];
+	}, { env: TEST_ENV });
+	const schemaKeys = [
+		"command",
+		"args",
+		"env",
+		"headers",
+		"type",
+		"url",
+		"description",
+	];
 	const kept = schemaKeys.filter((k) => Object.hasOwn(r.config, k));
 	check(
 		"U: schema keys (command/args/env/headers/type/url/description) preserved",
 		kept.length === schemaKeys.length,
-		`missing=${schemaKeys.filter((k)=>!Object.hasOwn(r.config,k)).join(",")}`,
+		`missing=${schemaKeys.filter((k) => !Object.hasOwn(r.config, k)).join(",")}`,
 	);
 	check(
 		"U: requiresEnv stripped even with multiple schema keys",
@@ -494,13 +454,13 @@ function check(name, cond, detail) {
 // shape: args has an unresolved ref and env carries a placeholder template.
 // ---------------------------------------------------------------------------
 {
-	ctx.process.env = { FILLED: "x" };
+	TEST_ENV = { FILLED: "x" };
 	const r = resolveEnvVarsInServer({
 		command: "cmd",
 		args: ["--ref", "${UNSET_REF}"],
 		env: { K: "${FILLED}", P: "YOUR_TOKEN_HERE" },
 		requiresEnv: ["UNSET_REF", "FILLED"],
-	});
+	}, { env: TEST_ENV });
 	check(
 		"V: strip does not swallow missing facts",
 		r.missing.includes("args[1]"),

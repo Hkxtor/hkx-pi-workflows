@@ -16,6 +16,18 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+	resolveEnvVarsInServer,
+	hasUnresolvedRef,
+	isPlaceholderTemplate,
+	ENV_VAR_NAME,
+	ENV_VAR_REF,
+	PURE_ENV_REF,
+	PLACEHOLDER_EXACT,
+	PLACEHOLDER_EMBEDDED,
+	persistableMcpServer,
+	MCP_SCHEMA_KEYS,
+} from "./lib/mcp-resolver.mjs";
 
 const schemaUrl =
 	"https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
@@ -24,163 +36,25 @@ const repoRoot = path.resolve(__dirname, "..");
 const templateRoot = path.join(repoRoot, "mcp-configs", "templates");
 const manifestPath = path.join(templateRoot, "manifest.json");
 
+// Re-export for any external importers of the apply script. The canonical
+// SSOT lives in scripts/lib/mcp-resolver.mjs; this preserves back-compat.
+export {
+	resolveEnvVarsInServer,
+	hasUnresolvedRef,
+	isPlaceholderTemplate,
+	ENV_VAR_NAME,
+	ENV_VAR_REF,
+	PURE_ENV_REF,
+	PLACEHOLDER_EXACT,
+	PLACEHOLDER_EMBEDDED,
+	persistableMcpServer,
+};
+
 function expandHome(inputPath) {
 	if (inputPath === "~") return os.homedir();
 	if (inputPath.startsWith("~/"))
 		return path.join(os.homedir(), inputPath.slice(2));
 	return inputPath;
-}
-
-/**
- * Shared charset for env-var names referenced via ${VAR} in MCP templates.
- * POSIX env-var names allow [A-Za-z_][A-Za-z0-9_]*; MCP configs commonly
- * also use kebab-case (e.g. `x-browser-use-api-key`), so hyphen is allowed
- * after the first char. Digits are allowed after the first char. The first
- * char cannot be a digit (shells reject those names).
- *
- * resolver and detector MUST use this single source of truth so the
- * detector never depends on the resolver having matched a particular name
- * class -- a still-present `${...}` is rejected by the detector regardless
- * of whether the name inside is well-formed (see hasUnresolvedRef).
- */
-const ENV_VAR_NAME = "[A-Za-z_][A-Za-z0-9_-]*";
-const ENV_VAR_REF = new RegExp(`\\$\{(${ENV_VAR_NAME})}`, "g");
-// Pure ${VAR} templates are env substitutions, not placeholder slots.
-const PURE_ENV_REF = new RegExp(`^\\$\\{(${ENV_VAR_NAME})\\}$`);
-
-/**
- * Placeholder detection is a property of the TEMPLATE, not of the resolved
- * secret (MF-2 / typescript B2 / tests T8).
- *
- * Whole-string forms (exact slot never filled):
- *   YOUR_TOKEN_HERE, TOKEN_HERE, REPLACE_ME, <redacted>
- * Embedded forms (realistic header/arg values):
- *   Bearer <REPLACE_ME>, prefix YOUR_TOKEN suffix, Authorization: <YOUR_KEY>
- *
- * Pure `${VAR}` templates are never placeholders: after substitution the
- * value is a real env secret (even if that secret happens to equal
- * REPLACE_ME / YOUR_TOKEN_HERE). Detecting post-substitution was the bug.
- */
-const PLACEHOLDER_EXACT = /^(YOUR_.*|.*_HERE|REPLACE_ME|<.*>)$/;
-const PLACEHOLDER_EMBEDDED =
-	/(?:\bYOUR_[A-Za-z0-9_]+\b|\bREPLACE_ME\b|\b[A-Za-z0-9_]+_HERE\b|<[^\s>]+>)/;
-
-function isPlaceholderTemplate(value) {
-	if (typeof value !== "string") return false;
-	const trimmed = value.trim();
-	if (PURE_ENV_REF.test(trimmed)) return false;
-	if (PLACEHOLDER_EXACT.test(trimmed)) return true;
-	return PLACEHOLDER_EMBEDDED.test(value);
-}
-
-/**
- * True iff `value` still contains an unresolved ${VAR} reference after
- * resolution. Charset-independent: catches BOTH well-formed names the
- * resolver left (because the env var was unset) AND anything else still
- * shaped like ${...} (e.g. names outside the charset that the resolver
- * could not substitute). This is the structural guard against MF-1: the
- * detector no longer mirrors the resolver's charset, so a name outside the
- * shared class can never silently slip past the missing/unresolved guard.
- */
-function hasUnresolvedRef(value) {
-	return typeof value === "string" && value.includes("${");
-}
-
-/**
- * Resolve ${VAR} references in a server config
- * (env/headers/args/command/url) against the current process environment.
- * Returns { config, missing, placeholders }.
- *
- * `missing` lists the config keys (env/headers/url/command) or arg indices
- * (args[i]) whose resolved value still contains an unresolved ${VAR}
- * reference. `placeholders` lists keys/indices whose TEMPLATE
- * (pre-substitution) matches a placeholder form — never the post-sub secret.
- */
-function resolveEnvVarsInServer(server) {
-	const resolve = (value) => {
-		if (typeof value !== "string") return value;
-		return value.replace(ENV_VAR_REF, (match, name) => {
-			const envValue = process.env[name];
-			return envValue === undefined ? match : envValue;
-		});
-	};
-
-	const resolved = structuredClone(server);
-	const placed = [];
-	const missing = new Set();
-
-	// Placeholder check uses the template; unresolved check uses the output.
-	const check = (key, template, out) => {
-		if (isPlaceholderTemplate(template)) placed.push(key);
-		if (hasUnresolvedRef(out)) missing.add(key);
-	};
-
-	if (resolved.env) {
-		for (const [key, value] of Object.entries(resolved.env)) {
-			const out = resolve(value);
-			check(key, value, out);
-			resolved.env[key] = out;
-		}
-	}
-	if (resolved.headers) {
-		for (const [key, value] of Object.entries(resolved.headers)) {
-			const out = resolve(value);
-			check(key, value, out);
-			resolved.headers[key] = out;
-		}
-	}
-	if (Array.isArray(resolved.args)) {
-		resolved.args = resolved.args.map((arg, i) => {
-			const out = resolve(arg);
-			check(`args[${i}]`, arg, out);
-			return out;
-		});
-	}
-	if (typeof resolved.command === "string") {
-		const template = resolved.command;
-		const out = resolve(template);
-		check("command", template, out);
-		resolved.command = out;
-	}
-	// HTTP MCP servers may embed ${VAR} in the URL (query tokens, path refs).
-	// Guard the url channel the same way as env/headers/args/command (MF-3).
-	if (typeof resolved.url === "string") {
-		const template = resolved.url;
-		const out = resolve(template);
-		check("url", template, out);
-		resolved.url = out;
-	}
-
-	// MF-5: catalog-only metadata keys (requiresEnv, and any other non-schema
-	// keys added later in the catalog) must NOT leak into the user's persisted
-	// mcp.json at mcpServers[<name>]. Carry catalog metadata out under a
-	// separate `requiresEnv` field so the caller can still aggregate required
-	// env vars into the pre-write requiredEnv gate, while the persisted config
-	// is built from an explicit runtime-key allowlist.
-	const catalogRequiresEnv = Array.isArray(resolved.requiresEnv)
-		? resolved.requiresEnv
-		: [];
-	const SCHEMA_KEYS = [
-		"command",
-		"args",
-		"env",
-		"headers",
-		"type",
-		"url",
-		"description",
-		"disabled",
-	];
-	const persisted = {};
-	for (const k of SCHEMA_KEYS) {
-		if (Object.hasOwn(resolved, k)) persisted[k] = resolved[k];
-	}
-
-	return {
-		config: persisted,
-		requiresEnv: catalogRequiresEnv,
-		missing: Array.from(missing),
-		placeholders: placed,
-	};
 }
 
 async function readJson(filePath, fallback) {
