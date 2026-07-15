@@ -31,12 +31,20 @@ Exa MCP server must be configured. Add to `.mcp.json` at project root:
   "exa-web-search": {
     "command": "npx",
     "args": ["-y", "exa-mcp-server"],
-    "env": { "EXA_API_KEY": "YOUR_EXA_API_KEY_HERE" }
+    "env": { "EXA_API_KEY": "${EXA_API_KEY}" }
   }
 }
 ```
 
 Or add to `~/.pi/.mcp.json` for global availability.
+
+Set the API key in your environment before running install-global or `pi`
+reload. The `.mcp.json` env value is a reference to the env var (not a
+placeholder literal):
+
+```sh
+export EXA_API_KEY="your-real-api-key"
+```
 
 Get an API key at [exa.ai](https://exa.ai).
 
@@ -57,7 +65,7 @@ web_search_exa(query: "latest AI developments 2026", numResults: 5)
 **Parameters:**
 
 | Param | Type | Default | Notes |
-|-------|------|---------|-------|
+| ------- | ------ | --------- | ------- |
 | `query` | string | required | Search query |
 | `numResults` | number | 8 | Number of results |
 | `type` | string | `auto` | Search mode |

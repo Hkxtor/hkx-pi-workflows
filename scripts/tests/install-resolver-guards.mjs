@@ -94,8 +94,14 @@ vm.runInContext(
 const mergeMcpConfig = ctx.__mergeMcpConfig;
 
 async function run(srcContent, initDest = null) {
-	const src = path.join(tmpDir, `src-${Math.random().toString(36).slice(2)}.json`);
-	const dest = path.join(tmpDir, `dest-${Math.random().toString(36).slice(2)}.json`);
+	const src = path.join(
+		tmpDir,
+		`src-${Math.random().toString(36).slice(2)}.json`,
+	);
+	const dest = path.join(
+		tmpDir,
+		`dest-${Math.random().toString(36).slice(2)}.json`,
+	);
 	await fs.writeFile(src, JSON.stringify(srcContent));
 	if (initDest === null) {
 		// dest absent — fresh-install path
@@ -163,7 +169,9 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 	}
 	if (typeof obj === "object") {
 		for (const [k, v] of Object.entries(obj)) {
-			hits.push(...scanForPlaceholders(v, pathPrefix ? `${pathPrefix}.${k}` : k));
+			hits.push(
+				...scanForPlaceholders(v, pathPrefix ? `${pathPrefix}.${k}` : k),
+			);
 		}
 	}
 	return hits;
