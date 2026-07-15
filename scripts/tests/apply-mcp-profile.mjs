@@ -325,10 +325,9 @@ function writeH1Catalog(name, serverEnv, { requiresEnv = [] } = {}) {
 // Case G (H1 guard): pre-seeded target + unresolved refuse → dest not mutated
 // ---------------------------------------------------------------------------
 {
-	const { catalogRoot, profileName } = writeH1Catalog(
-		"unresolved-seed",
-		{ LEAK: "${OTHER_UNSET}" },
-	);
+	const { catalogRoot, profileName } = writeH1Catalog("unresolved-seed", {
+		LEAK: "${OTHER_UNSET}",
+	});
 	const target = path.join(tmpDir, "g-mcp.json");
 	const before =
 		JSON.stringify(

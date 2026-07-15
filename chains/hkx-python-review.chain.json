@@ -12,7 +12,7 @@
           "output": "python-review/python.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Python-focused review for:\n\n{task}\n\nFocus: PEP 8, Pythonic idioms, type hints, packaging, async correctness, performance, and maintainability of Python changes.\nInspect the actual staged/unstaged diff and related Python files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes."
+          "task": "Python-focused review for:\n\n{task}\n\nFocus: PEP 8, Pythonic idioms, type hints, packaging, async correctness, performance, and maintainability of Python changes.\nInspect the actual staged/unstaged diff and related Python files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.security-reviewer",
@@ -22,7 +22,7 @@
           "output": "python-review/security.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Security review of Python changes for:\n\n{task}\n\nFocus: injection, unsafe pickle/yaml/eval/exec, path traversal, secrets, authz gaps, SSRF, dependency risk, and sensitive data exposure in Python code paths.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Security review of Python changes for:\n\n{task}\n\nFocus: injection, unsafe pickle/yaml/eval/exec, path traversal, secrets, authz gaps, SSRF, dependency risk, and sensitive data exposure in Python code paths.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.pr-test-analyzer",
@@ -32,7 +32,7 @@
           "output": "python-review/tests.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Test coverage and regression-risk review for Python changes in:\n\n{task}\n\nFocus: pytest/unittest coverage of changed behavior, fixtures, edge cases, and flaky patterns.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Test coverage and regression-risk review for Python changes in:\n\n{task}\n\nFocus: pytest/unittest coverage of changed behavior, fixtures, edge cases, and flaky patterns.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -42,7 +42,7 @@
           "output": "python-review/silent.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Hunt silent failures in Python changes for:\n\n{task}\n\nFocus: bare except, broad Exception catches, pass/log-only handlers, dangerous fallbacks, and success-by-default paths.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Hunt silent failures in Python changes for:\n\n{task}\n\nFocus: bare except, broad Exception catches, pass/log-only handlers, dangerous fallbacks, and success-by-default paths.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 4

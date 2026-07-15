@@ -11,7 +11,7 @@
           "as": "security",
           "output": "security/security.md",
           "outputMode": "file-only",
-          "task": "Perform a security scan for:\n\n{task}\n\nInspect the relevant code/diff deeply. Focus on auth, input validation, secrets, injection, unsafe defaults, and data exposure.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Perform a security scan for:\n\n{task}\n\nInspect the relevant code/diff deeply. Focus on auth, input validation, secrets, injection, unsafe defaults, and data exposure.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -20,7 +20,7 @@
           "as": "silent",
           "output": "security/silent.md",
           "outputMode": "file-only",
-          "task": "Scan for security-relevant silent failures in:\n\n{task}\n\nFocus on auth failures ignored, permission checks bypassed by catch/fallback, and error paths that look successful.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Scan for security-relevant silent failures in:\n\n{task}\n\nFocus on auth failures ignored, permission checks bypassed by catch/fallback, and error paths that look successful.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.code-reviewer",
@@ -29,7 +29,7 @@
           "as": "general",
           "output": "security/general.md",
           "outputMode": "file-only",
-          "task": "Review high-risk correctness issues adjacent to security for:\n\n{task}\n\nFocus only on issues that can become security or data-integrity failures. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Review high-risk correctness issues adjacent to security for:\n\n{task}\n\nFocus only on issues that can become security or data-integrity failures. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 3

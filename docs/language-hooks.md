@@ -73,6 +73,7 @@ Current behavior:
 - Blocks destructive Bash commands (`rm -rf`, `git push --force`, `DROP TABLE`, etc.).
 - Tracks per-session state so a file passes the gate after the first denial.
 - Condenses denial messages after the first three full denials to prevent context bloat.
+- **Pre-authorizes** writes under `.pi-subagents/` (chain-runs + artifacts), including bash redirects into those paths, so review-only chain `outputMode: file-only` does not detach on GateGuard friction.
 
 Disable per-session:
 
@@ -90,6 +91,26 @@ Complementary surfaces:
 
 - `skills/gateguard/SKILL.md` — prompt-level gate guidance and output format
 - `skills/safety-guard/SKILL.md` — runtime safety checks that do not overlap with the gate
+- `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write intercom asks
+
+### hkx-subagent-supervisor-auto-reply.ts
+
+Parent-session extension that keeps review chains from stalling on artifact writes.
+
+Current behavior:
+
+- On `session_start`, polls the native pi-subagents supervisor channel under the process tmpdir.
+- Auto-replies only to `need_decision` requests that look like **artifact-write / GateGuard / chain-run path** authorization (mentions `.pi-subagents`, `chain-runs`, configured output, etc.).
+- Does **not** auto-reply to product, architecture, or trade-off decisions.
+- Rate-limits UI notifications.
+
+Disable per-session:
+
+```text
+HKX_SUPERVISOR_AUTO_REPLY=off
+```
+
+Together with GateGuard's `.pi-subagents/` allowlist, this closes the detach loop where review children escalated solely to land `adv/*.md` outputs.
 
 ## Placement Guide
 

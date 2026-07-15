@@ -29,7 +29,7 @@
       "as": "review",
       "output": "docs/review.md",
       "outputMode": "file-only",
-      "task": "Review the documentation update for accuracy against code evidence.\n\nRequest:\n{task}\n\nDocs update summary:\n{outputs.docs}\n\nContext evidence:\n{outputs.context}\n\nFlag claims that are unsupported, stale, or over-confident. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+      "task": "Review the documentation update for accuracy against code evidence.\n\nRequest:\n{task}\n\nDocs update summary:\n{outputs.docs}\n\nContext evidence:\n{outputs.context}\n\nFlag claims that are unsupported, stale, or over-confident. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
     }
   ]
 }

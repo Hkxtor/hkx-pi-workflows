@@ -21,7 +21,7 @@
           "as": "rustReview",
           "output": "rust-build/rust-review.md",
           "outputMode": "file-only",
-          "task": "Review the Rust build fix for ownership/lifetime correctness, unsafe boundaries, and idiomatic error handling.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Review the Rust build fix for ownership/lifetime correctness, unsafe boundaries, and idiomatic error handling.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.code-reviewer",
@@ -30,7 +30,7 @@
           "as": "review",
           "output": "rust-build/review.md",
           "outputMode": "file-only",
-          "task": "Review the Rust build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Review the Rust build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -39,7 +39,7 @@
           "as": "silent",
           "output": "rust-build/silent.md",
           "outputMode": "file-only",
-          "task": "Check whether the Rust build fix hides failures (discarded Results, unwrap/expect in non-test paths, context-erasing map_err).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Check whether the Rust build fix hides failures (discarded Results, unwrap/expect in non-test paths, context-erasing map_err).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 3

@@ -41,7 +41,7 @@
           "as": "reviewGeneral",
           "output": "feature/review-general.md",
           "outputMode": "file-only",
-          "task": "Review the implementation result for correctness and regressions.\n\nRequest:\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual post-implementation diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\nReturn severity-ranked findings with path:line evidence and a verdict."
+          "task": "Review the implementation result for correctness and regressions.\n\nRequest:\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual post-implementation diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\nReturn severity-ranked findings with path:line evidence and a verdict.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.security-reviewer",
@@ -50,7 +50,7 @@
           "as": "reviewSecurity",
           "output": "feature/review-security.md",
           "outputMode": "file-only",
-          "task": "Security review of the implementation for:\n\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Security review of the implementation for:\n\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.pr-test-analyzer",
@@ -59,7 +59,7 @@
           "as": "reviewTests",
           "output": "feature/review-tests.md",
           "outputMode": "file-only",
-          "task": "Test coverage review for the implementation of:\n\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual diff and tests. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Test coverage review for the implementation of:\n\n{task}\n\nImplementation summary:\n{outputs.impl}\n\nInspect the actual diff and tests. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 3

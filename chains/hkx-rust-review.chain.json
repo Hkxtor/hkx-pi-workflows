@@ -12,7 +12,7 @@
           "output": "rust-review/rust.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Rust-focused review for:\n\n{task}\n\nFocus: ownership/lifetimes, error handling, unsafe boundaries, idiomatic APIs, async cancellation, performance, and crate design.\nInspect the actual staged/unstaged diff and related Rust files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes."
+          "task": "Rust-focused review for:\n\n{task}\n\nFocus: ownership/lifetimes, error handling, unsafe boundaries, idiomatic APIs, async cancellation, performance, and crate design.\nInspect the actual staged/unstaged diff and related Rust files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.security-reviewer",
@@ -22,7 +22,7 @@
           "output": "rust-review/security.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Security review of Rust changes for:\n\n{task}\n\nFocus: unsafe blocks, FFI boundaries, integer/overflow assumptions, path traversal, secrets, authz gaps, panic-as-control-flow in security paths, and sensitive data exposure.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Security review of Rust changes for:\n\n{task}\n\nFocus: unsafe blocks, FFI boundaries, integer/overflow assumptions, path traversal, secrets, authz gaps, panic-as-control-flow in security paths, and sensitive data exposure.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.pr-test-analyzer",
@@ -32,7 +32,7 @@
           "output": "rust-review/tests.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Test coverage and regression-risk review for Rust changes in:\n\n{task}\n\nFocus: unit/integration tests, property tests if present, edge cases, and whether changed behavior is locked by cargo test coverage.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Test coverage and regression-risk review for Rust changes in:\n\n{task}\n\nFocus: unit/integration tests, property tests if present, edge cases, and whether changed behavior is locked by cargo test coverage.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -42,7 +42,7 @@
           "output": "rust-review/silent.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Hunt silent failures in Rust changes for:\n\n{task}\n\nFocus: discarded Results (let _ =, .ok()), unwrap/expect in non-test paths, map_err that erases context, and fallbacks that hide real failures.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Hunt silent failures in Rust changes for:\n\n{task}\n\nFocus: discarded Results (let _ =, .ok()), unwrap/expect in non-test paths, map_err that erases context, and fallbacks that hide real failures.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 4

@@ -11,7 +11,7 @@
           "as": "general",
           "output": "adv/general.md",
           "outputMode": "file-only",
-          "task": "Adversarial general review for:\n\n{task}\n\nAssume the change is guilty until proven safe. Hunt regressions, incomplete migrations, and weak invariants.\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Adversarial general review for:\n\n{task}\n\nAssume the change is guilty until proven safe. Hunt regressions, incomplete migrations, and weak invariants.\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.security-reviewer",
@@ -20,7 +20,7 @@
           "as": "security",
           "output": "adv/security.md",
           "outputMode": "file-only",
-          "task": "Adversarial security review for:\n\n{task}\n\nLook for exploit paths, trust-boundary mistakes, and secret leakage. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Adversarial security review for:\n\n{task}\n\nLook for exploit paths, trust-boundary mistakes, and secret leakage. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.pr-test-analyzer",
@@ -29,7 +29,7 @@
           "as": "tests",
           "output": "adv/tests.md",
           "outputMode": "file-only",
-          "task": "Adversarial test-quality review for:\n\n{task}\n\nChallenge whether tests actually prove the new behavior and would catch regressions. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Adversarial test-quality review for:\n\n{task}\n\nChallenge whether tests actually prove the new behavior and would catch regressions. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -38,7 +38,7 @@
           "as": "silent",
           "output": "adv/silent.md",
           "outputMode": "file-only",
-          "task": "Adversarial silent-failure review for:\n\n{task}\n\nHunt swallowed errors and success-by-default paths. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Adversarial silent-failure review for:\n\n{task}\n\nHunt swallowed errors and success-by-default paths. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.typescript-reviewer",
@@ -47,7 +47,7 @@
           "as": "lang",
           "output": "adv/lang.md",
           "outputMode": "file-only",
-          "task": "If the change includes TypeScript/JavaScript, perform an adversarial language review for:\n\n{task}\n\nIf no TS/JS files changed, say so briefly and stop. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "If the change includes TypeScript/JavaScript, perform an adversarial language review for:\n\n{task}\n\nIf no TS/JS files changed, say so briefly and stop. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 5

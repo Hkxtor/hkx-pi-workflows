@@ -98,7 +98,11 @@
       "~/development/*": "allow",
       "~/.cargo/registry/*": "allow",
       "~/.pi/agent": "allow",
-      "~/.pi/agent/*": "allow"
+      "~/.pi/agent/*": "allow",
+      "/tmp": "allow",
+      "/tmp/*": "allow",
+      "/var/tmp": "allow",
+      "/var/tmp/*": "allow"
     }
   }
 }

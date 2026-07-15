@@ -12,7 +12,7 @@
           "output": "review/general.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Review the current local diff or PR described by:\n\n{task}\n\nFocus: correctness, regressions, maintainability, performance, and obvious security issues.\nInspect the actual staged/unstaged diff and changed files. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn:\n1. Verdict (approve / request-changes / block)\n2. Findings by severity (CRITICAL/HIGH/MEDIUM/LOW) with path:line\n3. Missing tests or validation gaps\n4. Fixes worth doing now vs defer"
+          "task": "Review the current local diff or PR described by:\n\n{task}\n\nFocus: correctness, regressions, maintainability, performance, and obvious security issues.\nInspect the actual staged/unstaged diff and changed files. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn:\n1. Verdict (approve / request-changes / block)\n2. Findings by severity (CRITICAL/HIGH/MEDIUM/LOW) with path:line\n3. Missing tests or validation gaps\n4. Fixes worth doing now vs defer\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.security-reviewer",
@@ -22,7 +22,7 @@
           "output": "review/security.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Security review for:\n\n{task}\n\nFocus: authz/authn, injection, secrets, unsafe IO, SSRF, XSS, path traversal, dependency risk, sensitive data exposure.\nInspect the actual diff and relevant call sites. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, exploitability notes, and safe fix guidance only."
+          "task": "Security review for:\n\n{task}\n\nFocus: authz/authn, injection, secrets, unsafe IO, SSRF, XSS, path traversal, dependency risk, sensitive data exposure.\nInspect the actual diff and relevant call sites. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, exploitability notes, and safe fix guidance only.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.pr-test-analyzer",
@@ -32,7 +32,7 @@
           "output": "review/tests.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Test coverage and regression-risk review for:\n\n{task}\n\nFocus: whether changed behavior is covered, edge cases, flaky patterns, and missing regression tests.\nInspect the actual diff and related tests. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn coverage gaps, high-risk untested paths, and the smallest useful tests to add."
+          "task": "Test coverage and regression-risk review for:\n\n{task}\n\nFocus: whether changed behavior is covered, edge cases, flaky patterns, and missing regression tests.\nInspect the actual diff and related tests. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn coverage gaps, high-risk untested paths, and the smallest useful tests to add.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -42,7 +42,7 @@
           "output": "review/silent-failures.md",
           "outputMode": "file-only",
           "progress": false,
-          "task": "Hunt silent failures in the change for:\n\n{task}\n\nFocus: swallowed errors, broad catch, dangerous fallbacks, missing propagation, log-only failures, default-success paths.\nInspect the actual diff and surrounding error handling. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Hunt silent failures in the change for:\n\n{task}\n\nFocus: swallowed errors, broad catch, dangerous fallbacks, missing propagation, log-only failures, default-success paths.\nInspect the actual diff and surrounding error handling. Cite file/line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 4

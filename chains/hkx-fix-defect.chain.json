@@ -40,7 +40,7 @@
           "as": "reviewGeneral",
           "output": "defect/review-general.md",
           "outputMode": "file-only",
-          "task": "Review the bug fix for correctness and regressions.\n\nDefect:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Review the bug fix for correctness and regressions.\n\nDefect:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -49,7 +49,7 @@
           "as": "reviewSilent",
           "output": "defect/review-silent.md",
           "outputMode": "file-only",
-          "task": "Check whether the bug fix introduces or leaves silent failures.\n\nDefect:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Check whether the bug fix introduces or leaves silent failures.\n\nDefect:\n{task}\n\nImplementation:\n{outputs.impl}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.pr-test-analyzer",
@@ -58,7 +58,7 @@
           "as": "reviewTests",
           "output": "defect/review-tests.md",
           "outputMode": "file-only",
-          "task": "Verify the regression test quality for:\n\n{task}\n\nImplementation:\n{outputs.impl}\n\nConfirm the test would fail without the fix and covers the real failure mode. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Verify the regression test quality for:\n\n{task}\n\nImplementation:\n{outputs.impl}\n\nConfirm the test would fail without the fix and covers the real failure mode. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 3

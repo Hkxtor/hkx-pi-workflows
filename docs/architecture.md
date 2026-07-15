@@ -139,8 +139,9 @@ Use an extension when the behavior must happen at runtime, for example:
 
 Current extensions:
 
-- `hkx-gateguard.ts`
-- `hkx-language-quality.ts`
+- `hkx-gateguard.ts` — fact-forcing gate; pre-authorizes `.pi-subagents/` chain artifact writes
+- `hkx-language-quality.ts` — post-mutation validation notifications
+- `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 

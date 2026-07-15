@@ -50,6 +50,12 @@ const requiredFiles = [
 	"scripts/tests/apply-mcp-profile.mjs",
 	// C1: install-global ships mcp-resolver next to apply-mcp-profile.
 	"scripts/tests/install-apply-packaging.mjs",
+	// GateGuard + supervisor auto-reply artifact policies.
+	"scripts/tests/gateguard-artifacts.mjs",
+	// Extensions (Path A + B).
+	"extensions/hkx-gateguard.ts",
+	"extensions/hkx-subagent-supervisor-auto-reply.ts",
+	"extensions/hkx-language-quality.ts",
 	// MF-6: shared resolver / placeholder / unresolved-ref SSOT used by both
 	// apply-mcp-profile.mjs and install.mjs. validate must fail if this module
 	// disappears (the two install paths would diverge again).

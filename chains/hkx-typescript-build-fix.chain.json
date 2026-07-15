@@ -21,7 +21,7 @@
           "as": "tsReview",
           "output": "ts-build/ts-review.md",
           "outputMode": "file-only",
-          "task": "Review the TypeScript/JavaScript build fix for type safety, async correctness, and idiomatic regressions.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Review the TypeScript/JavaScript build fix for type safety, async correctness, and idiomatic regressions.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual post-fix diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.code-reviewer",
@@ -30,7 +30,7 @@
           "as": "review",
           "output": "ts-build/review.md",
           "outputMode": "file-only",
-          "task": "Review the TS/JS build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Review the TS/JS build fix for overreach, latent breakage, and unnecessary scope expansion.\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         },
         {
           "agent": "hkx.silent-failure-hunter",
@@ -39,7 +39,7 @@
           "as": "silent",
           "output": "ts-build/silent.md",
           "outputMode": "file-only",
-          "task": "Check whether the TS/JS build fix hides failures (swallowed promises, empty catch, dangerous fallbacks).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed."
+          "task": "Check whether the TS/JS build fix hides failures (swallowed promises, empty catch, dangerous fallbacks).\n\nRequest:\n{task}\n\nFix summary:\n{outputs.fix}\n\nInspect the actual diff. Do not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored). Writes to that path are pre-authorized by GateGuard and do not require supervisor approval; do not escalate via contact_supervisor/intercom solely to write the review artifact. If a write is blocked, retry once; parent auto-reply may approve artifact-only writes. Do not modify project/source files."
         }
       ],
       "concurrency": 3

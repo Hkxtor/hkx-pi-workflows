@@ -37,7 +37,7 @@ Manifest shape (authoritative):
 | commands / prompts | 30 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 91 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
-| extensions | 2 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| extensions | 3 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
 | global AGENTS source | 1 | `GLOBAL_AGENTS.md` | no | `~/.pi/agent/AGENTS.md` |
@@ -279,10 +279,11 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 
 ## Extensions
 
-Two extensions are shipped intentionally:
+Three extensions are shipped intentionally:
 
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
-- `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping surface
+- `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping; pre-authorizes `.pi-subagents/` artifact writes
+- `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
 
 These are pi TypeScript extensions, not external shell hook packs.
 
