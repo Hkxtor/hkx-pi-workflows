@@ -31,15 +31,17 @@ type ExtensionFactory = (pi: ExtensionRuntime) => void;
  * destructive commands, demanding concrete investigation facts before
  * allowing the action to proceed.
  *
- * Mirrors ECC's `scripts/hooks/gateguard-fact-force.js` using Pi's native
- * extension `tool_call` event with `{ block: true, reason }` semantics.
- *
  * Disable per-session: set `HKX_GATEGUARD=off` in the environment.
  *
  * Artifact exception (chain review outputs):
- * Paths under `.pi-subagents/` (chain-runs + artifacts) are pre-authorized.
- * Review-only chains use `outputMode: file-only` into those paths; blocking
- * them caused detach/intercom deadlocks (see adversarial review runs).
+ * Paths under a real `.pi-subagents/` directory segment (chain-runs + artifacts)
+ * are pre-authorized after path normalization (rejects `..` escapes and
+ * substring false positives like `evil.pi-subagents/`).
+ *
+ * Bash: destructive detection always runs first. Artifact bash short-circuit
+ * only applies to non-destructive commands that clearly write into
+ * `.pi-subagents/` path segments — compound `write-artifact && rm -rf src`
+ * stays blocked.
  */
 
 // ---------------------------------------------------------------------------
@@ -61,6 +63,9 @@ const MUTATING_TOOL_NAMES = new Set<ToolName>([
 	"ast_grep_replace",
 ]);
 
+/** Path-segment boundary for the runtime artifact directory. */
+const ARTIFACT_DIR_SEGMENT = ".pi-subagents";
+
 // ---------------------------------------------------------------------------
 // Helpers (exported for unit tests)
 // ---------------------------------------------------------------------------
@@ -74,47 +79,76 @@ export function isEnabled(): boolean {
 }
 
 /**
- * True for pi-subagents chain/runtime output surfaces that review-only
- * agents must write without a GateGuard first-access interrogation.
- *
- * Matches:
- * - `.pi-subagents/chain-runs/**`
- * - `.pi-subagents/artifacts/**`
- * - any nested `.pi-subagents/` segment (absolute or relative)
+ * Collapse `.` / `..` path segments without requiring the path to exist.
+ * Returns null when the path would escape above its relative root via `..`.
  */
-export function isSubagentArtifactPath(filePath: string): boolean {
+export function normalizePathSegments(filePath: string): string | null {
 	const n = filePath.replace(/\\/g, "/");
-	// Absolute or relative project path containing the gitignored runtime dir.
-	if (n.includes("/.pi-subagents/") || n.includes(".pi-subagents/")) {
-		return true;
+	const isAbs = n.startsWith("/");
+	const parts = n.split("/");
+	const stack: string[] = [];
+	for (const part of parts) {
+		if (part === "" || part === ".") continue;
+		if (part === "..") {
+			if (stack.length === 0) return null;
+			stack.pop();
+			continue;
+		}
+		stack.push(part);
 	}
-	// Bare relative prefix
-	if (n === ".pi-subagents" || n.startsWith(".pi-subagents/")) {
-		return true;
-	}
-	return false;
+	const joined = stack.join("/");
+	if (isAbs) return `/${joined}`;
+	return joined;
 }
 
 /**
- * True when a bash command only mutates subagent artifact paths (or is a
- * pure write into those paths). Used so agents that shell out (`cat >`,
- * `tee`, heredoc) to write findings do not hit false "destructive" friction
- * and so we never interrogate artifact-only writes.
+ * True when the normalized path contains a full directory segment
+ * `.pi-subagents` (not a substring of another name).
  *
- * Conservative: returns true only when at least one `.pi-subagents` path
- * appears and no obvious non-artifact project source path is targeted by
- * common write redirections.
+ * Rejects:
+ * - `evil.pi-subagents/foo` (name collision)
+ * - `.pi-subagents/../scripts/x` (traversal out of artifact tree)
+ * - empty / non-string
+ */
+export function isSubagentArtifactPath(filePath: string): boolean {
+	if (typeof filePath !== "string" || !filePath.trim()) return false;
+	const normalized = normalizePathSegments(filePath);
+	if (normalized === null) return false;
+	const segments = normalized.split("/").filter((s) => s.length > 0);
+	return segments.includes(ARTIFACT_DIR_SEGMENT);
+}
+
+/**
+ * True when a bash command performs a clear write into a `.pi-subagents/`
+ * path segment and is not destructive.
+ *
+ * Order contract (MF1): callers must still run `isDestructiveCommand` first;
+ * this helper also returns false for destructive commands as defense in depth.
+ *
+ * Requires path-segment boundary (not `evil.pi-subagents/`).
  */
 export function isSubagentArtifactBashWrite(command: string): boolean {
-	if (!command.includes(".pi-subagents")) return false;
-	// If the command clearly redirects/writes into .pi-subagents, allow.
+	if (typeof command !== "string" || !command.includes(ARTIFACT_DIR_SEGMENT)) {
+		return false;
+	}
+	// MF1 defense-in-depth: never classify destructive compounds as artifact-only.
+	if (isDestructiveCommand(command)) return false;
+
+	// Path-segment boundary: `/ .pi-subagents/` or start-of-string `.pi-subagents/`
+	// or quote-delimited. Rejects `evil.pi-subagents/`.
+	const artifactPath =
+		/(?:^|[\s"'`=])\.pi-subagents\//.test(command) ||
+		/\/\.pi-subagents\//.test(command);
+	if (!artifactPath) return false;
+
 	const writesArtifact =
-		/>\s*['"]?[^'"\s]*\.pi-subagents\//.test(command) ||
-		/>>\s*['"]?[^'"\s]*\.pi-subagents\//.test(command) ||
-		/tee\s+['"]?[^'"\s]*\.pi-subagents\//.test(command) ||
-		/cp\s+[^\n]*\.pi-subagents\//.test(command) ||
-		/install\s+[^\n]*\.pi-subagents\//.test(command) ||
-		/mkdir\s+(-p\s+)?['"]?[^'"\s]*\.pi-subagents\//.test(command);
+		/>\s*['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command) ||
+		/>>\s*['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command) ||
+		/tee\s+['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command) ||
+		/\bcp\s+[^\n]*\/\.pi-subagents\//.test(command) ||
+		/\bcp\s+[^\n]*(?:^|[\s"'`])\.pi-subagents\//.test(command) ||
+		/\binstall\s+[^\n]*\.pi-subagents\//.test(command) ||
+		/\bmkdir\s+(-p\s+)?['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command);
 	return writesArtifact;
 }
 
@@ -125,7 +159,6 @@ export function extractFilePath(
 	for (const c of candidates) {
 		if (typeof c === "string" && c.trim()) return c;
 	}
-	// Multi-edit: extract from edits array
 	if (Array.isArray(input.edits)) {
 		for (const edit of input.edits) {
 			if (edit && typeof edit === "object") {
@@ -222,7 +255,6 @@ const extension: ExtensionFactory = (pi) => {
 
 			if (investigatedFiles.has(filePath)) return undefined;
 
-			// Auto-allow edits to well-known safe surfaces
 			if (
 				isSubagentArtifactPath(filePath) ||
 				filePath.includes("node_modules/") ||
@@ -242,23 +274,26 @@ const extension: ExtensionFactory = (pi) => {
 			};
 		}
 
-		// --- Bash: block destructive commands ---
+		// --- Bash: destructive first (MF1), then artifact-only allow ---
 		if (toolName === "bash") {
 			const command =
 				typeof rawInput.command === "string" ? rawInput.command : "";
 			if (!command) return undefined;
 
-			// Artifact-only shell writes are pre-authorized (chain review outputs).
+			// MF1: never short-circuit past destructive detection.
+			if (isDestructiveCommand(command)) {
+				return {
+					block: true,
+					reason: gateMessage(toolName, undefined, true),
+				};
+			}
+
+			// Non-destructive artifact-only shell writes are pre-authorized.
 			if (isSubagentArtifactBashWrite(command)) {
 				return undefined;
 			}
 
-			if (!isDestructiveCommand(command)) return undefined;
-
-			return {
-				block: true,
-				reason: gateMessage(toolName, undefined, true),
-			};
+			return undefined;
 		}
 
 		return undefined;

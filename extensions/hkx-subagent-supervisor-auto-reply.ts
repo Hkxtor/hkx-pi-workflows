@@ -6,14 +6,14 @@
  * `contact_supervisor` / intercom and detach the foreground chain.
  *
  * This parent-session extension polls the native pi-subagents supervisor
- * channel under tmpdir (pi-subagents-<scope>/supervisor-channels/.../requests)
+ * channel under tmpdir (pi-subagents-scope/supervisor-channels/.../requests)
  * and auto-replies to artifact-write authorization asks so chains do not stall.
  *
- * Scope (deliberately narrow):
- * - Only `need_decision` requests that look like artifact-write / GateGuard /
- *   chain-run path authorization.
- * - Never auto-replies to product/architecture decisions, destructive ops,
- *   or requests that do not mention subagent artifact surfaces.
+ * Scope (deliberately narrow — MF4):
+ * - Only need_decision requests that look like GateGuard / configured-output
+ *   artifact-write authorization with a real `.pi-subagents` path surface.
+ * - Product/architecture/trade-off language always rejects, even if the
+ *   message also mentions chain-runs or file-only context.
  *
  * Disable: `HKX_SUPERVISOR_AUTO_REPLY=off`
  */
@@ -54,6 +54,8 @@ type SupervisorRequest = {
 const POLL_MS = 400;
 const REQUESTS_DIR = "requests";
 const REPLIES_DIR = "replies";
+/** Safe request id characters for filesystem path segments. */
+const SAFE_REQUEST_ID = /^[A-Za-z0-9._-]+$/;
 
 const AUTO_REPLY_MESSAGE = [
 	"Auto-approved by hkx-subagent-supervisor-auto-reply.",
@@ -105,36 +107,63 @@ export function supervisorChannelsRoot(
  * True when a supervisor need_decision message is about writing chain
  * artifacts (GateGuard / permission / configured output path), not a real
  * product decision.
+ *
+ * MF4 rules:
+ * 1. Product/architecture/trade-off language always rejects (even with
+ *    artifact surface tokens).
+ * 2. Surface requires a real `.pi-subagents` path form (not bare `adv/` or
+ *    lone `file-only`).
+ * 3. Friction requires GateGuard / blocked-write / configured-output
+ *    authorization semantics (not bare `write` / `approve` / `permission`).
  */
 export function isArtifactWriteAuthorizationRequest(message: string): boolean {
+	if (typeof message !== "string" || !message.trim()) return false;
+
+	// MF4: product decisions always win over artifact co-mentions.
+	if (
+		/\b(architecture|api design|schema migration|product decision|which approach|trade-?off)\b/i.test(
+			message,
+		)
+	) {
+		return false;
+	}
+
 	const m = message.toLowerCase();
+
+	// Real path surface only (segment boundary).
+	// Allow any non-[A-Za-z0-9] char before `.pi-subagents` so fullwidth
+	// punctuation (：) and quotes work; still rejects evil.pi-subagents.
 	const mentionsArtifactSurface =
-		m.includes(".pi-subagents") ||
-		m.includes("chain-runs") ||
-		m.includes("adv/") ||
-		m.includes("output artifact") ||
+		/(?:^|[^a-z0-9])\.pi-subagents(?:\/|\b)/i.test(m) ||
 		m.includes("configured output") ||
-		m.includes("file-only");
+		m.includes("output artifact") ||
+		m.includes("configured output path") ||
+		m.includes("configured output artifact");
+
+	// Explicit write-authorization friction (not bare approve/write).
 	const mentionsWriteFriction =
 		m.includes("gateguard") ||
 		m.includes("gate guard") ||
 		m.includes("first access") ||
-		m.includes("blocked") ||
-		m.includes("write") ||
+		m.includes("blocked write") ||
+		m.includes("write blocked") ||
+		m.includes("blocked writing") ||
+		m.includes("writing findings") ||
+		m.includes("write the configured") ||
+		m.includes("write the review artifact") ||
 		m.includes("落盘") ||
-		m.includes("写入") ||
-		m.includes("artifact") ||
-		m.includes("output path") ||
-		m.includes("approve") ||
-		m.includes("批准") ||
-		m.includes("authorization") ||
-		m.includes("permission");
-	// Exclude clearly non-artifact product decisions
-	const looksLikeProductDecision =
-		/\b(architecture|api design|schema migration|product decision|which approach|trade-?off)\b/i.test(
-			message,
-		) && !mentionsArtifactSurface;
-	if (looksLikeProductDecision) return false;
+		m.includes("写入该") ||
+		m.includes("写入权威") ||
+		m.includes("批准写入") ||
+		m.includes("artifact-write") ||
+		m.includes("artifact write") ||
+		(m.includes("approve") &&
+			(m.includes("output artifact") ||
+				m.includes("configured output") ||
+				m.includes(".pi-subagents"))) ||
+		(m.includes("authorization") &&
+			(m.includes("output") || m.includes(".pi-subagents")));
+
 	return mentionsArtifactSurface && mentionsWriteFriction;
 }
 
@@ -161,7 +190,9 @@ function writeAtomicJson(file: string, value: unknown): void {
 	fs.renameSync(tmp, file);
 }
 
-function listRequestFiles(root: string): Array<{ channelDir: string; file: string }> {
+function listRequestFiles(
+	root: string,
+): Array<{ channelDir: string; file: string }> {
 	let channelEntries: fs.Dirent[];
 	try {
 		channelEntries = fs.readdirSync(root, { withFileTypes: true });
@@ -194,9 +225,13 @@ function listRequestFiles(root: string): Array<{ channelDir: string; file: strin
 
 function parseRequest(file: string): SupervisorRequest | undefined {
 	try {
-		const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as Partial<SupervisorRequest>;
+		const parsed = JSON.parse(
+			fs.readFileSync(file, "utf8"),
+		) as Partial<SupervisorRequest>;
 		if (parsed.type !== "subagent.supervisor.request") return undefined;
 		if (typeof parsed.id !== "string" || !parsed.id) return undefined;
+		// Reject path-unsafe ids (no traversal via reply/request paths).
+		if (!SAFE_REQUEST_ID.test(parsed.id)) return undefined;
 		if (parsed.reason !== "need_decision") return undefined;
 		if (!parsed.expectsReply) return undefined;
 		if (typeof parsed.message !== "string" || !parsed.message) return undefined;
@@ -209,6 +244,12 @@ function parseRequest(file: string): SupervisorRequest | undefined {
 /**
  * Process one poll tick. Returns number of auto-replies written.
  * Exported for unit tests (inject root + now).
+ *
+ * MF3: only permanently mark a file as `seen` after a terminal outcome:
+ * - successful reply write
+ * - permanent skip (expired, non-eligible product decision, already replied,
+ *   unparseable/non-request)
+ * Transient write failures leave the file off `seen` so the next poll retries.
  */
 export function pollAndAutoReply(
 	root: string = supervisorChannelsRoot(),
@@ -219,38 +260,51 @@ export function pollAndAutoReply(
 	let skipped = 0;
 	for (const { channelDir, file } of listRequestFiles(root)) {
 		if (seen.has(file)) continue;
-		seen.add(file);
+
 		const request = parseRequest(file);
 		if (!request) {
+			// Permanent: not a valid need_decision request.
+			seen.add(file);
 			skipped++;
 			continue;
 		}
 		if (request.expiresAt !== undefined && request.expiresAt < nowMs) {
+			seen.add(file);
 			skipped++;
 			continue;
 		}
 		if (!isArtifactWriteAuthorizationRequest(request.message)) {
+			// Permanent skip for non-eligible (product decisions, etc.).
+			seen.add(file);
 			skipped++;
 			continue;
 		}
-		// Already replied?
 		const dest = replyPath(channelDir, request.id);
 		if (fs.existsSync(dest)) {
+			seen.add(file);
 			skipped++;
 			continue;
 		}
-		writeAtomicJson(dest, {
-			type: "subagent.supervisor.reply",
-			requestId: request.id,
-			createdAt: nowMs,
-			message: AUTO_REPLY_MESSAGE,
-		});
+		try {
+			writeAtomicJson(dest, {
+				type: "subagent.supervisor.reply",
+				requestId: request.id,
+				createdAt: nowMs,
+				message: AUTO_REPLY_MESSAGE,
+			});
+		} catch {
+			// MF3: do not mark seen — retry on next poll.
+			skipped++;
+			continue;
+		}
 		// Best-effort: remove request file so native channel does not keep it pending
 		try {
 			fs.unlinkSync(requestPath(channelDir, request.id));
 		} catch {
 			// ignore
 		}
+		// MF3: mark seen only after successful reply write.
+		seen.add(file);
 		replied++;
 	}
 	return { replied, skipped };
@@ -264,6 +318,7 @@ export default function (pi: ExtensionAPI): void {
 	let poller: ReturnType<typeof setInterval> | undefined;
 	const seen = new Set<string>();
 	let lastNotifyAt = 0;
+	let lastErrorNotifyAt = 0;
 
 	const stop = (): void => {
 		if (poller) clearInterval(poller);
@@ -274,10 +329,13 @@ export default function (pi: ExtensionAPI): void {
 	const tick = (ctx?: ExtensionContext): void => {
 		if (!isAutoReplyEnabled()) return;
 		try {
-			const { replied } = pollAndAutoReply(supervisorChannelsRoot(), Date.now(), seen);
+			const { replied } = pollAndAutoReply(
+				supervisorChannelsRoot(),
+				Date.now(),
+				seen,
+			);
 			if (replied > 0 && ctx?.ui?.notify) {
 				const now = Date.now();
-				// Rate-limit UI noise: at most one notify per 5s
 				if (now - lastNotifyAt > 5000) {
 					lastNotifyAt = now;
 					ctx.ui.notify(
@@ -286,8 +344,20 @@ export default function (pi: ExtensionAPI): void {
 					);
 				}
 			}
-		} catch {
-			// Never break the parent session for auto-reply failures
+		} catch (error) {
+			// Never break the parent session; surface rare poll failures at low rate.
+			if (ctx?.ui?.notify) {
+				const now = Date.now();
+				if (now - lastErrorNotifyAt > 30_000) {
+					lastErrorNotifyAt = now;
+					const msg =
+						error instanceof Error ? error.message : String(error);
+					ctx.ui.notify(
+						`supervisor auto-reply poll failed: ${msg.slice(0, 120)}`,
+						"warning",
+					);
+				}
+			}
 		}
 	};
 
@@ -303,7 +373,6 @@ export default function (pi: ExtensionAPI): void {
 		stop();
 	});
 
-	// Also tick after agent turns so replies land quickly even if poll is delayed
 	pi.on("agent_end", (_event, ctx) => {
 		tick(ctx);
 	});
