@@ -51,7 +51,6 @@ Current behavior:
 - Observes successful `edit`, `write`, and `ast_grep_replace` tool results.
 - Extracts touched file paths from tool input and details.
 - Shows a UI notification listing suggested validation checks.
-- Logs a debug entry for diagnostics.
 
 It does not:
 

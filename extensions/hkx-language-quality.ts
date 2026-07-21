@@ -22,9 +22,6 @@ type ExtensionRuntime = {
 			ctx: ExtensionContext,
 		) => void | Promise<void>,
 	): void;
-	logger: {
-		debug(message: string, data?: unknown): void;
-	};
 };
 
 type ExtensionFactory = (pi: ExtensionRuntime) => void;
@@ -127,12 +124,6 @@ const extension: ExtensionFactory = (pi) => {
 
 		const message = `HKX language quality: ${checks.join("; ")}`;
 		ctx.ui.notify(message, "info");
-		pi.logger.debug("HKX language quality reminder", {
-			toolName: event.toolName,
-			paths,
-			checks,
-			cwd: ctx.cwd,
-		});
 	});
 };
 
