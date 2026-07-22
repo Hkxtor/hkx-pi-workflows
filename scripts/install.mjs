@@ -602,6 +602,21 @@ async function main() {
 		}
 	}
 
+	// Instinct evolve CLI (Phase 1): ship tree so /hkx-evolve works after install-global.
+	// Callers: commands/hkx-evolve.md, commands/hkx-instinct-status.md
+	// Auth: user "开工" Phase 1; plan docs/instinct-evolve-plan.md
+	// Verify: npm test; path exists under ~/.pi/agent/hkx-pi-workflows/scripts/instinct/
+	const instinctSrc = path.join(repoRoot, "scripts", "instinct");
+	if (await pathExists(instinctSrc)) {
+		await linkOrCopy(
+			instinctSrc,
+			path.join(packageAssetRoot, "scripts", "instinct"),
+			{
+				copyOnly: true,
+			},
+		);
+	}
+
 	// Install/update packages listed in ~/.pi/agent/settings.json
 	const piUpdateOk = await updatePiExtensions();
 	if (!piUpdateOk) failed.push("pi update --extensions");

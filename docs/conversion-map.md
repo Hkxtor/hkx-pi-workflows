@@ -340,8 +340,20 @@ These are intentionally left out of the core package unless a user asks for an o
 - shell hook packs and hookify flows
 - external wrapper commands that duplicate pi-native orchestration
 - session-history utilities tied to another session store
-- continuous-learning scripts tied to a different home-directory layout
+- Claude Code continuous-learning hooks/observer-loop tied to a different home-directory layout (replaced by optional Pi-native instinct-evolve: `commands/hkx-evolve`, `scripts/instinct/`, skill `instinct-evolve`)
 - giant language/domain catalogs that would bloat the core package
+
+## Optional knowledge surface: Instinct Evolve
+
+Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning port):
+
+- commands: `hkx-evolve`, `hkx-instinct-status`
+- skill: `instinct-evolve`
+- CLI: `scripts/instinct/cli.mjs` (Node, Linux + Windows)
+- data root: Linux XDG / Windows LocalAppData (`HKX_HOMUNCULUS_DIR` override)
+- plan: `docs/instinct-evolve-plan.md`
+
+Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
 
 ## Naming Rules
 

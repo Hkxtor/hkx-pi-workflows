@@ -147,6 +147,24 @@ subagent({
 })
 ```
 
+### Instinct evolve (knowledge drafts)
+
+Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Windows Node CLI):
+
+- `/hkx-instinct-status` — list project/global instincts
+- `/hkx-instinct-from-om` — map OM session reflections → **pending** instincts
+- `/hkx-instinct-accept` — pending → personal (human review gate)
+- `/hkx-instinct-export` / `/hkx-instinct-import` — portable bundles (+ optional ECC tree import)
+- `/hkx-instinct-promote` — cross-project → global promotion (explicit `--apply`)
+- `/hkx-evolve` — analyze clusters; optional `--generate` drafts under data root `evolved/`
+- `/hkx-publish-draft` — preview/publish drafts into `~/.pi/agent` (requires `--apply`)
+- `/hkx-instinct-decay` — weekly confidence decay (preview default; `--apply` writes)
+- skill: `instinct-evolve`
+- CLI: `node scripts/instinct/cli.mjs` (or `npm run instinct -- …`)
+
+Data roots: Linux `~/.local/share/hkx-homunculus`, Windows `%LOCALAPPDATA%\hkx-homunculus`.
+Drafts are never auto-installed into package `skills/`. Plan: `docs/instinct-evolve-plan.md`.
+
 ### Use a specialist agent directly
 
 Representative agents:

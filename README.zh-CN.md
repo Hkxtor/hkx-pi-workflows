@@ -147,6 +147,24 @@ subagent({
 })
 ```
 
+### Instinct evolve（知识草稿）
+
+将跨会话 **instincts** 聚类为 skill/command/agent 草稿（Linux + Windows Node CLI）：
+
+- `/hkx-instinct-status` — 列出项目/全局 instincts
+- `/hkx-instinct-from-om` — OM session reflections → **pending** instincts
+- `/hkx-instinct-accept` — pending → personal（人工审核门）
+- `/hkx-instinct-export` / `/hkx-instinct-import` — 导入导出 bundle
+- `/hkx-instinct-promote` — 跨项目提升到 global
+- `/hkx-evolve` — 分析聚类；可选 `--generate` 写入数据根 `evolved/` 草稿
+- `/hkx-publish-draft` — 预览/发布草稿到 `~/.pi/agent`（需 `--apply`）
+- `/hkx-instinct-decay` — 置信度按周衰减（默认预览，`--apply` 写回）
+- skill：`instinct-evolve`
+- CLI：`node scripts/instinct/cli.mjs`（或 `npm run instinct -- …`）
+
+数据根：Linux `~/.local/share/hkx-homunculus`，Windows `%LOCALAPPDATA%\hkx-homunculus`。
+草稿不会自动安装进包内 `skills/`。计划：`docs/instinct-evolve-plan.md`。
+
 ### 直接调用专家 agent
 
 代表性 agents：

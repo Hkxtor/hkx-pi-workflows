@@ -14,6 +14,7 @@ Use this page when you need to decide **which doc to open**, not when you need t
 | What currently ships in this package? | `conversion-map.md` |
 | Which skill should win when several could match? | `skill-routing.md` |
 | Should this be a language rule or a runtime extension? | `language-hooks.md` |
+| How does instinct inventory + evolve work (Linux/Windows)? | `instinct-evolve-plan.md` + skill `instinct-evolve` |
 | How should maintainers change this repository? | `../AGENTS.md` |
 | What global development handbook gets installed? | `../GLOBAL_AGENTS.md` |
 | What global system-level tool discipline gets installed? | `../APPEND_SYSTEM.md` |
@@ -53,6 +54,16 @@ Read this when you need to decide:
 - what may stack after the primary skill
 - how command/skill twins should split operator entry vs reusable guidance
 
+### `instinct-evolve-plan.md`
+
+Pi-native instinct store + evolve implementation plan (cross-platform).
+
+Read this when you need:
+
+- data roots on Linux vs Windows
+- evolve thresholds and CLI surface
+- boundary with `pi-observational-memory`
+
 ### `language-hooks.md`
 
 Rule vs extension guidance for language and runtime behavior.
@@ -91,6 +102,7 @@ Day-to-day package scripts live in `package.json`:
 - `npm run install-global` — Path B full operator install (sync surfaces, merge settings, `pi update --extensions`)
 - `npm run validate` — surface contracts + dual-path manifest (`pi` + `pi-subagents`)
 - `npm run mcp:apply-profile`
+- `npm run instinct -- <init|status|evolve>` — instinct store / evolve CLI
 
 Official package install (Path A) is **not** an npm script:
 
