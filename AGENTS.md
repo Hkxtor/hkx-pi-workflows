@@ -76,8 +76,9 @@ Keep this package intentionally small. It should stay focused on a useful core w
 ### External extension configs
 
 - Managed under `configs/<extension-name>/` when this package owns only a config overlay, not the extension package.
-- Current: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`.
-- Install runs after `pi update --extensions` and creates the extension config directory when missing (cold install often leaves no `config.json`).
+- Current:
+  - `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (after `pi update --extensions`; creates dir if missing).
+  - `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/...`) **only if missing** — never overwrite `/advisor` model picks; do not version `modelKey`.
 - Do not vendor third-party extension source into this package unless it becomes a first-party pi extension.
 
 ### Global agent settings
@@ -86,7 +87,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Install deep-merges managed keys into `~/.pi/agent/settings.json` (does not wipe machine-local keys).
 - Managed scope: `packages` (authoritative list) plus portable defaults such as `compaction` and `observational-memory`.
 - Do **not** version machine-local keys here: `shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`.
-- After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays.
+- After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays (permission + rpiv-advisor seed).
 
 ### Scripts
 

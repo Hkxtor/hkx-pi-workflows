@@ -46,7 +46,7 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 
 **Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, and permission-system config overlays. Use Path B for those.
+**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, permission-system config overlays, and rpiv-advisor config seed. Use Path B for those.
 
 Update later with:
 
@@ -97,6 +97,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | agent settings merge | no | yes |
 | managed `packages` update | no (only this package entry) | yes (`pi update --extensions`) |
 | permission config overlay | no | yes |
+| rpiv-advisor config seed | no | yes (if missing) |
 | GLOBAL_AGENTS / APPEND_SYSTEM | no | yes |
 | MCP defaults / templates | no | yes |
 
@@ -113,6 +114,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults; preserves machine-local keys) |
 | pi packages | after settings merge: `pi update --extensions` |
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing) |
+| rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
 | global AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP defaults | `.mcp.json` → merge into `~/.pi/agent/mcp.json` |

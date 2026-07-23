@@ -20,7 +20,7 @@ Note: your local checkout directory name may differ from the package/runtime nam
 | Path | How | Loads |
 | --- | --- | --- |
 | **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents/chains when pi-subagents is installed |
-| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings merge, managed packages update, permission overlay |
+| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings merge, managed packages update, permission overlay, rpiv-advisor seed |
 
 Manifest shape (authoritative):
 
@@ -39,6 +39,7 @@ Manifest shape (authoritative):
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 3 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
+| rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
 | global AGENTS source | 1 | `GLOBAL_AGENTS.md` | no | `~/.pi/agent/AGENTS.md` |
 | global system append source | 1 | `APPEND_SYSTEM.md` | no | `~/.pi/agent/APPEND_SYSTEM.md` |
@@ -291,11 +292,14 @@ These are pi TypeScript extensions, not external shell hook packs.
 
 This package can version-control operator config for third-party extensions without vendoring their source.
 
-Current overlay:
+Current overlays:
 
 - `configs/pi-permission-system/config.json`
-- installed by `npm run install-global` to `~/.pi/agent/extensions/pi-permission-system/config.json`
-- install order: after `pi update --extensions`; creates the extension config directory when missing
+  - installed by `npm run install-global` to `~/.pi/agent/extensions/pi-permission-system/config.json`
+  - install order: after `pi update --extensions`; creates the extension config directory when missing
+- `configs/rpiv-advisor/advisor.json`
+  - seeded by `npm run install-global` to `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/...`) **only when missing**
+  - portable fields only (`effort`, `guidance`, `disabledForModels`); operators set `modelKey` via `/advisor`
 
 ## Global agent settings
 

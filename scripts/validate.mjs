@@ -34,6 +34,7 @@ const requiredFiles = [
 	"docs/skill-routing.md",
 	"docs/language-hooks.md",
 	"configs/pi-permission-system/config.json",
+	"configs/rpiv-advisor/advisor.json",
 	"configs/agent-settings.json",
 	"agents/code-reviewer.md",
 	"agents/planner.md",
@@ -50,6 +51,8 @@ const requiredFiles = [
 	"scripts/tests/apply-mcp-profile.mjs",
 	// C1: install-global ships mcp-resolver next to apply-mcp-profile.
 	"scripts/tests/install-apply-packaging.mjs",
+	// rpiv-advisor XDG seed (Path B; never overwrite operator modelKey).
+	"scripts/tests/rpiv-advisor-seed.mjs",
 	// GateGuard + supervisor auto-reply artifact policies.
 	"scripts/tests/gateguard-artifacts.mjs",
 	// Extensions (Path A + B).
@@ -409,6 +412,81 @@ async function main() {
 		if (err && err.code !== "ENOENT") {
 			errors.push(
 				`configs/pi-permission-system/config.json: invalid JSON: ${err.message}`,
+			);
+		}
+	}
+
+	// Portable rpiv-advisor seed (XDG; no machine-local modelKey)
+	const advisorConfigPath = path.join(
+		root,
+		"configs",
+		"rpiv-advisor",
+		"advisor.json",
+	);
+	try {
+		const advisorConfig = JSON.parse(
+			await fs.readFile(advisorConfigPath, "utf8"),
+		);
+		if (!advisorConfig || typeof advisorConfig !== "object") {
+			errors.push("configs/rpiv-advisor/advisor.json: must be a JSON object");
+		} else {
+			if (Object.hasOwn(advisorConfig, "modelKey")) {
+				errors.push(
+					"configs/rpiv-advisor/advisor.json: do not version machine-local modelKey; operators pick via /advisor",
+				);
+			}
+			if (
+				advisorConfig.effort !== undefined &&
+				typeof advisorConfig.effort !== "string"
+			) {
+				errors.push(
+					"configs/rpiv-advisor/advisor.json: effort must be a string when present",
+				);
+			}
+			if (
+				advisorConfig.disabledForModels !== undefined &&
+				!Array.isArray(advisorConfig.disabledForModels)
+			) {
+				errors.push(
+					"configs/rpiv-advisor/advisor.json: disabledForModels must be an array when present",
+				);
+			}
+			const guidance = advisorConfig.guidance;
+			if (guidance !== undefined) {
+				if (!guidance || typeof guidance !== "object") {
+					errors.push(
+						"configs/rpiv-advisor/advisor.json: guidance must be an object when present",
+					);
+				} else {
+					if (
+						guidance.promptSnippet !== undefined &&
+						(typeof guidance.promptSnippet !== "string" ||
+							guidance.promptSnippet.length === 0)
+					) {
+						errors.push(
+							"configs/rpiv-advisor/advisor.json: guidance.promptSnippet must be a non-empty string",
+						);
+					}
+					if (guidance.promptGuidelines !== undefined) {
+						const ok =
+							Array.isArray(guidance.promptGuidelines) &&
+							guidance.promptGuidelines.length > 0 &&
+							guidance.promptGuidelines.every(
+								(s) => typeof s === "string" && s.length > 0,
+							);
+						if (!ok) {
+							errors.push(
+								"configs/rpiv-advisor/advisor.json: guidance.promptGuidelines must be a non-empty string array",
+							);
+						}
+					}
+				}
+			}
+		}
+	} catch (err) {
+		if (err && err.code !== "ENOENT") {
+			errors.push(
+				`configs/rpiv-advisor/advisor.json: invalid JSON: ${err.message}`,
 			);
 		}
 	}

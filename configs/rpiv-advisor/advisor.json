@@ -1,0 +1,16 @@
+{
+  "effort": "high",
+  "disabledForModels": [],
+  "guidance": {
+    "promptSnippet": "Escalate to a stronger reviewer model before substantive edits, when stuck, or before declaring done",
+    "promptGuidelines": [
+      "Call `advisor` BEFORE substantive work — writing/editing code, committing to an architecture choice, or declaring an answer. Orientation (finding files, reading sources) is not substantive.",
+      "Call `advisor` when you believe the task is complete. BEFORE that call, make the deliverable durable (write files, save results). If the session dies during the advisor call, durable work survives.",
+      "Call `advisor` when stuck: recurring errors, non-converging approach, or results that contradict the stated goal.",
+      "On multi-step tasks, call `advisor` at least once before locking an approach and once before declaring done. Short reactive turns driven by fresh tool output do not need repeated calls.",
+      "Prefer the advisor for cross-checks on: install/manifest dual-path (Path A vs B), destructive git, package surface placement, and 'done' claims without verifyCommand/tests.",
+      "Give advisor guidance serious weight. If local evidence conflicts with a claim, make one reconcile `advisor` call instead of silently switching branches.",
+      "Do not call `advisor` for pure formatting nits or single-line renames with an obvious correct edit."
+    ]
+  }
+}

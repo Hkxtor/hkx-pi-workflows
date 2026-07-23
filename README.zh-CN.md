@@ -46,7 +46,7 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 
 **agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
 
-**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、以及 permission-system 配置覆盖层。需要这些请用路径 B。
+**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、permission-system 配置覆盖层、以及 rpiv-advisor 配置种子。需要这些请用路径 B。
 
 后续更新：
 
@@ -97,6 +97,7 @@ pi -e .
 | agent settings 合并 | 否 | 是 |
 | 受管 `packages` 更新 | 否（仅本包条目） | 是（`pi update --extensions`） |
 | permission 配置覆盖层 | 否 | 是 |
+| rpiv-advisor 配置种子 | 否 | 是（仅当缺失） |
 | GLOBAL_AGENTS / APPEND_SYSTEM | 否 | 是 |
 | MCP 默认值 / 模板 | 否 | 是 |
 
@@ -113,6 +114,7 @@ pi -e .
 | agent settings | `configs/agent-settings.json` → 深合并进 `~/.pi/agent/settings.json`（`packages` + 可移植默认值；保留机器本地键） |
 | pi packages | settings 合并后：`pi update --extensions` |
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
+| rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
 | 全局 AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP 默认值 | `.mcp.json` → 合并进 `~/.pi/agent/mcp.json` |

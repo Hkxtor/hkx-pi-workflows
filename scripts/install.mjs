@@ -40,6 +40,10 @@
  * - configs/pi-permission-system/config.json
  *                            -> ~/.pi/agent/extensions/pi-permission-system/config.json
  *                              (after package update; creates the extension dir if missing)
+ * - configs/rpiv-advisor/advisor.json
+ *                            -> ~/.config/rpiv-advisor/advisor.json
+ *                              (or $XDG_CONFIG_HOME/rpiv-advisor/advisor.json)
+ *                              seed-if-missing only: never overwrite /advisor choices
  *
  * This is the full operator install path. It does not run migration helpers.
  */
@@ -419,6 +423,56 @@ async function installPermissionSystemConfig() {
 	return true;
 }
 
+/**
+ * Resolve XDG-aware config dir for rpiv-* overlays.
+ * Mirrors @juicesharp/rpiv-config: absolute XDG_CONFIG_HOME or ~/.config.
+ */
+function resolveXdgConfigDir() {
+	const xdg = process.env.XDG_CONFIG_HOME?.trim();
+	if (xdg && path.isAbsolute(xdg)) return xdg;
+	return path.join(os.homedir(), ".config");
+}
+
+/**
+ * Seed portable rpiv-advisor template when the operator has no local file yet.
+ * Never overwrite ~/.config/rpiv-advisor/advisor.json — that file holds the
+ * machine-local modelKey selected via /advisor.
+ */
+async function installRpivAdvisorConfig() {
+	const src = path.join(repoRoot, "configs", "rpiv-advisor", "advisor.json");
+	if (!(await pathExists(src))) {
+		console.warn("Skip rpiv-advisor config: source missing at", src);
+		return false;
+	}
+
+	const destDir = path.join(resolveXdgConfigDir(), "rpiv-advisor");
+	const dest = path.join(destDir, "advisor.json");
+	if (await pathExists(dest)) {
+		console.log(`Keep existing rpiv-advisor config (not overwriting): ${dest}`);
+		return true;
+	}
+
+	await ensureDir(destDir);
+	const body = await fs.readFile(src, "utf-8");
+	// Validate JSON before writing so we never seed a broken template.
+	try {
+		JSON.parse(body);
+	} catch (err) {
+		console.error(
+			`rpiv-advisor template is invalid JSON (${src}): ${err.message}`,
+		);
+		return false;
+	}
+	await fs.writeFile(dest, body.endsWith("\n") ? body : `${body}\n`, {
+		encoding: "utf-8",
+		mode: 0o600,
+	});
+	// writeFile mode is umask-sensitive on some platforms; force 0600.
+	await fs.chmod(dest, 0o600);
+	console.log(`Seeded rpiv-advisor config: ${dest}`);
+	return true;
+}
+
 async function main() {
 	console.log(`Installing Pi Workflows globally to ${piHome}...`);
 	const packageAssetRoot = path.join(piHome, "hkx-pi-workflows");
@@ -626,6 +680,10 @@ async function main() {
 	const permissionConfigOk = await installPermissionSystemConfig();
 	if (!permissionConfigOk) failed.push("pi-permission-system config");
 
+	// XDG seed for rpiv-advisor (guidance/effort only; never clobber modelKey).
+	const advisorConfigOk = await installRpivAdvisorConfig();
+	if (!advisorConfigOk) failed.push("rpiv-advisor config");
+
 	if (failed.length > 0) {
 		console.error(
 			`\nInstall completed with ${failed.length} non-fatal issue(s): ${failed.join(", ")}`,
@@ -643,6 +701,9 @@ async function main() {
 		"Settings: configs/agent-settings.json → merge ~/.pi/agent/settings.json",
 	);
 	console.log("Packages: pi update --extensions (from settings packages)");
+	console.log(
+		"rpiv-advisor: configs/rpiv-advisor/advisor.json → seed ~/.config/rpiv-advisor/advisor.json (if missing)",
+	);
 }
 
 main().catch((err) => {

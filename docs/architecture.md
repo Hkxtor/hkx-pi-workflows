@@ -149,14 +149,19 @@ Extensions should stay explicit, local, and low-noise. They should not silently 
 
 Some third-party extensions are installed outside this package, but their operator config is versioned here.
 
-Current overlay:
+Current overlays:
 
-- source: `configs/pi-permission-system/config.json`
-- install target: `~/.pi/agent/extensions/pi-permission-system/config.json`
-- install order: after `pi update --extensions`
-- install behavior: create `~/.pi/agent/extensions/pi-permission-system/` when missing, then write/link the managed config (cold install often has no config yet)
+- `pi-permission-system`
+  - source: `configs/pi-permission-system/config.json`
+  - install target: `~/.pi/agent/extensions/pi-permission-system/config.json`
+  - install order: after `pi update --extensions`
+  - install behavior: create the extension dir when missing, then write/link the managed config (cold install often has no config yet)
+- `rpiv-advisor`
+  - source: `configs/rpiv-advisor/advisor.json`
+  - install target: `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/rpiv-advisor/advisor.json`)
+  - install behavior: **seed if missing only** — never overwrite operator `/advisor` selections; template omits machine-local `modelKey`
 
-This package manages the **config**, not the `pi-permission-system` extension package itself.
+This package manages the **config**, not the third-party extension packages themselves.
 
 ### Global agent settings
 
@@ -254,6 +259,7 @@ Important mappings:
 - `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json`
 - then: `pi update --extensions` for packages listed in settings
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing)
+- then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
 - `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md`
 
