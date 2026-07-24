@@ -41,6 +41,8 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | PRD → capability / interfaces | `product-capability` | `intent-driven-development` | `product-lens` only |
 | acceptance criteria for this change | `intent-driven-development` | `tdd-workflow` | `council` |
 | multi-path go/no-go tradeoff | `council` | `product-lens` | routine implementation |
+| dual independent review until ship-ready | `santa-method` | `verification-loop` first | `council` (decisions, not correctness) |
+| extract session patterns as instincts | `instinct-evolve` | commands `hkx-learn` / `hkx-learn-eval` | `growth-log` (human journal) |
 | UI design direction | `frontend-design-direction` | `design-system` | `browser-qa` |
 | design tokens / system audit | `design-system` | `make-interfaces-feel-better` | `accessibility` only |
 | implement React/TS UI | `frontend-patterns` | `typescript-workflow`, `accessibility` | `browser-qa` first |
@@ -91,12 +93,14 @@ Order: classify with `research-ops` (or jump straight to `search-first` / `docum
 
 ### Session quality
 
-| Phase | Skill |
+| Phase | Skill / command |
 | --- | --- |
 | After edits | `verification-loop` |
+| High-stakes dual review | `santa-method` (`/hkx-santa-loop`) |
 | Before ending session | `delivery-gate` |
 | Optional reflection scorecard | `agent-self-evaluation` |
 | Narrative recap | `session-summary` |
+| Capture reusable session patterns | `/hkx-learn` or `/hkx-learn-eval` → `instinct-evolve` |
 
 ### Config and portfolio governance
 
@@ -118,6 +122,7 @@ Never start with `config-gc`. Inventory or stocktake first; delete only with exp
 | Capability contract | `product-capability` |
 | Observable acceptance criteria | `intent-driven-development` |
 | Multi-path decision | `council` |
+| Adversarial correctness review | `santa-method` (not council) |
 
 ### Frontend
 
@@ -184,6 +189,8 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 | --- | --- | --- |
 | `hkx-delivery-gate` | `delivery-gate` | Same delivery checklist lane |
 | `hkx-session-summary` | `session-summary` | Session recap |
+| `hkx-santa-loop` | `santa-method` | Dual independent review convergence |
+| `hkx-learn` / `hkx-learn-eval` | `instinct-evolve` | Session → pending instincts |
 | `hkx-security-scan` | `security-scan` | Config security scan |
 | `hkx-orch-*` | matching `orch-*` | Orchestrated operations |
 | `hkx-skill-health` | (pairs with `skill-stocktake`) | Health = frontmatter; stocktake = overlap/quality |

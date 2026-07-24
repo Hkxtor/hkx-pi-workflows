@@ -34,8 +34,8 @@ Manifest shape (authoritative):
 | --- | ---: | --- | --- | --- |
 | agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 30 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 91 | `skills/` | yes | `~/.pi/agent/skills/` |
+| commands / prompts | 43 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| skills | 93 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 3 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
@@ -78,6 +78,7 @@ These are the main operator-facing entry points:
 - `hkx-update-docs`
 - `hkx-update-codemaps`
 - `hkx-checkpoint`
+- `hkx-aside`
 
 ### Orchestration and loop commands
 
@@ -94,6 +95,22 @@ These coordinate larger workflows or bounded multi-step execution:
 - `hkx-delivery-gate`
 - `hkx-session-summary`
 - `hkx-model-route`
+- `hkx-santa-loop`
+
+### Learning and instinct commands
+
+Session pattern capture and instinct inventory (pending → accept → evolve):
+
+- `hkx-learn`
+- `hkx-learn-eval`
+- `hkx-evolve`
+- `hkx-instinct-status`
+- `hkx-instinct-from-om`
+- `hkx-instinct-accept`
+- `hkx-instinct-promote`
+- `hkx-instinct-export`
+- `hkx-instinct-import`
+- `hkx-instinct-decay`
 
 ### Package and harness support commands
 
@@ -123,6 +140,8 @@ Representative examples:
 - `parallel-execution-optimizer`
 - `delivery-gate`
 - `session-summary`
+- `santa-method`
+- `instinct-evolve`
 
 ### Language workflow skills
 
@@ -351,13 +370,21 @@ These are intentionally left out of the core package unless a user asks for an o
 
 Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning port):
 
-- commands: `hkx-evolve`, `hkx-instinct-status`
+- session extract: `hkx-learn`, `hkx-learn-eval` (pending instincts; human accept)
+- inventory/evolve: `hkx-evolve`, `hkx-instinct-status`, accept/promote/export/import/decay/from-om
 - skill: `instinct-evolve`
 - CLI: `scripts/instinct/cli.mjs` (Node, Linux + Windows)
 - data root: Linux XDG / Windows LocalAppData (`HKX_HOMUNCULUS_DIR` override)
 - plan: `docs/instinct-evolve-plan.md`
 
 Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
+
+## Dual-review ship gate: Santa Method
+
+- skill: `santa-method`
+- command: `hkx-santa-loop`
+- related chain: `hkx-adversarial-review` (multi-angle one-shot; Santa adds dual-pass convergence)
+- related rule: Delegation Completion Contract in `rules/hkx-common-development-workflow.md` and `GLOBAL_AGENTS.md`
 
 ## Naming Rules
 

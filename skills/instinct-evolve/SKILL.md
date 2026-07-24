@@ -143,10 +143,14 @@ See [om-adapter.md](references/om-adapter.md).
 ## Operator flow
 
 1. `init` / ensure layout
-2. Add instincts under `projects/<id>/instincts/personal/` (or global)
-3. `status` to review
-4. `evolve` to analyze; `evolve --generate` for drafts
-5. Human review drafts → optional formal skill via skill-create / manual copy
+2. Add instincts:
+   - manual under `projects/<id>/instincts/personal/` (or global)
+   - session extract: `/hkx-learn` or quality-gated `/hkx-learn-eval` → **pending**
+   - OM file: `/hkx-instinct-from-om` → **pending**
+3. `/hkx-instinct-accept` after human review of pending
+4. `status` to review personal inventory
+5. `evolve` to analyze; `evolve --generate` for drafts
+6. Human review drafts → optional formal skill via skill-create / manual copy / publish-draft
 
 ## References
 

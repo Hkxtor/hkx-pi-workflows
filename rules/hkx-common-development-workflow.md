@@ -16,6 +16,7 @@ Use this rule for non-trivial feature, bug fix, refactor, prompt, command, skill
 2. **Plan**
    - Restate the requirement, affected files, order of work, validation commands, and risks.
    - For broad work, decompose and use Pi-native agents for independent read-only discovery or review.
+   - If you spawn subagents, obey the Delegation Completion Contract: wait, integrate, then answer.
    - Ask only when the missing choice materially changes the outcome.
 
 3. **Test first where behavior changes**
@@ -37,8 +38,19 @@ Use this rule for non-trivial feature, bug fix, refactor, prompt, command, skill
    - Review from the user's perspective: behavior, docs, tests, security, and operational impact.
    - Report changed surfaces, validation observed, and residual risk.
 
+## Delegation Completion Contract
+
+Applies to every agent at every depth (parent, child, grandchild):
+
+1. **Your final message IS the deliverable.** Never end a turn with "waiting for background agents" — a spawned task is not a completed task. Ending while children still run orphans their results.
+2. **If you delegate, you own collection.** Wait for results, integrate them, then return. Fire-and-forget delegation is forbidden.
+3. **Decompose only when the work cannot fit in one context.** Do not re-delegate a task already sized for a single agent — depth is an outcome, not a plan.
+
+Rationale: parallel fan-out without a completion contract produces zombie tasks whose successful child output never reaches the user.
+
 ## Defaults
 
 - Use structured Pi tools over shell equivalents.
 - Treat external mutation, publishing, deploying, merging, and destructive operations as approval-gated.
 - Keep generated workflow artifacts free of private host state and credentials.
+- Dual independent review for high-stakes ship gates: `/hkx-santa-loop` (skill `santa-method`).

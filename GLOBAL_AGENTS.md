@@ -84,6 +84,16 @@ When helper agents and chains are installed, use them as accelerators rather tha
 - Keep review steps read-only when possible.
 - Keep a single writer for the active worktree.
 
+## Delegation Completion Contract
+
+Applies to every agent at every depth (parent, child, grandchild):
+
+1. **Your final message IS the deliverable.** Never end a turn with "waiting for background agents" — a spawned task is not a completed task. Ending while children still run orphans their results.
+2. **If you delegate, you own collection.** Wait for results, integrate them, then return. Fire-and-forget delegation is forbidden.
+3. **Decompose only when the work cannot fit in one context.** Do not re-delegate a task already sized for a single agent — depth is an outcome, not a plan.
+
+Rationale: parallel fan-out without a completion contract produces zombie tasks whose successful child output never reaches the user.
+
 ## Safety and Decision Rules
 
 - Do not expose secrets, credentials, tokens, or private data.
