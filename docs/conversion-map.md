@@ -34,8 +34,8 @@ Manifest shape (authoritative):
 | --- | ---: | --- | --- | --- |
 | agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 43 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 93 | `skills/` | yes | `~/.pi/agent/skills/` |
+| commands / prompts | 46 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| skills | 96 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 3 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
@@ -68,6 +68,8 @@ These are the main operator-facing entry points:
 - `hkx-workflow`
 - `hkx-plan`
 - `hkx-plan-prd`
+- `hkx-blueprint`
+- `hkx-plan-canvas`
 - `hkx-build-fix`
 - `hkx-code-review`
 - `hkx-review-pr`
@@ -122,6 +124,7 @@ These support repository maintenance and operator workflows:
 - `hkx-skill-create`
 - `hkx-skill-health`
 - `hkx-harness-audit`
+- `hkx-context-budget`
 
 ## Skills
 
@@ -142,6 +145,9 @@ Representative examples:
 - `session-summary`
 - `santa-method`
 - `instinct-evolve`
+- `blueprint`
+- `plan-canvas`
+- `context-budget`
 
 ### Language workflow skills
 
@@ -385,6 +391,21 @@ Still out of scope: bash observer-loop, auto formal skill install, default-on ca
 - command: `hkx-santa-loop`
 - related chain: `hkx-adversarial-review` (multi-angle one-shot; Santa adds dual-pass convergence)
 - related rule: Delegation Completion Contract in `rules/hkx-common-development-workflow.md` and `GLOBAL_AGENTS.md`
+
+## Multi-session plans: Blueprint + Plan Canvas
+
+- skills: `blueprint`, `plan-canvas`
+- commands: `hkx-blueprint`, `hkx-plan-canvas`
+- CLI: `scripts/plan-canvas.cjs` (`npm run plan-canvas` / bin `hkx-plan-canvas`)
+- artifacts: `.pi/plans/*.blueprint.md` / `*.plan.md`
+- state: `~/.pi/plan-canvas/` (`HKX_PLAN_CANVAS_*` env)
+- Path B also copies the CLI under `~/.pi/agent/hkx-pi-workflows/scripts/`
+
+## Context hygiene: Context Budget
+
+- skill: `context-budget`
+- command: `hkx-context-budget`
+- scans `~/.pi/agent` + package surfaces; no auto-delete
 
 ## Naming Rules
 

@@ -21,12 +21,16 @@
   "bugs": {
     "url": "https://github.com/Hkxtor/hkx-pi-workflows/issues"
   },
+  "bin": {
+    "hkx-plan-canvas": "scripts/plan-canvas.cjs"
+  },
   "scripts": {
     "validate": "node scripts/validate.mjs",
     "test": "node scripts/tests/run.mjs",
     "install-global": "node scripts/install.mjs",
     "mcp:apply-profile": "node scripts/apply-mcp-profile.mjs",
-    "instinct": "node scripts/instinct/cli.mjs"
+    "instinct": "node scripts/instinct/cli.mjs",
+    "plan-canvas": "node scripts/plan-canvas.cjs"
   },
   "pi": {
     "extensions": [

@@ -64,6 +64,14 @@ const requiredFiles = [
 	// apply-mcp-profile.mjs and install.mjs. validate must fail if this module
 	// disappears (the two install paths would diverge again).
 	"scripts/lib/mcp-resolver.mjs",
+	// Plan Canvas CLI (CommonJS under type:module package).
+	"scripts/plan-canvas.cjs",
+	"scripts/lib/loopback-guard.cjs",
+	"scripts/lib/plan-canvas/server.cjs",
+	"scripts/lib/plan-canvas/sessions.cjs",
+	"scripts/lib/plan-canvas/markdown.cjs",
+	"scripts/lib/plan-canvas/sdk.cjs",
+	"scripts/lib/plan-canvas/ui.cjs",
 ];
 
 const allowedPiTools = new Set([

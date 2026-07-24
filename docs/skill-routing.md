@@ -43,6 +43,9 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | multi-path go/no-go tradeoff | `council` | `product-lens` | routine implementation |
 | dual independent review until ship-ready | `santa-method` | `verification-loop` first | `council` (decisions, not correctness) |
 | extract session patterns as instincts | `instinct-evolve` | commands `hkx-learn` / `hkx-learn-eval` | `growth-log` (human journal) |
+| multi-session multi-PR construction plan | `blueprint` | `/hkx-plan-canvas` for approve | `/hkx-plan` for single-session |
+| browser annotate/approve a local plan | `plan-canvas` | after `/hkx-plan` or `/hkx-blueprint` | code review commands |
+| audit agents/skills/MCP token tax | `context-budget` | `skill-stocktake`, `workspace-surface-audit` | `strategic-compact` (mid-session) |
 | UI design direction | `frontend-design-direction` | `design-system` | `browser-qa` |
 | design tokens / system audit | `design-system` | `make-interfaces-feel-better` | `accessibility` only |
 | implement React/TS UI | `frontend-patterns` | `typescript-workflow`, `accessibility` | `browser-qa` first |
@@ -191,6 +194,9 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 | `hkx-session-summary` | `session-summary` | Session recap |
 | `hkx-santa-loop` | `santa-method` | Dual independent review convergence |
 | `hkx-learn` / `hkx-learn-eval` | `instinct-evolve` | Session → pending instincts |
+| `hkx-blueprint` | `blueprint` | Multi-session construction plan |
+| `hkx-plan-canvas` | `plan-canvas` | Browser annotate/approve |
+| `hkx-context-budget` | `context-budget` | Install-surface token audit |
 | `hkx-security-scan` | `security-scan` | Config security scan |
 | `hkx-orch-*` | matching `orch-*` | Orchestrated operations |
 | `hkx-skill-health` | (pairs with `skill-stocktake`) | Health = frontmatter; stocktake = overlap/quality |

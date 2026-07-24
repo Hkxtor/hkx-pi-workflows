@@ -671,6 +671,39 @@ async function main() {
 		);
 	}
 
+	// Plan Canvas CLI: local browser review for .pi/plans artifacts.
+	// Callers: commands/hkx-plan-canvas.md, skills/plan-canvas
+	const planCanvasCli = path.join(repoRoot, "scripts", "plan-canvas.cjs");
+	const planCanvasLib = path.join(repoRoot, "scripts", "lib", "plan-canvas");
+	const loopbackGuard = path.join(
+		repoRoot,
+		"scripts",
+		"lib",
+		"loopback-guard.cjs",
+	);
+	if (await pathExists(planCanvasCli)) {
+		await linkOrCopy(
+			planCanvasCli,
+			path.join(packageAssetRoot, "scripts", "plan-canvas.cjs"),
+			{ copyOnly: true },
+		);
+		if (await pathExists(planCanvasLib)) {
+			await linkOrCopy(
+				planCanvasLib,
+				path.join(packageAssetRoot, "scripts", "lib", "plan-canvas"),
+				{ copyOnly: true },
+			);
+		}
+		if (await pathExists(loopbackGuard)) {
+			await ensureDir(path.join(packageAssetRoot, "scripts", "lib"));
+			await linkOrCopy(
+				loopbackGuard,
+				path.join(packageAssetRoot, "scripts", "lib", "loopback-guard.cjs"),
+				{ copyOnly: true },
+			);
+		}
+	}
+
 	// Install/update packages listed in ~/.pi/agent/settings.json
 	const piUpdateOk = await updatePiExtensions();
 	if (!piUpdateOk) failed.push("pi update --extensions");
