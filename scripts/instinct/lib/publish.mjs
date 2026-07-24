@@ -71,7 +71,7 @@ export function ensureNamedFrontmatter(name, content, kind) {
 		return text.replace(/^---\n/, `---\nname: ${name}\n`);
 	}
 	if (kind === "agent") {
-		return `---\nname: ${name}\ndescription: "Evolved agent from instinct-evolve"\ntools: read, ffgrep, fffind\n---\n\n${text}`.replace(
+		return `---\nname: ${name}\ndescription: "Evolved agent from instinct-evolve"\ntools: read, ffgrep, fffind, grep, find\n---\n\n${text}`.replace(
 			/\r\n/g,
 			"\n",
 		);

@@ -19,7 +19,7 @@ Prefer local repository evidence and tool output over assumptions. Keep changes 
 ## Default Development Workflow
 
 1. Clarify the requested outcome, constraints, and acceptance criteria.
-2. Search first with `fffind` / `ffgrep`, then read only the files and symbols that matter.
+2. Search first with `fffind` / `ffgrep` (native `find` / `grep` as fallback), then read only the files and symbols that matter.
 3. Before editing, understand the surrounding implementation, callers, tests, and local conventions.
 4. Make the smallest coherent change that solves the task.
 5. Validate with the narrowest relevant checks first, then broader checks if the change warrants it.
@@ -29,8 +29,8 @@ Prefer local repository evidence and tool output over assumptions. Keep changes 
 
 ### Discovery and reading
 
-- Use `fffind` for path discovery.
-- Use `ffgrep` for content search.
+- Use `fffind` for path discovery; native `find` is available as fallback.
+- Use `ffgrep` for content search; native `grep` is available as fallback.
 - Use `fff-multi-grep` when several literal patterns matter at once.
 - Use `module_report`, `symbol_search`, `read_symbol`, and `read_enclosing` when you need structure or one symbol body instead of a whole-file dump.
 

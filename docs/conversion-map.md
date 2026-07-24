@@ -206,7 +206,7 @@ The `agents/` directory is now a **pi-subagents native** surface.
 
 - frontmatter `package: hkx`
 - runtime names: `hkx.<name>`
-- search surface: `ffgrep` / `fffind`
+- search surface: `ffgrep` / `fffind` (preferred) with native `grep` / `find` as co-resident fallback
 - code intelligence surface: `lsp_diagnostics`, `lsp_navigation`, `ast_grep_search`, `ast_grep_replace`
 - reviewers are read-only by default
 - writer agents use scoped mutation plus supervisor/intercom escalation rules

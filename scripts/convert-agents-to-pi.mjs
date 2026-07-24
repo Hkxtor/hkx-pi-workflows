@@ -129,10 +129,10 @@ function mapTools(ompTools, name, isReviewer) {
 	mapped.add("read");
 	mapped.add("ffgrep");
 	mapped.add("fffind");
+	mapped.add("grep");
+	mapped.add("find");
 	mapped.add("ls");
 	mapped.add("bash");
-	mapped.delete("grep");
-	mapped.delete("find");
 	mapped.delete("search");
 	mapped.delete("lsp");
 	mapped.delete("ast_grep");
@@ -153,6 +153,8 @@ function mapTools(ompTools, name, isReviewer) {
 		"read",
 		"ffgrep",
 		"fffind",
+		"grep",
+		"find",
 		"fff-multi-grep",
 		"ls",
 		"bash",
@@ -230,8 +232,8 @@ function convertOne(file) {
 		`You are the \`hkx.${name}\` subagent running inside pi-subagents.`,
 		"",
 		"Operating rules for this runtime:",
-		"- Use the provided tools directly (`read`, `ffgrep`, `fffind`, `ls`, `bash`, and any write/lens tools listed in frontmatter).",
-		"- Prefer `ffgrep` / `fffind` (pi-fff) for content and path search. Do not use builtin `grep` / `find`.",
+		"- Use the provided tools directly (`read`, `ffgrep`, `fffind`, `grep`, `find`, `ls`, `bash`, and any write/lens tools listed in frontmatter).",
+		"- Prefer `ffgrep` / `fffind` (pi-fff) for content and path search. Native `grep` / `find` are available as fallback when FFF tools are unavailable or for simple single-pattern lookups.",
 		"- Prefer `lsp_diagnostics` / `lsp_navigation` and `ast_grep_search` (pi-lens) when type or structural evidence is needed.",
 		"- Prefer targeted search and selective reading over whole-file dumps.",
 		roleNote,

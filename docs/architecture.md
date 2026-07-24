@@ -284,13 +284,14 @@ Prefer authoring new package surfaces in the current pi-native shape. Use conver
 
 This package assumes a pi tool stack centered on:
 
-- **pi-fff** for search: `fffind`, `ffgrep`, `fff-multi-grep`
+- **pi-fff** for high-performance search: `fffind`, `ffgrep`, `fff-multi-grep`
+- **native read tools as fallback**: `grep`, `find` (always co-declared with ffgrep/fffind so Plan Mode / review-only agents stay usable when FFF is unavailable)
 - **pi-lens** for code intelligence: `lsp_diagnostics`, `lsp_navigation`, `ast_grep_search`, `ast_grep_replace`, `module_report`, `symbol_search`, `read_symbol`, `read_enclosing`
 - core file / shell tools: `read`, `edit`, `write`, `ls`, `bash`
 
 That means the intended workflow is:
 
-1. discover with pi-fff
+1. discover with pi-fff (fallback to native `grep` / `find` when needed)
 2. inspect semantically with pi-lens
 3. mutate narrowly with edit/write
 4. validate with bash and repo-local scripts

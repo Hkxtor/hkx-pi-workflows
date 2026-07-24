@@ -9,7 +9,8 @@
  * - package.json dual-path manifest (pi + pi-subagents)
  * - agents frontmatter and pi-native tools allowlist
  * - chains presence and basic shape
- * - rejection of superseded tool aliases (grep/find/search, lsp/ast_grep/ast_edit)
+ * - rejection of superseded tool aliases (search, lsp/ast_grep/ast_edit)
+ * - native grep/find allowed only as co-resident fallback with ffgrep/fffind
  *
  * Frontmatter matching accepts both LF and CRLF.
  * This is a pure check: it never installs or mutates package surfaces.
@@ -71,6 +72,8 @@ const allowedPiTools = new Set([
 	"edit",
 	"bash",
 	"ls",
+	"grep",
+	"find",
 	"ffgrep",
 	"fffind",
 	"fff-multi-grep",
@@ -581,15 +584,20 @@ async function main() {
 				errors.push(`${relativePath}: unknown tool ${JSON.stringify(tool)}`);
 			}
 		}
-		// Reject superseded search aliases. They are checked here intentionally
-		// so newly-authored package surfaces cannot regress to pre-pi-fff names.
+		// Reject the pre-pi-fff generic `search` alias only.
+		// Native `grep`/`find` are allowed as fallback tools, but only when
+		// ffgrep/fffind are also declared so agents cannot regress to FFF-less lists.
+		if (tools.includes("search")) {
+			errors.push(
+				`${relativePath}: use ffgrep/fffind instead of search for pi-fff`,
+			);
+		}
 		if (
-			tools.includes("grep") ||
-			tools.includes("find") ||
-			tools.includes("search")
+			(tools.includes("grep") || tools.includes("find")) &&
+			!(tools.includes("ffgrep") && tools.includes("fffind"))
 		) {
 			errors.push(
-				`${relativePath}: use ffgrep/fffind instead of grep/find/search for pi-fff`,
+				`${relativePath}: native grep/find require co-resident ffgrep/fffind`,
 			);
 		}
 		// Reject superseded pi-lens aliases for the same reason: current package

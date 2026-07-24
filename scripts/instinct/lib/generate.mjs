@@ -81,7 +81,7 @@ export function generateEvolved(root, project, analysis) {
 		const agentName = slugify(trigger, 20);
 		const agentFile = path.join(evolvedRoot, "agents", `${agentName}.md`);
 		const domains = cand.domains.join(", ");
-		let content = `---\nmodel: sonnet\ntools: read, ffgrep, fffind\n---\n\n`;
+		let content = `---\nmodel: sonnet\ntools: read, ffgrep, fffind, grep, find\n---\n\n`;
 		content += `# ${agentName}\n\n`;
 		content += `Evolved from ${cand.instincts.length} instincts `;
 		content += `(avg confidence: ${Math.round(cand.avgConfidence * 100)}%)\n`;

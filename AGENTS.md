@@ -44,7 +44,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Use `package: hkx` so runtime names are `hkx.<name>`.
 - Tools must use pi tool names accepted by `scripts/validate.mjs`.
 - Reviewers review; resolvers and implementation agents make minimal, scoped edits.
-- Prefer `ffgrep` / `fffind` and pi-lens tools over non-pi search aliases.
+- Prefer `ffgrep` / `fffind` (with native `grep` / `find` as co-resident fallback) and pi-lens tools over non-pi search aliases.
 
 ### Chains
 
