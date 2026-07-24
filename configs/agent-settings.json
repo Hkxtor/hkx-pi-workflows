@@ -26,9 +26,9 @@
     "keepRecentTokens": 48000
   },
   "observational-memory": {
-    "observeAfterTokens": 30000,
-    "reflectAfterTokens": 90000,
-    "compactAfterTokens": 200000,
+    "observeAfterTokens": 48000,
+    "reflectAfterTokens": 144000,
+    "compactAfterTokens": 217600,
     "compactAfterTokensMode": "ratio",
     "compactAfterTokensRatio": 0.8,
     "observationsPoolMaxTokens": 32000,
