@@ -36,7 +36,8 @@
     "extensions": [
       "./extensions/hkx-language-quality.ts",
       "./extensions/hkx-gateguard.ts",
-      "./extensions/hkx-subagent-supervisor-auto-reply.ts"
+      "./extensions/hkx-subagent-supervisor-auto-reply.ts",
+      "./extensions/hkx-git-footer.ts"
     ],
     "skills": [
       "./skills"

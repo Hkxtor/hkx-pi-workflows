@@ -142,6 +142,7 @@ Current extensions:
 - `hkx-gateguard.ts` — fact-forcing gate; pre-authorizes `.pi-subagents/` chain artifact writes
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
+- `hkx-git-footer.ts` — git-first custom footer (`getGitBranch`); toggle `/hkx-git-footer`, disable with `HKX_GIT_FOOTER=off`
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 

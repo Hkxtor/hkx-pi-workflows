@@ -60,6 +60,7 @@ const requiredFiles = [
 	"extensions/hkx-gateguard.ts",
 	"extensions/hkx-subagent-supervisor-auto-reply.ts",
 	"extensions/hkx-language-quality.ts",
+	"extensions/hkx-git-footer.ts",
 	// MF-6: shared resolver / placeholder / unresolved-ref SSOT used by both
 	// apply-mcp-profile.mjs and install.mjs. validate must fail if this module
 	// disappears (the two install paths would diverge again).
