@@ -1,0 +1,73 @@
+{
+  "providers": {
+    "meme": {
+      "baseUrl": "https://example.com/v1",
+      "api": "openai-completions",
+      "apiKey": "sk-example",
+      "models": [
+        {
+          "id": "grok-4.5",
+          "name": "grok-4.5",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 512000,
+          "maxTokens": 65536
+        },
+        {
+          "id": "deepseek-v4-flash",
+          "name": "deepseek-v4-flash",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1000000,
+          "maxTokens": 384000,
+          "compat": {
+            "requiresReasoningContentOnAssistantMessages": true,
+            "thinkingFormat": "deepseek"
+          },
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": null,
+            "medium": null,
+            "high": "high",
+            "xhigh": "max"
+          }
+        },
+        {
+          "id": "deepseek-v4-pro",
+          "name": "deepseek-v4-pro",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1000000,
+          "maxTokens": 384000,
+          "compat": {
+            "requiresReasoningContentOnAssistantMessages": true,
+            "thinkingFormat": "deepseek"
+          },
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": null,
+            "medium": null,
+            "high": "high",
+            "xhigh": "max"
+          }
+        },
+        {
+          "id": "glm-5.2",
+          "name": "glm-5.2",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 202752,
+          "maxTokens": 65536
+        },
+        {
+          "id": "minimax-m3",
+          "name": "minimax-m3",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 524288,
+          "maxTokens": 65536
+        }
+      ]
+    }
+  }
+}
