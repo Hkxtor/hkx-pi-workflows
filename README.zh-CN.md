@@ -183,6 +183,9 @@ subagent({
 - `/hkx-evolve` — 分析聚类；可选 `--generate` 写入数据根 `evolved/` 草稿
 - `/hkx-publish-draft` — 预览/发布草稿到 `~/.pi/agent`（需 `--apply`）
 - `/hkx-instinct-decay` — 置信度按周衰减（默认预览，`--apply` 写回）
+- `/hkx-instinct-prune` — 清理过期 **pending** instincts（默认 TTL 30 天；默认预览，`--apply` 删除）
+- `/hkx-instinct-projects` — 列出已知项目与 instinct 计数
+- `/hkx-prp-commit` / `/hkx-prp-pr` — 自然语言选文件提交 + 模板感知 GitHub PR
 - skill：`instinct-evolve`
 - CLI：`node scripts/instinct/cli.mjs`（或 `npm run instinct -- …`）
 

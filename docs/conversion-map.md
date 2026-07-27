@@ -34,7 +34,7 @@ Manifest shape (authoritative):
 | --- | ---: | --- | --- | --- |
 | agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 46 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| commands / prompts | 50 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 96 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 4 | `extensions/` | yes | `~/.pi/agent/extensions/` |
@@ -113,6 +113,15 @@ Session pattern capture and instinct inventory (pending → accept → evolve):
 - `hkx-instinct-export`
 - `hkx-instinct-import`
 - `hkx-instinct-decay`
+- `hkx-instinct-prune`
+- `hkx-instinct-projects`
+
+### PRP operator commands
+
+Thin ECC-derived commit/PR helpers (prompt-only; pair with git + `gh`):
+
+- `hkx-prp-commit`
+- `hkx-prp-pr`
 
 ### Package and harness support commands
 
@@ -396,6 +405,8 @@ Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning por
 - plan: `docs/instinct-evolve-plan.md`
 
 Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
+
+Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default) and `projects` (registry + counts).
 
 ## Dual-review ship gate: Santa Method
 

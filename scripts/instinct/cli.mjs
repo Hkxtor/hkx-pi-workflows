@@ -3,13 +3,22 @@
  * Instinct store + evolve + OM adapter CLI (cross-platform Node ESM).
  *
  * Usage:
- *   node scripts/instinct/cli.mjs init|status|evolve|from-om|accept|export|import|promote|publish-draft|decay [flags]
+ *   node scripts/instinct/cli.mjs init|status|evolve|from-om|accept|export|import|promote|publish-draft|decay|prune|projects [flags]
  *
- * Imports: lib/paths, store, cluster, generate, om-session, om-map, transfer, promote, publish, decay
- * Docs: docs/instinct-evolve-plan.md, commands/hkx-evolve.md, hkx-instinct-accept.md
+ * Imports: lib/paths, store, cluster, generate, om-session, om-map, transfer, promote, publish, decay, prune, projects
+ * Docs: docs/instinct-evolve-plan.md, commands/hkx-evolve.md, hkx-instinct-accept.md, hkx-instinct-prune.md, hkx-instinct-projects.md
  * Public surface: process exit 0/1/2; --json stdout schema
- * Auth: Phase 1-3 + publish-draft + confidence decay
- * Verify: npm test; HKX_HOMUNCULUS_DIR=... node scripts/instinct/cli.mjs from-om|accept
+ * Auth: Phase 1-3 + publish-draft + confidence decay + P0 prune/projects
+ * Verify: npm test; HKX_HOMUNCULUS_DIR=... node scripts/instinct/cli.mjs from-om|accept|prune|projects
+ *
+ * GateGuard (edit):
+ * 1. Callers: package.json scripts.instinct; commands/hkx-instinct-*; scripts/tests/instinct-*.mjs;
+ *    install.mjs copies under ~/.pi/agent/hkx-pi-workflows/scripts/instinct/; README + conversion-map.
+ * 2. Public surface: subcommand switch + parseArgs flags + stdout/JSON schemas; exit 0/1/2.
+ * 3. Formats: HKX_HOMUNCULUS_DIR absolute; project 12-hex; instinct ids [a-z0-9][a-z0-9._-]*;
+ *    pending TTL days int; --as-of ISO/YYYY-MM-DD.
+ * 4. Auth: user "接按 P0 开实现" add prune + projects.
+ * 5. Verify: scripts/tests/instinct-prune.mjs + npm test + npm run validate.
  */
 import path from "node:path";
 import {
@@ -57,6 +66,12 @@ import {
 	DEFAULT_DECAY_PER_WEEK,
 	DEFAULT_CONFIDENCE_FLOOR,
 } from "./lib/decay.mjs";
+import {
+	planPrune,
+	applyPrune,
+	DEFAULT_PENDING_TTL_DAYS,
+} from "./lib/prune.mjs";
+import { listProjectStats, formatProjectStats } from "./lib/projects.mjs";
 import fs from "node:fs";
 
 function configureUtf8() {
@@ -86,6 +101,8 @@ Commands:
   promote              List/apply project->global promotion candidates
   publish-draft        Publish evolved/ drafts to Pi agent surfaces
   decay                Apply time-based confidence decay (preview default)
+  prune                Delete expired pending instincts (preview default)
+  projects             List known projects and instinct statistics
   help                 Show this help
 
 Flags:
@@ -94,24 +111,25 @@ Flags:
   --generate           Write evolved/ drafts (evolve only)
   --cwd <path>         Working directory for project detection
   --session <path|id>  Session JSONL path or partial id (from-om)
-  --dry-run            Do not write (from-om)
+  --dry-run            Do not write (from-om / prune)
   --min-relevance <l>  low|medium|high|critical (from-om, default medium)
   --all                Accept all pending (accept)
   --force              Overwrite existing personal on accept
-  --scope <s>          project|global (accept, default project)
+  --scope <s>          project|global|all (accept/decay/prune; default varies)
   --id <instinct-id>   Accept/promote specific id (repeatable)
   --output <file>      Export target file (export)
   --domain <name>      Filter by domain (export)
   --min-confidence <n> Min confidence 0-1 (export/import)
   --from-ecc <dir>     Import from ECC homunculus tree (import)
-  --apply              Apply promote candidates (promote; else list only)
+  --apply              Apply promote/decay/prune writes (else preview)
   --from-project <id>  Promote using version from project id
   --target <dir>       Publish root (default ~/.pi/agent)
   --kind <k>           skill|command|agent (repeatable; publish-draft)
   --name <n>           Draft name filter (repeatable; publish-draft)
   --rate <n>           Decay per inactive week (default 0.02)
   --floor <n>          Confidence floor (default 0.1)
-  --as-of <ISO-date>   Evaluate decay as of date (tests/backdate)
+  --as-of <ISO-date>   Evaluate decay/prune as of date (tests/backdate)
+  --max-age <days>     Pending TTL for prune (default 30)
 
 Env:
   HKX_HOMUNCULUS_DIR   Absolute data root
@@ -153,6 +171,7 @@ function parseArgs(argv) {
 		rate: /** @type {number|undefined} */ (undefined),
 		floor: /** @type {number|undefined} */ (undefined),
 		asOf: /** @type {string|undefined} */ (undefined),
+		maxAge: /** @type {number|undefined} */ (undefined),
 	};
 	const rest = argv.slice(2);
 	if (rest.length === 0) return args;
@@ -193,14 +212,25 @@ function parseArgs(argv) {
 			if (Number.isFinite(n)) args.floor = n;
 		} else if (a === "--as-of") {
 			args.asOf = rest[++i];
+		} else if (a === "--max-age") {
+			const n = Number.parseInt(rest[++i] ?? "", 10);
+			if (Number.isFinite(n)) args.maxAge = n;
 		} else if (a === "--id") {
 			const id = rest[++i];
 			if (id) args.ids.push(id);
 		} else if (a === "--help" || a === "-h") {
 			args.command = "help";
-		} else if (!a.startsWith("-") && (args.command === "accept" || args.command === "promote")) {
+		} else if (
+			!a.startsWith("-") &&
+			(args.command === "accept" || args.command === "promote")
+		) {
 			args.ids.push(a);
-		} else if (!a.startsWith("-") && args.command === "import" && !args.source && !args.fromEcc) {
+		} else if (
+			!a.startsWith("-") &&
+			args.command === "import" &&
+			!args.source &&
+			!args.fromEcc
+		) {
 			args.source = a;
 		}
 	}
@@ -597,9 +627,11 @@ function cmdExport(args) {
 }
 
 function cmdImport(args) {
-	const { root, source: rootSource, warnings } = resolveHomunculusDir(
-		process.env,
-	);
+	const {
+		root,
+		source: rootSource,
+		warnings,
+	} = resolveHomunculusDir(process.env);
 	for (const w of warnings) console.error(`[hkx-instinct] ${w}`);
 	const project = detectProject(args.cwd);
 	ensureLayout(root, project);
@@ -607,11 +639,16 @@ function cmdImport(args) {
 
 	let result;
 	if (args.fromEcc) {
-		result = importFromEccHomunculus(path.resolve(args.fromEcc), root, project, {
-			dryRun: args.dryRun,
-			minConfidence: args.minConfidence,
-			scope,
-		});
+		result = importFromEccHomunculus(
+			path.resolve(args.fromEcc),
+			root,
+			project,
+			{
+				dryRun: args.dryRun,
+				minConfidence: args.minConfidence,
+				scope,
+			},
+		);
 	} else {
 		const src = args.source;
 		if (!src) {
@@ -665,11 +702,17 @@ function cmdImport(args) {
 		}
 		console.log("Import instincts");
 		console.log(`  target scope: ${result.targetScope}`);
-		console.log(`  new: ${result.toAdd.length}  update: ${result.toUpdate.length}  skip: ${result.duplicates.length}`);
+		console.log(
+			`  new: ${result.toAdd.length}  update: ${result.toUpdate.length}  skip: ${result.duplicates.length}`,
+		);
 		for (const i of result.toAdd.slice(0, 15))
-			console.log(`    + ${i.id} (${Math.round((i.confidence ?? 0.5) * 100)}%)`);
+			console.log(
+				`    + ${i.id} (${Math.round((i.confidence ?? 0.5) * 100)}%)`,
+			);
 		for (const i of result.toUpdate.slice(0, 10))
-			console.log(`    ~ ${i.id} (${Math.round((i.confidence ?? 0.5) * 100)}%)`);
+			console.log(
+				`    ~ ${i.id} (${Math.round((i.confidence ?? 0.5) * 100)}%)`,
+			);
 		if (args.dryRun) console.log("  (dry-run: nothing written)");
 		else console.log(`  wrote ${result.written.length} files`);
 	}
@@ -772,7 +815,9 @@ function cmdPromote(args) {
 	if (args.json) {
 		console.log(JSON.stringify({ ok: true, apply: true, results }, null, 2));
 	} else {
-		console.log(`Promoted ${results.filter((r) => r.ok && !r.dryRun).length} instincts`);
+		console.log(
+			`Promoted ${results.filter((r) => r.ok && !r.dryRun).length} instincts`,
+		);
 		for (const r of results) {
 			if (r.ok) console.log(`  + ${r.id} -> ${r.dest}`);
 			else console.log(`  ! ${r.reason}`);
@@ -780,7 +825,6 @@ function cmdPromote(args) {
 	}
 	return 0;
 }
-
 
 function cmdPublishDraft(args) {
 	const { root, source, warnings } = resolveHomunculusDir(process.env);
@@ -795,7 +839,8 @@ function cmdPublishDraft(args) {
 	if (isPackageRepoSkillsRoot(publishRoot) && !args.force) {
 		const msg =
 			"Refusing to publish into @hkx/pi-workflows package tree without --force. Use default ~/.pi/agent or set --target explicitly.";
-		if (args.json) console.log(JSON.stringify({ ok: false, error: msg, publishRoot }));
+		if (args.json)
+			console.log(JSON.stringify({ ok: false, error: msg, publishRoot }));
 		else console.error(`[hkx-instinct] ${msg}`);
 		return 1;
 	}
@@ -904,7 +949,9 @@ function cmdPublishDraft(args) {
 			);
 		}
 		if (doApply) {
-			console.log(`\n  wrote ${result.written.length}, skipped ${result.skipped.length}`);
+			console.log(
+				`\n  wrote ${result.written.length}, skipped ${result.skipped.length}`,
+			);
 		} else {
 			console.log(
 				"\n  No files written. Review paths, then: publish-draft --apply",
@@ -913,7 +960,6 @@ function cmdPublishDraft(args) {
 	}
 	return 0;
 }
-
 
 function cmdDecay(args) {
 	const { root, source, warnings } = resolveHomunculusDir(process.env);
@@ -986,13 +1032,15 @@ function cmdDecay(args) {
 		);
 	} else {
 		console.log("Confidence time decay");
-		console.log(`  model:  -${args.rate ?? DEFAULT_DECAY_PER_WEEK}/week inactive (floor ${args.floor ?? DEFAULT_CONFIDENCE_FLOOR})`);
+		console.log(
+			`  model:  -${args.rate ?? DEFAULT_DECAY_PER_WEEK}/week inactive (floor ${args.floor ?? DEFAULT_CONFIDENCE_FLOOR})`,
+		);
 		console.log(`  as-of:  ${asOf.toISOString()}`);
 		console.log(`  data:   ${root} (${source})`);
-		console.log(`  mode:   ${doApply ? "APPLY" : "preview (pass --apply to write)"}`);
 		console.log(
-			`  counts: total=${plan.length} changing=${changing.length}`,
+			`  mode:   ${doApply ? "APPLY" : "preview (pass --apply to write)"}`,
 		);
+		console.log(`  counts: total=${plan.length} changing=${changing.length}`);
 		console.log("");
 		const show = changing.length ? changing : plan.slice(0, 15);
 		for (const p of show.slice(0, 30)) {
@@ -1002,7 +1050,9 @@ function cmdDecay(args) {
 			);
 		}
 		if (!changing.length) {
-			console.log("  (nothing to decay — all active within a week or at floor)");
+			console.log(
+				"  (nothing to decay — all active within a week or at floor)",
+			);
 		}
 		if (result.skipped.length) {
 			console.log(`\n  skipped: ${result.skipped.length}`);
@@ -1019,6 +1069,149 @@ function cmdDecay(args) {
 	return 0;
 }
 
+function cmdPrune(args) {
+	const { root, source, warnings } = resolveHomunculusDir(process.env);
+	for (const w of warnings) console.error(`[hkx-instinct] ${w}`);
+	const project = detectProject(args.cwd);
+	ensureLayout(root, project);
+
+	let asOf = new Date();
+	if (args.asOf) {
+		const d = new Date(
+			/^\d{4}-\d{2}-\d{2}$/.test(args.asOf)
+				? `${args.asOf}T00:00:00.000Z`
+				: args.asOf,
+		);
+		if (Number.isNaN(d.getTime())) {
+			const msg = `Invalid --as-of date: ${args.asOf}`;
+			if (args.json) console.log(JSON.stringify({ ok: false, error: msg }));
+			else console.error(`[hkx-instinct] ${msg}`);
+			return 1;
+		}
+		asOf = d;
+	}
+
+	const scope =
+		args.scope === "project" || args.scope === "global" ? args.scope : "all";
+	const maxAgeDays =
+		typeof args.maxAge === "number" ? args.maxAge : DEFAULT_PENDING_TTL_DAYS;
+	const planned = planPrune(root, project, {
+		maxAgeDays,
+		asOf,
+		scope,
+	});
+	const doApply = args.apply && !args.dryRun;
+	const result = applyPrune(planned.expired, { dryRun: !doApply });
+
+	if (args.json) {
+		console.log(
+			JSON.stringify(
+				{
+					ok: true,
+					apply: doApply,
+					asOf: asOf.toISOString(),
+					maxAgeDays: planned.maxAgeDays,
+					scope,
+					counts: {
+						total: planned.items.length,
+						expired: planned.expired.length,
+						remaining: planned.remaining.length,
+						deleted: result.deleted.length,
+						failed: result.failed.length,
+					},
+					expired: planned.expired.map((p) => ({
+						id: p.id,
+						ageDays: p.ageDays,
+						scope: p.scope,
+						projectId: p.projectId,
+						filePath: p.filePath,
+						created: p.created,
+						createdSource: p.createdSource,
+					})),
+					deleted: result.deleted,
+					failed: result.failed,
+				},
+				null,
+				2,
+			),
+		);
+	} else {
+		console.log("Prune pending instincts");
+		console.log(
+			`  TTL:    ${planned.maxAgeDays} days (created/updated/mtime age)`,
+		);
+		console.log(`  as-of:  ${asOf.toISOString()}`);
+		console.log(`  data:   ${root} (${source})`);
+		console.log(`  scope:  ${scope}`);
+		console.log(
+			`  mode:   ${doApply ? "APPLY (delete)" : "preview (pass --apply to delete)"}`,
+		);
+		console.log(
+			`  counts: total=${planned.items.length} expired=${planned.expired.length} remaining=${planned.remaining.length}`,
+		);
+		console.log("");
+		if (!planned.expired.length) {
+			console.log(
+				`  (no pending instincts older than ${planned.maxAgeDays} days)`,
+			);
+		} else {
+			for (const p of planned.expired.slice(0, 40)) {
+				const where = p.projectId
+					? `${p.projectName || p.projectId}`
+					: "global";
+				console.log(
+					`  ${doApply ? "-" : "~"} ${p.id} age=${p.ageDays}d via ${p.createdSource} [${p.scope}/${where}]`,
+				);
+			}
+			if (planned.expired.length > 40) {
+				console.log(`  … +${planned.expired.length - 40} more`);
+			}
+		}
+		if (result.failed.length) {
+			console.log(`\n  failed: ${result.failed.length}`);
+			for (const f of result.failed.slice(0, 10)) {
+				console.log(`    ! ${f.id}: ${f.reason}`);
+			}
+		}
+		if (doApply) {
+			console.log(`\n  deleted ${result.deleted.length} pending file(s)`);
+		} else if (planned.expired.length) {
+			console.log("\n  No files deleted. Review, then: prune --apply");
+		}
+	}
+	return result.failed.length ? 1 : 0;
+}
+
+function cmdProjects(args) {
+	const { root, source, warnings } = resolveHomunculusDir(process.env);
+	for (const w of warnings) console.error(`[hkx-instinct] ${w}`);
+	// Touch current project so registry/meta stay warm when run from a repo.
+	const project = detectProject(args.cwd);
+	if (project.id !== "global") ensureLayout(root, project);
+
+	const stats = listProjectStats(root);
+	if (args.json) {
+		console.log(
+			JSON.stringify(
+				{
+					ok: true,
+					root,
+					source,
+					currentProject: project,
+					registryCount: stats.registryCount,
+					projects: stats.projects,
+					global: stats.global,
+				},
+				null,
+				2,
+			),
+		);
+		return 0;
+	}
+	console.log(formatProjectStats(stats, { root, source }));
+	console.log("");
+	return 0;
+}
 
 function main() {
 	configureUtf8();
@@ -1045,6 +1238,10 @@ function main() {
 				return cmdPublishDraft(args);
 			case "decay":
 				return cmdDecay(args);
+			case "prune":
+				return cmdPrune(args);
+			case "projects":
+				return cmdProjects(args);
 			case "help":
 			case "--help":
 			case "-h":

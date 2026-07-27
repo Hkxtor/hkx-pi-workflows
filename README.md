@@ -183,6 +183,9 @@ Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Win
 - `/hkx-evolve` — analyze clusters; optional `--generate` drafts under data root `evolved/`
 - `/hkx-publish-draft` — preview/publish drafts into `~/.pi/agent` (requires `--apply`)
 - `/hkx-instinct-decay` — weekly confidence decay (preview default; `--apply` writes)
+- `/hkx-instinct-prune` — delete expired **pending** instincts (TTL 30d; preview default; `--apply` deletes)
+- `/hkx-instinct-projects` — list known projects + instinct counts
+- `/hkx-prp-commit` / `/hkx-prp-pr` — natural-language commit targeting + template-aware GitHub PR
 - skill: `instinct-evolve`
 - CLI: `node scripts/instinct/cli.mjs` (or `npm run instinct -- …`)
 

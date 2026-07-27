@@ -110,6 +110,18 @@ node scripts/instinct/cli.mjs decay --apply      # write confidence + updated
 - Floor: `0.1` (override `--floor`)
 - Activity: `last_seen` → `updated` → `created` → mtime
 
+## Prune pending + project stats
+
+```bash
+node scripts/instinct/cli.mjs prune              # preview expired pending (TTL 30d)
+node scripts/instinct/cli.mjs prune --apply      # delete expired pending only
+node scripts/instinct/cli.mjs projects           # registry + personal/inherited/pending counts
+```
+
+- Pending age: `created` → `updated` → `last_seen` → mtime
+- Does not delete personal/inherited (use decay for confidence)
+- Commands: `/hkx-instinct-prune`, `/hkx-instinct-projects`
+
 ## Publish drafts
 
 ```bash
