@@ -186,6 +186,7 @@ subagent({
 - `/hkx-instinct-prune` — 清理过期 **pending** instincts（默认 TTL 30 天；默认预览，`--apply` 删除）
 - `/hkx-instinct-projects` — 列出已知项目与 instinct 计数
 - `/hkx-prp-commit` / `/hkx-prp-pr` — 自然语言选文件提交 + 模板感知 GitHub PR
+- `/hkx-multi-workflow` — ECC `multi-*` 路由到现有 chains / orch / `hkx-workflow`（无外部 ccg-workflow）
 - skill：`instinct-evolve`
 - CLI：`node scripts/instinct/cli.mjs`（或 `npm run instinct -- …`）
 

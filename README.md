@@ -186,6 +186,7 @@ Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Win
 - `/hkx-instinct-prune` — delete expired **pending** instincts (TTL 30d; preview default; `--apply` deletes)
 - `/hkx-instinct-projects` — list known projects + instinct counts
 - `/hkx-prp-commit` / `/hkx-prp-pr` — natural-language commit targeting + template-aware GitHub PR
+- `/hkx-multi-workflow` — ECC `multi-*` router → existing chains / orch / `hkx-workflow` (no external ccg-workflow)
 - skill: `instinct-evolve`
 - CLI: `node scripts/instinct/cli.mjs` (or `npm run instinct -- …`)
 

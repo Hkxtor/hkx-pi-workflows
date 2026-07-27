@@ -34,7 +34,7 @@ Manifest shape (authoritative):
 | --- | ---: | --- | --- | --- |
 | agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 50 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| commands / prompts | 51 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 96 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 4 | `extensions/` | yes | `~/.pi/agent/extensions/` |
@@ -86,6 +86,7 @@ These are the main operator-facing entry points:
 
 These coordinate larger workflows or bounded multi-step execution:
 
+- `hkx-multi-workflow` — thin ECC `multi-*` router → existing chains / orch / `hkx-workflow` (no ccg-workflow runtime)
 - `hkx-orch-review`
 - `hkx-orch-add-feature`
 - `hkx-orch-build-mvp`
@@ -311,6 +312,8 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 - `hkx-fix-defect`
 - `hkx-refactor-flow`
 - `hkx-docs-update`
+
+Operator entry that **routes** to these chains (and orch commands) without duplicating them: `hkx-multi-workflow`.
 
 ## Extensions
 
