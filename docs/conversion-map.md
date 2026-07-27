@@ -305,14 +305,25 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 
 ## Extensions
 
-Four extensions are shipped intentionally:
+Six extensions are shipped intentionally:
 
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping; pre-authorizes `.pi-subagents/` artifact writes
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
-- `hkx-git-footer.ts` — compact TUI footer (`model - [thinking] > [D] path > ctx`); `/hkx-git-footer`, `HKX_GIT_FOOTER=off`
+- `hkx-git-footer.ts` — compact TUI footer (`model [-thinking] > [D] path > branch > ctx > $cost`); `/hkx-git-footer`, `HKX_GIT_FOOTER=off`
+- `hkx-brand-header.ts` — compact `HKX · π` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
+- `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 
 These are pi TypeScript extensions, not external shell hook packs.
+
+## Themes
+
+Official-pi brand themes (oh-my-pi palette adapted to 51 required tokens):
+
+- `themes/hkx-dark.json` — name `hkx-dark`
+- `themes/hkx-light.json` — name `hkx-light`
+
+Declared in `package.json` `pi.themes`. Path B also installs to `~/.pi/agent/themes/` and defaults managed settings `theme` to `hkx-dark`.
 
 ## External extension config overlays
 
@@ -333,7 +344,7 @@ Portable global settings and the desired pi package list are versioned here:
 
 - source: `configs/agent-settings.json`
 - install: deep-merge into `~/.pi/agent/settings.json`
-- managed keys: `packages` (authoritative), plus portable defaults such as `compaction` and `observational-memory`
+- managed keys: `packages` (authoritative), `theme` (default `hkx-dark`), plus portable defaults such as `compaction` and `observational-memory`
 - not versioned here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, …)
 - after merge: `npm run install-global` runs `pi update --extensions`
 

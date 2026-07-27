@@ -1,4 +1,5 @@
 {
+  "theme": "hkx-dark",
   "packages": [
     "npm:@gotgenes/pi-permission-system",
     "npm:pi-rewind",

@@ -17,7 +17,8 @@ Use it when deciding:
 - **rules** provide lightweight reminders
 - **agents** provide executable specialists
 - **chains** orchestrate multiple agents into repeatable flows
-- **extensions** enforce or surface runtime behavior
+- **extensions** enforce or surface runtime behavior (including TUI appearance hooks)
+- **themes** provide brand colors for official pi TUI
 - **global context files** shape the default agent behavior outside this repo
 
 ## Surface Map
@@ -29,7 +30,8 @@ Use it when deciding:
 | `rules/` | provide short reminders and guardrails | model / agent | no |
 | `agents/` | execute a narrow specialist role | pi-subagents | some yes, some no |
 | `chains/` | orchestrate multiple agents in a stable sequence | pi-subagents runner | depends on included agents |
-| `extensions/` | runtime hooks, notifications, or gatekeeping | pi runtime | should stay narrow and explicit |
+| `extensions/` | runtime hooks, notifications, gatekeeping, or TUI chrome | pi runtime | should stay narrow and explicit |
+| `themes/` | brand terminal themes (`hkx-dark` / `hkx-light`) | pi theme loader | no |
 | `GLOBAL_AGENTS.md` | generic global dev handbook | global pi sessions | no |
 | `APPEND_SYSTEM.md` | short system-level tool discipline | global pi sessions | no |
 | root `AGENTS.md` | repository maintenance rules for this package | work inside this repo | no |
@@ -142,7 +144,20 @@ Current extensions:
 - `hkx-gateguard.ts` — fact-forcing gate; pre-authorizes `.pi-subagents/` chain artifact writes
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
-- `hkx-git-footer.ts` — compact footer `model - [thinking] > [D] path > ctx`; toggle `/hkx-git-footer`, disable with `HKX_GIT_FOOTER=off`
+- `hkx-git-footer.ts` — compact footer `model [-thinking] > [D] path > branch > ctx > $cost`; toggle `/hkx-git-footer`, disable with `HKX_GIT_FOOTER=off`
+- `hkx-brand-header.ts` — compact `HKX · π` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
+- `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
+
+### Themes
+
+Brand themes adapted from oh-my-pi colors into the **official pi** 51-token schema:
+
+- `themes/hkx-dark.json` — default Path B theme name `hkx-dark`
+- `themes/hkx-light.json` — optional light companion `hkx-light`
+
+Path A loads them via `package.json` `pi.themes`. Path B also copies them to `~/.pi/agent/themes/` and may set `theme: "hkx-dark"` in managed settings (overwrites existing `theme`).
+
+Out of scope for this package: OMP built-in status-line segment engine, powerline presets, welcome dual-column gradient intro.
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 
@@ -170,7 +185,7 @@ Portable global pi settings are versioned here and deep-merged on install:
 
 - source: `configs/agent-settings.json`
 - install target: deep-merge into `~/.pi/agent/settings.json`
-- managed keys: `packages` (authoritative list), plus portable defaults such as `compaction` and `observational-memory`
+- managed keys: `packages` (authoritative list), `theme` (default `hkx-dark`), plus portable defaults such as `compaction` and `observational-memory`
 - not managed here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`, …)
 - after merge: `pi update --extensions` installs/updates packages declared in settings
 

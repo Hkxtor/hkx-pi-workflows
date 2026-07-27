@@ -13,9 +13,10 @@
 - **commands** — 面向操作者的 slash 提示词（仓库目录 `commands/`；在 `package.json` 中声明为 `pi.prompts`）
 - **skills** — 工作流与语言/领域指导
 - **rules** — 轻量仓库/会话提醒（仅完整安装路径）
-- **extensions** — 低噪声质量与门禁扩展
+- **extensions** — 低噪声质量、门禁与 TUI 外观扩展
+- **themes** — 品牌主题 `hkx-dark` / `hkx-light`（官方 pi 主题 schema；路径 A 经 `pi.themes`）
 - **外部扩展配置** — 受管覆盖层（如 `pi-permission-system`；仅完整安装）
-- **全局 agent 设置** — `configs/agent-settings.json` → 合并进 `~/.pi/agent/settings.json`（仅完整安装）
+- **全局 agent 设置** — `configs/agent-settings.json` → 合并进 `~/.pi/agent/settings.json`（仅完整安装；含默认 `theme: "hkx-dark"`）
 - **全局上下文文件** — 安装源：`~/.pi/agent/AGENTS.md`、`~/.pi/agent/APPEND_SYSTEM.md`（仅完整安装）
 
 ## 快速开始
@@ -41,12 +42,15 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 | `pi.extensions` | `extensions/*.ts` |
 | `pi.skills` | `skills/` |
 | `pi.prompts` | `commands/`（slash 提示词模板） |
+| `pi.themes` | `themes/`（`hkx-dark`、`hkx-light`） |
 | `pi-subagents.agents` | `agents/` 作为 package agents（`hkx.<name>`） |
 | `pi-subagents.chains` | `chains/` 作为 package chains |
 
-**agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
+**agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts / themes 不依赖它即可加载。
 
-**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、permission-system 配置覆盖层、以及 rpiv-advisor 配置种子。需要这些请用路径 B。
+**路径 A 主题说明：** 安装后主题可被发现，但路径 A **不会**改写当前 `theme` 设置。需要时用 `/settings` 选择 `hkx-dark` 或 `hkx-light`。
+
+**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`（因此无默认 `theme: hkx-dark`）、permission-system 配置覆盖层、以及 rpiv-advisor 配置种子。需要这些请用路径 B。
 
 后续更新：
 
@@ -89,12 +93,13 @@ pi -e .
 | Surface | 路径 A（`pi install`） | 路径 B（`npm run install-global`） |
 | --- | --- | --- |
 | extensions | 是（来自 package） | 是 → `~/.pi/agent/extensions/` |
+| themes | 是（`pi.themes`；不自动选中） | 是 → `~/.pi/agent/themes/` + 默认 `theme: hkx-dark` |
 | skills | 是（来自 package） | 是 → `~/.pi/agent/skills/` |
 | commands / prompts | 是（`pi.prompts` → `commands/`） | 是 → `commands/` **与** `prompts/` |
 | agents | 是（经 pi-subagents 包发现） | 是 → `~/.pi/agent/agents/hkx/` |
 | chains | 是（经 pi-subagents 包发现） | 是 → `~/.pi/agent/chains/` |
 | rules | 否 | 是 → `~/.pi/agent/rules/` |
-| agent settings 合并 | 否 | 是 |
+| agent settings 合并 | 否 | 是（含 `theme: "hkx-dark"`，会覆盖已有 `theme`） |
 | 受管 `packages` 更新 | 否（仅本包条目） | 是（`pi update --extensions`） |
 | permission 配置覆盖层 | 否 | 是 |
 | rpiv-advisor 配置种子 | 否 | 是（仅当缺失） |
@@ -111,7 +116,8 @@ pi -e .
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
 | extensions | `~/.pi/agent/extensions/` |
-| agent settings | `configs/agent-settings.json` → 深合并进 `~/.pi/agent/settings.json`（`packages` + 可移植默认值；保留机器本地键） |
+| themes | `themes/*.json` → `~/.pi/agent/themes/` |
+| agent settings | `configs/agent-settings.json` → 深合并进 `~/.pi/agent/settings.json`（`packages`、`theme: "hkx-dark"`、可移植默认值；保留机器本地键；**会覆盖已有 `theme`**） |
 | pi packages | settings 合并后：`pi update --extensions` |
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
 | rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
@@ -120,6 +126,22 @@ pi -e .
 | MCP 默认值 | `.mcp.json` → 合并进 `~/.pi/agent/mcp.json` |
 | MCP 模板/目录 | `mcp-configs/` → `~/.pi/agent/hkx-pi-workflows/mcp-configs/` |
 | MCP profile 助手 | `scripts/apply-mcp-profile.mjs` → `~/.pi/agent/hkx-pi-workflows/scripts/` |
+
+## 外观套件（TUI）
+
+从 oh-my-pi 配色改编、面向**官方 pi** 的品牌外观（不是 fork OMP 核心 TUI）：
+
+| 部件 | 效果 | 默认 | 关闭 |
+| --- | --- | --- | --- |
+| 主题 | `hkx-dark`、`hkx-light`（官方 51 token schema） | 路径 B 写入 `theme: "hkx-dark"`（会覆盖已有 `theme`） | `/settings` 另选主题 |
+| Footer | `model [-thinking] > [D] path > branch > ctx > $cost` | 开 | `HKX_GIT_FOOTER=off` 或 `/hkx-git-footer` |
+| Header | 简洁 `HKX · π` 品牌条 | 开 | `HKX_BRAND_HEADER=off` 或 `/hkx-brand-header` |
+| Working indicator | accent braille 旋转指示 | 开 | `HKX_WORKING_INDICATOR=off` 或 `/hkx-working-indicator` |
+
+**路径 A：** 主题与外观扩展随包装载；主题需手动选择。
+**路径 B：** 额外把 `themes/*.json` 同步到 `~/.pi/agent/themes/`，并合并默认 `theme`。
+
+**不移植** OMP 内置 status-line preset、powerline 分段，或 welcome 双栏渐变 intro。
 
 ## 常用工作流
 

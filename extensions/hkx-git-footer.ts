@@ -1,11 +1,11 @@
 /**
- * HKX Git Footer — compact single-line status footer.
+ * HKX Git Footer — compact single-line status footer (OMP-inspired).
  *
  * Layout:
- *   <model> - [<thinking>] > [D] <cwd> > ctx: <pct>%/<window>
+ *   <model> - [<thinking>] > [D] <cwd> > <branch> > ctx: <pct>%/<window> > $<cost>
  *
  * Example:
- *   grok-4.5 - [medium] > [D] ~/workspace/omp > ctx: 8.8%/512K
+ *   grok-4.5 - [medium] > [D] ~/workspace/omp > main > ctx: 8.8%/512K > $0.012
  *
  * Optional second line: extension status texts from setStatus().
  *
@@ -16,7 +16,8 @@
  *
  * Data sources:
  * - model / thinkingLevel / cwd / getContextUsage() from ExtensionContext
- * - branch change still subscribed via FooterDataProvider.onBranchChange for re-render
+ * - branch via FooterDataProvider.getGitBranch / onBranchChange
+ * - cost via sessionManager.getBranch() assistant usage.cost.total (optional)
  *
  * Investigation (GateGuard):
  * 1. Callers/docs: package.json pi.extensions, scripts/validate.mjs required
@@ -24,8 +25,9 @@
  * 2. Public surface: default export ExtensionFactory; command `hkx-git-footer`;
  *    env `HKX_GIT_FOOTER`; uses ctx.ui.setFooter.
  * 3. API shape: ctx.model, ctx.thinkingLevel, ctx.cwd, ctx.getContextUsage(),
- *    FooterDataProvider.onBranchChange / getExtensionStatuses.
- * 4. User instruction: compact footer "模型 - [思考强度] > [D] 路径 > ctx".
+ *    optional ctx.sessionManager.getBranch(), FooterDataProvider.onBranchChange
+ *    / getGitBranch / getExtensionStatuses.
+ * 4. User instruction: OMP-style compact footer with branch + cost.
  * 5. Verify: npm run validate && npm test; manual /hkx-git-footer toggle.
  */
 
@@ -57,6 +59,16 @@ type ContextUsage = {
 	percent: number | null;
 };
 
+type SessionBranchEntry = {
+	type?: string;
+	message?: {
+		role?: string;
+		usage?: {
+			cost?: { total?: number };
+		};
+	};
+};
+
 type ExtensionContext = {
 	ui: {
 		setFooter(
@@ -70,6 +82,9 @@ type ExtensionContext = {
 	model?: { id?: string; reasoning?: boolean } | null;
 	thinkingLevel?: string;
 	getContextUsage?(): ContextUsage | undefined;
+	sessionManager?: {
+		getBranch(): SessionBranchEntry[];
+	};
 };
 
 type ExtensionRuntime = {
@@ -164,14 +179,75 @@ function contextColor(percent: number | null): "error" | "warning" | "dim" {
 	return "dim";
 }
 
+/** Sum assistant cost.total from the current session branch. */
+export function sumSessionCost(ctx: ExtensionContext): number | null {
+	const getBranch = ctx.sessionManager?.getBranch;
+	if (typeof getBranch !== "function") return null;
+	let total = 0;
+	let saw = false;
+	try {
+		for (const entry of getBranch.call(ctx.sessionManager) ?? []) {
+			if (entry?.type !== "message") continue;
+			if (entry.message?.role !== "assistant") continue;
+			const cost = entry.message.usage?.cost?.total;
+			if (typeof cost === "number" && Number.isFinite(cost)) {
+				total += cost;
+				saw = true;
+			}
+		}
+	} catch {
+		return null;
+	}
+	return saw ? total : null;
+}
+
+export function formatCost(total: number): string {
+	if (total < 0.01) return `$${total.toFixed(4)}`;
+	return `$${total.toFixed(3)}`;
+}
+
+/** Pure segment builder for tests / render. */
+export function buildFooterSegments(options: {
+	modelName: string;
+	thinking: string;
+	cwdLabel: string;
+	branch: string | null;
+	percent: number | null;
+	windowLabel: string;
+	cost: number | null;
+	theme: Theme;
+}): string {
+	const arrow = options.theme.fg("dim", " > ");
+	const left =
+		options.theme.fg("accent", options.modelName) +
+		options.theme.fg("dim", options.thinking);
+	const pathSeg =
+		options.theme.fg("dim", "[D] ") +
+		options.theme.fg("muted", options.cwdLabel);
+	const parts = [left, pathSeg];
+
+	if (options.branch) {
+		parts.push(options.theme.fg("success", options.branch));
+	}
+
+	const percentLabel =
+		options.percent === null ? "?" : options.percent.toFixed(1);
+	const ctxLabel = `ctx: ${percentLabel}%/${options.windowLabel}`;
+	parts.push(options.theme.fg(contextColor(options.percent), ctxLabel));
+
+	if (options.cost !== null) {
+		parts.push(options.theme.fg("dim", formatCost(options.cost)));
+	}
+
+	return parts.join(arrow);
+}
+
 function createStatusFooter(
 	ctx: ExtensionContext,
 	tui: TUI,
 	theme: Theme,
 	footerData: FooterData,
 ): Component {
-	// Re-render on branch change even though branch is not shown — keeps
-	// footer fresh when cwd/session state shifts with git operations.
 	const unsub = footerData.onBranchChange(() => tui.requestRender());
 
 	return {
@@ -188,20 +264,24 @@ function createStatusFooter(
 
 			const home = process.env.HOME || process.env.USERPROFILE;
 			const cwdLabel = formatCwd(ctx.cwd || process.cwd(), home);
+			const branch = footerData.getGitBranch();
 
 			const usage = ctx.getContextUsage?.();
 			const contextWindow = usage?.contextWindow ?? 0;
 			const percent = usage?.percent ?? null;
-			const percentLabel = percent === null ? "?" : percent.toFixed(1);
 			const windowLabel = contextWindow > 0 ? formatTokens(contextWindow) : "?";
-			const ctxLabel = `ctx: ${percentLabel}%/${windowLabel}`;
+			const cost = sumSessionCost(ctx);
 
-			const arrow = theme.fg("dim", " > ");
-			const left = theme.fg("accent", modelName) + theme.fg("dim", thinking);
-			const mid = theme.fg("dim", "[D] ") + theme.fg("muted", cwdLabel);
-			const right = theme.fg(contextColor(percent), ctxLabel);
-
-			const line = left + arrow + mid + arrow + right;
+			const line = buildFooterSegments({
+				modelName,
+				thinking,
+				cwdLabel,
+				branch,
+				percent,
+				windowLabel,
+				cost,
+				theme,
+			});
 			const lines = [truncateToWidth(line, width)];
 
 			const statuses = footerData.getExtensionStatuses();
@@ -240,7 +320,8 @@ const extension: ExtensionFactory = (pi) => {
 	});
 
 	pi.registerCommand("hkx-git-footer", {
-		description: "Toggle compact footer (model - [thinking] > [D] path > ctx)",
+		description:
+			"Toggle compact footer (model - [thinking] > path > branch > ctx > cost)",
 		handler: async (_args, ctx) => {
 			enabled = !enabled;
 			if (enabled) {

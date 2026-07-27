@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pi-native core workflow package: subagents, chains, prompt templates, skills, rules, extensions, and MCP templates.",
+  "description": "Pi-native core workflow package: subagents, chains, prompt templates, skills, rules, extensions, themes, and MCP templates.",
   "keywords": [
     "pi-package",
     "pi",
@@ -37,13 +37,18 @@
       "./extensions/hkx-language-quality.ts",
       "./extensions/hkx-gateguard.ts",
       "./extensions/hkx-subagent-supervisor-auto-reply.ts",
-      "./extensions/hkx-git-footer.ts"
+      "./extensions/hkx-git-footer.ts",
+      "./extensions/hkx-brand-header.ts",
+      "./extensions/hkx-working-indicator.ts"
     ],
     "skills": [
       "./skills"
     ],
     "prompts": [
       "./commands"
+    ],
+    "themes": [
+      "./themes"
     ]
   },
   "pi-subagents": {
