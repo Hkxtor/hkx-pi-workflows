@@ -200,9 +200,7 @@ check(
 // MF1 regressions
 check(
 	"B-MF1: compound artifact write + rm is destructive (not artifact-only)",
-	isDestructiveCommand(
-		"cat > .pi-subagents/artifacts/x.md && rm -rf scripts/",
-	),
+	isDestructiveCommand("cat > .pi-subagents/artifacts/x.md && rm -rf scripts/"),
 );
 check(
 	"B-MF1: compound is NOT classified as artifact bash write",
@@ -497,6 +495,48 @@ process.exit(bad.length ? 1 : 0);
 	check("F: /tmp/* allow", ext["/tmp/*"] === "allow");
 	check("F: /var/tmp allow", ext["/var/tmp"] === "allow");
 	check("F: /var/tmp/* allow", ext["/var/tmp/*"] === "allow");
+	check("F: ~/.pi allow", ext["~/.pi"] === "allow");
+	check("F: ~/.pi/* allow", ext["~/.pi/*"] === "allow");
+	check(
+		"F: Windows npm global allow",
+		ext["~/AppData/Roaming/npm/node_modules"] === "allow",
+	);
+	check(
+		"F: Windows npm global/* allow",
+		ext["~/AppData/Roaming/npm/node_modules/*"] === "allow",
+	);
+	check(
+		"F: Linux /usr/lib/node_modules allow",
+		ext["/usr/lib/node_modules"] === "allow",
+	);
+	check(
+		"F: Linux /usr/lib/node_modules/* allow",
+		ext["/usr/lib/node_modules/*"] === "allow",
+	);
+	check(
+		"F: Linux /usr/local/lib/node_modules allow",
+		ext["/usr/local/lib/node_modules"] === "allow",
+	);
+	check(
+		"F: Linux /usr/local/lib/node_modules/* allow",
+		ext["/usr/local/lib/node_modules/*"] === "allow",
+	);
+	const infra = cfg?.piInfrastructureReadPaths ?? [];
+	check(
+		"F: infra covers ~/.pi",
+		infra.includes("~/.pi") && infra.includes("~/.pi/*"),
+	);
+	check(
+		"F: infra covers Windows npm global",
+		infra.includes("~/AppData/Roaming/npm/node_modules") &&
+			infra.includes("~/AppData/Roaming/npm/node_modules/*"),
+	);
+	check(
+		"F: fff tools allowed",
+		cfg?.permission?.ffgrep === "allow" &&
+			cfg?.permission?.fffind === "allow" &&
+			cfg?.permission?.["fff-multi-grep"] === "allow",
+	);
 }
 
 // ---------------------------------------------------------------------------
