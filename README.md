@@ -187,7 +187,7 @@ Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Win
 - `/hkx-instinct-projects` — list known projects + instinct counts
 - `/hkx-prp-commit` / `/hkx-prp-pr` — natural-language commit targeting + template-aware GitHub PR
 - `/hkx-multi-workflow` — ECC `multi-*` router → existing chains / orch / `hkx-workflow` (no external ccg-workflow)
-- `/hkx-unified-memory` — memory vault on `hkx-homunculus` (`memory recall|save|validate`; skill `unified-memory`)
+- `/hkx-unified-memory` — memory vault on `hkx-homunculus` (`memory recall|save|handoff|promote-instinct|import-ecc|validate`; skill `unified-memory`)
 - skill: `instinct-evolve`
 - CLI: `node scripts/instinct/cli.mjs` (or `npm run instinct -- …`)
 

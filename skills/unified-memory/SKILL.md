@@ -95,4 +95,4 @@ Fails on bad frontmatter, scope/dir mismatch, or id≠filename stem.
 
 - Command: `/hkx-unified-memory`
 - Skill: `instinct-evolve`
-- PRD/plan: `.pi/prds/unified-memory-instinct-om.prd.md`
+- PRD (closed, versioned): `docs/prds/unified-memory-instinct-om.prd.md`

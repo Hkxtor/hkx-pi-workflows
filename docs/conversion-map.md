@@ -116,7 +116,7 @@ Session pattern capture and instinct inventory (pending → accept → evolve):
 - `hkx-instinct-decay`
 - `hkx-instinct-prune`
 - `hkx-instinct-projects`
-- `hkx-unified-memory` — memory vault router (`memory recall|save|validate` on homunculus)
+- `hkx-unified-memory` — memory vault router (`memory recall|save|handoff|promote-instinct|import-ecc|validate` on homunculus)
 
 ### PRP operator commands
 

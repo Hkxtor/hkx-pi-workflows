@@ -15,6 +15,7 @@ Use this page when you need to decide **which doc to open**, not when you need t
 | Which skill should win when several could match? | `skill-routing.md` |
 | Should this be a language rule or a runtime extension? | `language-hooks.md` |
 | How does instinct inventory + evolve work (Linux/Windows)? | `instinct-evolve-plan.md` + skill `instinct-evolve` |
+| Where is the closed Unified Memory PRD (vault vs instinct vs OM)? | `prds/unified-memory-instinct-om.prd.md` + skill `unified-memory` |
 | How should maintainers change this repository? | `../AGENTS.md` |
 | What global development handbook gets installed? | `../GLOBAL_AGENTS.md` |
 | What global system-level tool discipline gets installed? | `../APPEND_SYSTEM.md` |
@@ -64,6 +65,16 @@ Read this when you need:
 - evolve thresholds and CLI surface
 - boundary with `pi-observational-memory`
 
+### `prds/unified-memory-instinct-om.prd.md`
+
+Closed PRD for the homunculus memory vault (M0–M4 shipped).
+
+Read this when you need:
+
+- vault vs instinct vs OM boundaries and Non-Goals
+- resolved scope/layout/`from-om` decisions
+- acceptance evidence and milestone commits
+
 ### `language-hooks.md`
 
 Rule vs extension guidance for language and runtime behavior.
@@ -94,7 +105,8 @@ These files live at the package root, but they complete the documentation set:
 3. `conversion-map.md` — what currently ships
 4. `skill-routing.md` — which skill to prefer when families overlap
 5. `language-hooks.md` — only if you are changing rules or extensions
-6. `../AGENTS.md` — only if you are maintaining this repository
+6. `prds/unified-memory-instinct-om.prd.md` — only if you need the closed vault PRD
+7. `../AGENTS.md` — only if you are maintaining this repository
 
 ## Scripts And Helpers
 
