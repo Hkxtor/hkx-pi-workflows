@@ -1,7 +1,7 @@
 ---
 name: hkx-unified-memory
 description: "Pi-native memory vault router — recall/save/validate project and user context on the hkx-homunculus root (hkx.memory.v1; no second data root)."
-argument-hint: "[recall|save|validate] [title or query] [--scope project|user] [--apply]"
+argument-hint: "[recall|save|handoff|promote-instinct|validate] [title or query] [--scope project|user] [--apply]"
 ---
 
 # /hkx-unified-memory — Memory Vault Router
@@ -46,6 +46,8 @@ Split `$ARGUMENTS` into **mode** (optional first token) and **rest**.
 | --- | --- |
 | `recall` / `search` / `list` | **recall** |
 | `save` / `write` / `add` | **save** |
+| `handoff` | **handoff** (tag `handoff`; same vault) |
+| `promote` / `promote-instinct` | **promote-instinct** (`--id` required) |
 | `validate` / `check` | **validate** |
 | `help` | print usage |
 | *(missing or other)* | If rest looks like a query → **recall** with `--query`; if empty → ask |
@@ -86,11 +88,35 @@ node scripts/instinct/cli.mjs memory save --title "..." --body "..." --apply
 - Show preview path + id after dry run.
 - Reject team scope (team dir stub only through M2).
 
+### handoff
+
+```bash
+node scripts/instinct/cli.mjs memory handoff --title "..." --body "..." [--apply]
+```
+
+Writes `hkx.memory.v1` with tag `handoff` (preview default).
+
+### promote-instinct
+
+```bash
+node scripts/instinct/cli.mjs memory promote-instinct --id <memory-id> [--apply] [--force]
+```
+
+Creates **pending** instinct only; vault file unchanged. Weak/non-actionable body needs `--force`.
+
 ### validate
 
 ```bash
 node scripts/instinct/cli.mjs memory validate [--scope project|user|all] [--json]
 ```
+
+### from-om bridge (related CLI, not a memory sub)
+
+```bash
+node scripts/instinct/cli.mjs from-om [--to instinct|vault|both] [--dry-run]
+```
+
+Default/`--to instinct` unchanged. `--to vault|both` is opt-in.
 
 ---
 
@@ -101,5 +127,5 @@ Return mode, CLI invoked, scope/ids/paths, whether write applied, and next step.
 ## Related
 
 - Skill: `unified-memory`
-- Instinct: `instinct-evolve`, `/hkx-instinct-from-om` (no silent dual-write to vault)
+- Instinct: `instinct-evolve`, `/hkx-instinct-from-om` (default instinct-only; optional `--to vault|both`)
 - `node scripts/instinct/cli.mjs help`

@@ -154,6 +154,73 @@ function check(name, cond, detail) {
 			acc2Json.skipped.length >= 1 || acc2Json.accepted.length >= 0,
 			JSON.stringify(acc2Json),
 		);
+
+		// M3: --to vault / both (default path already covered above)
+		const dryVault = spawnSync(
+			process.execPath,
+			[
+				cli,
+				"from-om",
+				"--session",
+				sessionFixture,
+				"--to",
+				"vault",
+				"--dry-run",
+				"--json",
+			],
+			{ env, encoding: "utf8" },
+		);
+		check(
+			"from-om --to vault dry exit 0",
+			dryVault.status === 0,
+			dryVault.stderr || dryVault.stdout,
+		);
+		const dryVaultJson = JSON.parse(dryVault.stdout);
+		check("vault dry to=vault", dryVaultJson.to === "vault");
+		check(
+			"vault dry no instinct written",
+			dryVaultJson.written.length === 0,
+		);
+		check(
+			"vault dry has vaultDocs count",
+			typeof dryVaultJson.counts.vaultDocs === "number",
+		);
+		check(
+			"vault dry no vaultWritten",
+			dryVaultJson.vaultWritten.length === 0,
+		);
+
+		const dryBoth = spawnSync(
+			process.execPath,
+			[
+				cli,
+				"from-om",
+				"--session",
+				sessionFixture,
+				"--to",
+				"both",
+				"--dry-run",
+				"--json",
+			],
+			{ env, encoding: "utf8" },
+		);
+		check(
+			"from-om --to both dry exit 0",
+			dryBoth.status === 0,
+			dryBoth.stderr,
+		);
+		const dryBothJson = JSON.parse(dryBoth.stdout);
+		check("both dry to=both", dryBothJson.to === "both");
+		check(
+			"both dry still has instinct candidates",
+			dryBothJson.counts.candidates >= 1,
+		);
+
+		check(
+			"default dry to instinct or undefined",
+			!dryJson.to || dryJson.to === "instinct",
+			String(dryJson.to),
+		);
 	} finally {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	}

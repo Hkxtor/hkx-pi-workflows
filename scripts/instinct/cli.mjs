@@ -76,7 +76,10 @@ import {
 	recallMemories,
 	saveMemory,
 	validateMemories,
+	createHandoff,
+	promoteMemoryToPending,
 } from "./lib/memory-store.mjs";
+import { mapProjectionToVaultDocs } from "./lib/om-vault-map.mjs";
 import fs from "node:fs";
 
 function configureUtf8() {
@@ -99,7 +102,7 @@ Commands:
   init                 Create data layout for current project
   status [--pending]   List instincts (project + global)
   evolve [--generate]  Cluster instincts; optional draft generation
-  from-om              Map OM session reflections -> pending instincts
+  from-om              Map OM session reflections -> pending instincts (optional --to vault|both)
   accept               Move pending instincts to personal
   export               Export instincts to stdout or --output file
   import               Import instincts from file (or --from-ecc dir)
@@ -108,12 +111,14 @@ Commands:
   decay                Apply time-based confidence decay (preview default)
   prune                Delete expired pending instincts (preview default)
   projects             List known projects and instinct statistics
-  memory <sub>         Memory vault (recall|save|validate) under homunculus
+  memory <sub>         Memory vault under homunculus
   help                 Show this help
 
 Memory subcommands:
   memory recall [--scope project|user] [--tag t] [--id id] [--query s]
   memory save --title T [--body|--body-file] [--scope project|user] [--tag t] [--id id] [--apply]
+  memory handoff --title T [--body|--body-file] [--scope project|user] [--apply]
+  memory promote-instinct --id <memory-id> [--scope project|user] [--apply] [--force]
   memory validate [--scope project|user|all]
 
 Flags:
@@ -122,6 +127,7 @@ Flags:
   --generate           Write evolved/ drafts (evolve only)
   --cwd <path>         Working directory for project detection
   --session <path|id>  Session JSONL path or partial id (from-om)
+  --to <target>        from-om: instinct|vault|both (default instinct)
   --dry-run            Do not write (from-om / prune)
   --min-relevance <l>  low|medium|high|critical (from-om, default medium)
   --all                Accept all pending (accept)
@@ -195,6 +201,7 @@ function parseArgs(argv) {
 		/** @type {string[]} */
 		tags: [],
 		query: /** @type {string|undefined} */ (undefined),
+		to: /** @type {string|undefined} */ (undefined),
 	};
 	const rest = argv.slice(2);
 	if (rest.length === 0) return args;
@@ -224,6 +231,7 @@ function parseArgs(argv) {
 		else if (a === "--body") args.body = rest[++i];
 		else if (a === "--body-file") args.bodyFile = rest[++i];
 		else if (a === "--query") args.query = rest[++i];
+		else if (a === "--to") args.to = rest[++i];
 		else if (a === "--tag") {
 			const t = rest[++i];
 			if (t) args.tags.push(t);
@@ -483,29 +491,70 @@ function cmdFromOm(args) {
 	}
 
 	const projection = projectSessionFile(sessionPath);
-	const { candidates, skipped } = mapProjectionToCandidates(projection, {
-		project,
-		minRelevance: args.minRelevance,
-	});
+	const toRaw = String(args.to || "instinct").toLowerCase();
+	const to =
+		toRaw === "vault" || toRaw === "both" || toRaw === "instinct"
+			? toRaw
+			: "instinct";
+	if (args.to && to !== toRaw && args.to !== to) {
+		// invalid --to already normalized only for known; reject unknown
+	}
+	if (
+		args.to &&
+		!["instinct", "vault", "both"].includes(String(args.to).toLowerCase())
+	) {
+		const msg = `--to must be instinct|vault|both (got ${args.to})`;
+		if (args.json) console.log(JSON.stringify({ ok: false, error: msg }));
+		else console.error(`[hkx-instinct] ${msg}`);
+		return 1;
+	}
+
+	const wantInstinct = to === "instinct" || to === "both";
+	const wantVault = to === "vault" || to === "both";
+
+	const { candidates, skipped } = wantInstinct
+		? mapProjectionToCandidates(projection, {
+				project,
+				minRelevance: args.minRelevance,
+			})
+		: { candidates: [], skipped: [] };
+
+	const vaultMapped = wantVault
+		? mapProjectionToVaultDocs(projection, {
+				project,
+				minRelevance: args.minRelevance,
+			})
+		: { docs: [], skipped: [] };
 
 	/** @type {string[]} */
 	const written = [];
+	/** @type {string[]} */
+	const vaultWritten = [];
 	if (!args.dryRun) {
-		for (const inst of candidates) {
-			const p = writeInstinct(
-				root,
-				project,
-				/** @type {any} */ (inst),
-				"pending",
-				"project",
-			);
-			written.push(p);
+		if (wantInstinct) {
+			for (const inst of candidates) {
+				const p = writeInstinct(
+					root,
+					project,
+					/** @type {any} */ (inst),
+					"pending",
+					"project",
+				);
+				written.push(p);
+			}
+		}
+		if (wantVault) {
+			for (const doc of vaultMapped.docs) {
+				const r = saveMemory(root, project, doc, { apply: true });
+				if (r.ok && r.filePath) vaultWritten.push(r.filePath);
+			}
 		}
 	}
 
 	const payload = {
 		ok: true,
 		dryRun: args.dryRun,
+		to,
 		sessionPath,
 		root,
 		source,
@@ -516,6 +565,9 @@ function cmdFromOm(args) {
 			candidates: candidates.length,
 			skipped: skipped.length,
 			written: written.length,
+			vaultDocs: vaultMapped.docs.length,
+			vaultSkipped: vaultMapped.skipped.length,
+			vaultWritten: vaultWritten.length,
 		},
 		candidates: candidates.map((c) => ({
 			id: /** @type {any} */ (c).id,
@@ -525,12 +577,25 @@ function cmdFromOm(args) {
 		})),
 		skipped,
 		written,
+		vaultDocs: vaultMapped.docs.map((d) => ({
+			id: d.id,
+			title: d.title,
+			tags: d.tags,
+		})),
+		vaultSkipped: vaultMapped.skipped,
+		vaultWritten,
 	};
 
 	if (args.json) {
 		console.log(JSON.stringify(payload, null, 2));
 	} else {
-		console.log("OM -> pending instincts");
+		console.log(
+			to === "vault"
+				? "OM -> memory vault"
+				: to === "both"
+					? "OM -> pending instincts + memory vault"
+					: "OM -> pending instincts",
+		);
 		console.log(`  session:     ${sessionPath}`);
 		console.log(`  data root:   ${root}`);
 		console.log(
@@ -553,11 +618,24 @@ function cmdFromOm(args) {
 				);
 			}
 		}
-		if (!args.dryRun) {
-			console.log(`  wrote ${written.length} pending files`);
+		if (wantVault) {
 			console.log(
-				"  Next: review with status --pending, then accept --all or --id <id>",
+				`  vault docs: ${vaultMapped.docs.length}  vault-skipped: ${vaultMapped.skipped.length}  dry-run: ${args.dryRun}`,
 			);
+			for (const d of vaultMapped.docs.slice(0, 15)) {
+				console.log(`    ~ ${d.id}: ${d.title}`);
+			}
+		}
+		if (!args.dryRun) {
+			if (wantInstinct) {
+				console.log(`  wrote ${written.length} pending files`);
+				console.log(
+					"  Next: review with status --pending, then accept --all or --id <id>",
+				);
+			}
+			if (wantVault) {
+				console.log(`  wrote ${vaultWritten.length} vault memory files`);
+			}
 		} else {
 			console.log("  (dry-run: nothing written)");
 		}
@@ -1250,8 +1328,15 @@ function cmdProjects(args) {
 
 function cmdMemory(args) {
 	const sub = args.memoryCmd;
-	if (!sub || !["recall", "save", "validate"].includes(sub)) {
-		console.error("Usage: memory recall|save|validate [flags]\n  see: help");
+	if (
+		!sub ||
+		!["recall", "save", "validate", "handoff", "promote-instinct"].includes(
+			sub,
+		)
+	) {
+		console.error(
+			"Usage: memory recall|save|handoff|promote-instinct|validate [flags]\n  see: help",
+		);
 		return 1;
 	}
 	const { root, source, warnings } = resolveHomunculusDir(process.env);
@@ -1380,6 +1465,111 @@ function cmdMemory(args) {
 			console.log("---");
 			console.log(result.preview.trimEnd());
 		}
+		return 0;
+	}
+
+	if (sub === "handoff") {
+		if (!args.title) {
+			console.error("memory handoff requires --title");
+			return 1;
+		}
+		let body = args.body ?? "";
+		if (args.bodyFile) {
+			body = fs.readFileSync(args.bodyFile, "utf8");
+		}
+		const hScope =
+			args.scope === "user" || args.scope === "project"
+				? args.scope
+				: "project";
+		const hResult = createHandoff(
+			root,
+			project,
+			{
+				title: args.title,
+				body,
+				scope: hScope,
+				tags: args.tags,
+				id: args.ids[0],
+			},
+			{ apply: Boolean(args.apply) && !args.dryRun },
+		);
+		if (!hResult.ok) {
+			if (args.json) console.log(JSON.stringify(hResult, null, 2));
+			else
+				console.error(
+					`[hkx-instinct] memory handoff: ${hResult.error}`,
+				);
+			return 1;
+		}
+		if (args.json) {
+			console.log(
+				JSON.stringify(
+					{
+						ok: true,
+						apply: hResult.apply,
+						filePath: hResult.filePath,
+						doc: hResult.doc,
+						preview: hResult.apply ? undefined : hResult.preview,
+					},
+					null,
+					2,
+				),
+			);
+			return 0;
+		}
+		console.log(
+			hResult.apply
+				? `Handoff saved: ${hResult.filePath}`
+				: `Handoff preview (pass --apply to write): ${hResult.filePath}`,
+		);
+		console.log(
+			`  id: ${hResult.doc?.id} tags: ${(hResult.doc?.tags || []).join(",")}`,
+		);
+		if (!hResult.apply && hResult.preview) {
+			console.log("---");
+			console.log(hResult.preview.trimEnd());
+		}
+		return 0;
+	}
+
+	if (sub === "promote-instinct") {
+		const mid = args.ids[0];
+		if (!mid) {
+			console.error("memory promote-instinct requires --id <memory-id>");
+			return 1;
+		}
+		const pScope =
+			args.scope === "user" || args.scope === "project"
+				? args.scope
+				: "project";
+		const pResult = promoteMemoryToPending(root, project, {
+			id: mid,
+			scope: pScope,
+			apply: Boolean(args.apply) && !args.dryRun,
+			force: Boolean(args.force),
+		});
+		if (!pResult.ok) {
+			if (args.json) console.log(JSON.stringify(pResult, null, 2));
+			else
+				console.error(
+					`[hkx-instinct] promote-instinct: ${pResult.error}`,
+				);
+			return 1;
+		}
+		if (args.json) {
+			console.log(JSON.stringify(pResult, null, 2));
+			return 0;
+		}
+		console.log(
+			pResult.apply
+				? `Promoted memory ${pResult.memoryId} -> pending ${pResult.instinct?.id}`
+				: `Promote preview (pass --apply to write pending): ${pResult.instinct?.id}`,
+		);
+		console.log(`  pending: ${pResult.pendingPath}`);
+		console.log(
+			`  vault unchanged: ${pResult.memoryPath || pResult.memoryId}`,
+		);
+		console.log(`  trigger: ${pResult.instinct?.trigger}`);
 		return 0;
 	}
 

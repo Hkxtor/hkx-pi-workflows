@@ -17,6 +17,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { layoutPaths, isValidInstinctId } from "./paths.mjs";
 import { writeFileAtomic } from "./atomic-write.mjs";
+import { writeInstinct } from "./store.mjs";
+import {
+	classifyDomain,
+	looksActionable,
+	triggerFromContent,
+} from "./om-map.mjs";
 import {
 	MEMORY_SCHEMA,
 	parseMemoryFile,
@@ -24,6 +30,9 @@ import {
 	slugMemoryId,
 	validateMemoryDoc,
 } from "./memory-schema.mjs";
+
+const HANDOFF_TAG = "handoff";
+const HANDOFF_STUB = `## Status\n\n## Done\n\n## Do not touch\n\n## Next\n\n## Links\n`;
 
 /**
  * @param {string} root
@@ -276,5 +285,179 @@ export function validateMemories(root, project, opts = {}) {
 		okCount: okFiles.length,
 		errors,
 		okFiles,
+	};
+}
+
+/**
+ * @param {string} root
+ * @param {{ id: string }} project
+ * @param {string} id
+ * @param {{"project"|"user"}} [scope]
+ */
+export function getMemory(root, project, id, scope = "project") {
+	if (!id || !isValidInstinctId(id)) {
+		return { ok: false, error: `invalid memory id "${id}"` };
+	}
+	if (scope !== "project" && scope !== "user") {
+		return { ok: false, error: `getMemory scope must be project|user` };
+	}
+	const dir = memoryDirForScope(root, project, scope);
+	const filePath = path.join(dir, `${id}.md`);
+	if (!fs.existsSync(filePath)) {
+		return { ok: false, error: `memory not found: ${id} (${scope})` };
+	}
+	const raw = fs.readFileSync(filePath, "utf8");
+	const parsed = parseMemoryFile(raw);
+	if (!parsed.ok) return { ok: false, error: parsed.error, filePath };
+	if (parsed.doc.scope !== scope) {
+		return {
+			ok: false,
+			error: `scope mismatch in file: ${parsed.doc.scope}`,
+			filePath,
+		};
+	}
+	return {
+		ok: true,
+		doc: { ...parsed.doc, _filePath: filePath },
+		filePath,
+	};
+}
+
+/**
+ * Save a handoff note (hkx.memory.v1 + tag handoff).
+ * @param {string} root
+ * @param {{ id: string }} project
+ * @param {{ title: string, body?: string, id?: string, scope?: "project"|"user", tags?: string[] }}
+ * @param {{ apply?: boolean }} [opts]
+ */
+export function createHandoff(root, project, input, opts = {}) {
+	const bodyRaw = String(input.body ?? "").trim();
+	const body =
+		bodyRaw.length >= 20
+			? bodyRaw
+			: `${bodyRaw ? `${bodyRaw}\n\n` : ""}${HANDOFF_STUB}`;
+	const tags = Array.isArray(input.tags) ? [...input.tags.map(String)] : [];
+	if (!tags.some((t) => t.toLowerCase() === HANDOFF_TAG)) {
+		tags.unshift(HANDOFF_TAG);
+	}
+	return saveMemory(
+		root,
+		project,
+		{
+			title: input.title,
+			body,
+			id: input.id,
+			scope: input.scope ?? "project",
+			tags,
+			source: "session",
+		},
+		{ apply: Boolean(opts.apply) },
+	);
+}
+
+/**
+ * Explicit vault → pending instinct (no vault delete; no personal write).
+ * @param {string} root
+ * @param {{ id: string, name?: string }} project
+ * @param {{ id: string, scope?: "project"|"user", apply?: boolean, force?: boolean }}
+ */
+export function promoteMemoryToPending(root, project, opts) {
+	const scope = opts.scope === "user" ? "user" : "project";
+	const apply = Boolean(opts.apply);
+	const force = Boolean(opts.force);
+	const loaded = getMemory(root, project, opts.id, scope);
+	if (!loaded.ok) {
+		return { ok: false, error: loaded.error, apply: false };
+	}
+	const doc = loaded.doc;
+	const text = `${doc.title}\n${doc.body ?? ""}`.trim();
+	if (text.length < 12) {
+		return {
+			ok: false,
+			error: "memory body/title too short to promote",
+			apply: false,
+		};
+	}
+	if (!looksActionable(text) && !force) {
+		return {
+			ok: false,
+			error:
+				"memory does not look like an actionable preference/decision; pass --force to promote anyway",
+			apply: false,
+			doc,
+		};
+	}
+	const instinctId = isValidInstinctId(doc.id) ? doc.id : slugMemoryId(doc.id);
+	const trigger = triggerFromContent(text);
+	const domain = classifyDomain(text);
+	const content = [
+		`# ${doc.title}`,
+		"",
+		"## Action",
+		"",
+		String(doc.body ?? "").trim() || doc.title,
+		"",
+		"## Evidence",
+		"",
+		`- Promoted from memory vault id \`${doc.id}\` (scope ${doc.scope})`,
+		doc.tags?.length ? `- Tags: ${doc.tags.join(", ")}` : null,
+		"",
+	]
+		.filter((l) => l !== null)
+		.join("\n");
+
+	/** @type {import('./parse.mjs').Instinct} */
+	const inst = {
+		id: instinctId,
+		trigger,
+		confidence: 0.45,
+		domain,
+		source: "memory-vault",
+		scope: "project",
+		project_id: project.id,
+		project_name: project.name,
+		created: new Date().toISOString().slice(0, 10),
+		content,
+	};
+
+	const layout = layoutPaths(root, project);
+	const pendingPath = layout.projectInstincts
+		? path.join(layout.projectInstincts.pending, `${instinctId}.md`)
+		: null;
+	if (!pendingPath) {
+		return {
+			ok: false,
+			error: "cannot resolve project pending dir (global project?)",
+			apply: false,
+		};
+	}
+	if (fs.existsSync(pendingPath) && !force) {
+		return {
+			ok: false,
+			error: `pending instinct "${instinctId}" already exists; pass --force to overwrite pending only`,
+			apply: false,
+			pendingPath,
+			instinct: inst,
+			memoryId: doc.id,
+		};
+	}
+	if (!apply) {
+		return {
+			ok: true,
+			apply: false,
+			pendingPath,
+			instinct: inst,
+			memoryId: doc.id,
+			memoryPath: doc._filePath,
+		};
+	}
+	const written = writeInstinct(root, project, inst, "pending", "project");
+	return {
+		ok: true,
+		apply: true,
+		pendingPath: written,
+		instinct: inst,
+		memoryId: doc.id,
+		memoryPath: doc._filePath,
 	};
 }

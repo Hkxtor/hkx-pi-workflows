@@ -50,12 +50,15 @@ node scripts/instinct/cli.mjs memory recall
 node scripts/instinct/cli.mjs memory recall --scope user --query "auth"
 node scripts/instinct/cli.mjs memory save --title "Decision" --body "..."       # preview
 node scripts/instinct/cli.mjs memory save --title "Decision" --body "..." --apply
+node scripts/instinct/cli.mjs memory handoff --title "Slice" --body "..." --apply
+node scripts/instinct/cli.mjs memory promote-instinct --id prefer-token-bucket --apply
 node scripts/instinct/cli.mjs memory validate
+node scripts/instinct/cli.mjs from-om --to vault --dry-run   # opt-in; default is instinct-only
 ```
 
 Slash entry: **`/hkx-unified-memory`**.
 
-Flags: `--json`, `--scope project|user` (validate: `all`), `--apply` (save writes), `--tag` / `--id` / `--query`.
+Flags: `--json`, `--scope project|user` (validate: `all`), `--apply` (writes), `--tag` / `--id` / `--query`, `--force` (promote), from-om `--to instinct|vault|both`.
 
 ## Workflow
 
@@ -81,9 +84,9 @@ Fails on bad frontmatter, scope/dir mismatch, or id≠filename stem.
 
 ## OM and instinct boundaries
 
-- **`from-om`**: reflections → **pending instincts only** (no silent vault dual-write).
-- **Vault → instinct**: not automatic (M3+ explicit promote).
-- **Handoff** subcommand: M3.
+- **`from-om`**: default → **pending instincts only**. Opt-in `--to vault` / `--to both` (never default both).
+- **Vault → instinct**: explicit `memory promote-instinct` → **pending** only; vault file kept.
+- **Handoff**: `memory handoff` (tag `handoff`); recall with `--tag handoff`.
 
 ## Related
 

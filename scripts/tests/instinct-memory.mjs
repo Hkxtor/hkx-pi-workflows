@@ -25,7 +25,10 @@ import {
 	recallMemories,
 	saveMemory,
 	validateMemories,
+	createHandoff,
+	promoteMemoryToPending,
 } from "../instinct/lib/memory-store.mjs";
+import { listPending } from "../instinct/lib/store.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(__dirname, "../..");
@@ -259,6 +262,109 @@ function check(name, cond, detail) {
 
 		const lp = layoutPaths(tmp, project);
 		check("layoutPaths projectMemory", typeof lp.projectMemory === "string");
+
+		// M3 handoff
+		const ho = createHandoff(
+			tmp,
+			project,
+			{ title: "Auth handoff", body: "WIP on cookies", id: "auth-handoff" },
+			{ apply: true },
+		);
+		check("handoff apply ok", ho.ok && ho.apply, ho.error);
+		check(
+			"handoff has tag",
+			Boolean(ho.doc?.tags?.includes("handoff")),
+			JSON.stringify(ho.doc?.tags),
+		);
+		const hoRecall = recallMemories(tmp, project, { tag: "handoff" });
+		check(
+			"recall tag handoff",
+			hoRecall.items.some((i) => i.id === "auth-handoff"),
+		);
+
+		// M3 promote
+		const promoMem = saveMemory(
+			tmp,
+			project,
+			{
+				id: "prefer-token-bucket",
+				title: "Prefer token bucket",
+				body: "Always use token bucket rate limiting for public APIs.",
+				tags: ["api"],
+				scope: "project",
+			},
+			{ apply: true },
+		);
+		check("promo mem saved", promoMem.ok, promoMem.error);
+		const promoPrev = promoteMemoryToPending(tmp, project, {
+			id: "prefer-token-bucket",
+			apply: false,
+		});
+		check(
+			"promote preview ok",
+			promoPrev.ok && !promoPrev.apply,
+			promoPrev.error,
+		);
+		check(
+			"promote preview no pending file yet",
+			!fs.existsSync(promoPrev.pendingPath),
+		);
+		const promo = promoteMemoryToPending(tmp, project, {
+			id: "prefer-token-bucket",
+			apply: true,
+		});
+		check("promote apply ok", promo.ok && promo.apply, promo.error);
+		check("pending file exists", fs.existsSync(promo.pendingPath));
+		check(
+			"vault still exists",
+			fs.existsSync(
+				path.join(layout.projectMemory, "prefer-token-bucket.md"),
+			),
+		);
+		const pendingList = listPending(tmp, project, "project");
+		check(
+			"listPending has promoted",
+			pendingList.some((p) => p.id === "prefer-token-bucket"),
+		);
+		const promoDup = promoteMemoryToPending(tmp, project, {
+			id: "prefer-token-bucket",
+			apply: true,
+		});
+		check("promote dup without force fails", !promoDup.ok);
+
+		const cliHo = spawnSync(
+			process.execPath,
+			[
+				cli,
+				"memory",
+				"handoff",
+				"--title",
+				"CLI handoff",
+				"--body",
+				"## Status\nShipping M3",
+				"--id",
+				"cli-handoff",
+				"--apply",
+				"--json",
+			],
+			{ env, encoding: "utf8" },
+		);
+		check("cli handoff exit 0", cliHo.status === 0, cliHo.stderr);
+		const cliPromo = spawnSync(
+			process.execPath,
+			[
+				cli,
+				"memory",
+				"promote-instinct",
+				"--id",
+				"prefer-token-bucket",
+				"--force",
+				"--apply",
+				"--json",
+			],
+			{ env, encoding: "utf8" },
+		);
+		check("cli promote force exit 0", cliPromo.status === 0, cliPromo.stderr);
 	} finally {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	}

@@ -141,8 +141,9 @@ node scripts/instinct/cli.mjs memory validate
 
 - Layout: `projects/<id>/memory/`, `memory/user/` (team dir stub only; no writes in M1)
 - Default recall scope: **project** (user only with `--scope user`)
-- `from-om` still writes **pending instincts only** (no silent vault dual-write)
-- Slash commands / full `unified-memory` skill: M2+
+- `from-om` default: **pending instincts only**; opt-in `--to vault|both`
+- Vault handoff / promote: `memory handoff`, `memory promote-instinct` (skill `unified-memory`, `/hkx-unified-memory`)
+- Slash: `/hkx-unified-memory`
 
 ## Publish drafts
 
@@ -168,6 +169,7 @@ node scripts/instinct/cli.mjs promote --apply
 ```bash
 node scripts/instinct/cli.mjs from-om --session /path/to/session.jsonl --dry-run
 node scripts/instinct/cli.mjs from-om --session /path/to/session.jsonl
+node scripts/instinct/cli.mjs from-om --session /path/to/session.jsonl --to vault --dry-run
 node scripts/instinct/cli.mjs status --pending
 node scripts/instinct/cli.mjs accept --all
 ```
