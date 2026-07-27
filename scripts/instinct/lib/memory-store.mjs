@@ -30,10 +30,7 @@ import {
 	slugMemoryId,
 	validateMemoryDoc,
 } from "./memory-schema.mjs";
-import {
-	hasBlockingSecrets,
-	scanMemoryText,
-} from "./memory-secrets.mjs";
+import { hasBlockingSecrets, scanMemoryText } from "./memory-secrets.mjs";
 
 const HANDOFF_TAG = "handoff";
 const HANDOFF_STUB = `## Status\n\n## Done\n\n## Do not touch\n\n## Next\n\n## Links\n`;
@@ -296,9 +293,7 @@ export function validateMemories(root, project, opts = {}) {
 				`${parsed.doc.title}\n${parsed.doc.body ?? ""}`,
 			);
 			const high = secretScan.findings.filter((f) => f.severity === "high");
-			const medium = secretScan.findings.filter(
-				(f) => f.severity === "medium",
-			);
+			const medium = secretScan.findings.filter((f) => f.severity === "medium");
 			if (high.length) {
 				errors.push({
 					file: filePath,

@@ -446,14 +446,7 @@ function check(name, cond, detail) {
 
 		const cliImp = spawnSync(
 			process.execPath,
-			[
-				cli,
-				"memory",
-				"import-ecc",
-				"--from",
-				fixture,
-				"--json",
-			],
+			[cli, "memory", "import-ecc", "--from", fixture, "--json"],
 			{ env, encoding: "utf8" },
 		);
 		check("cli import-ecc preview exit 0", cliImp.status === 0, cliImp.stderr);

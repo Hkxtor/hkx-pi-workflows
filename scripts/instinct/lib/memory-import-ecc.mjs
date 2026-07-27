@@ -301,12 +301,10 @@ export function applyEccMemoryImport(plan, root, project, opts = {}) {
 			results.push({ ...item, action: `preview-${item.action}` });
 			continue;
 		}
-		const r = saveMemory(
-			root,
-			project,
-			/** @type {any} */ (item.doc),
-			{ apply: true, forceSecrets: Boolean(opts.forceSecrets) },
-		);
+		const r = saveMemory(root, project, /** @type {any} */ (item.doc), {
+			apply: true,
+			forceSecrets: Boolean(opts.forceSecrets),
+		});
 		if (!r.ok) {
 			results.push({
 				file: item.file,

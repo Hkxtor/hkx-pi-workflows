@@ -1588,8 +1588,7 @@ function cmdMemory(args) {
 	}
 
 	if (sub === "import-ecc") {
-		const from =
-			args.fromPath || args.fromEcc || args.source || args.ids[0];
+		const from = args.fromPath || args.fromEcc || args.source || args.ids[0];
 		if (!from) {
 			console.error(
 				"memory import-ecc requires --from <repo|.ecc/memory> (not instinct import --from-ecc)",
@@ -1597,9 +1596,7 @@ function cmdMemory(args) {
 			return 1;
 		}
 		const iScope =
-			args.scope === "project" ||
-			args.scope === "user" ||
-			args.scope === "all"
+			args.scope === "project" || args.scope === "user" || args.scope === "all"
 				? args.scope
 				: "all";
 		const plan = planEccMemoryImport(from, root, project, {
@@ -1644,12 +1641,7 @@ function cmdMemory(args) {
 			console.log(`  written: ${applied.written?.length ?? 0}`);
 		}
 		for (const it of (plan.items || []).slice(0, 25)) {
-			const mark =
-				it.action === "skip"
-					? "-"
-					: doApply
-						? "*"
-						: "~";
+			const mark = it.action === "skip" ? "-" : doApply ? "*" : "~";
 			console.log(
 				`  ${mark} ${it.action} ${it.id || "?"} [${it.scope || ""}] ${it.reason || ""}`,
 			);
