@@ -122,6 +122,28 @@ node scripts/instinct/cli.mjs projects           # registry + personal/inherited
 - Does not delete personal/inherited (use decay for confidence)
 - Commands: `/hkx-instinct-prune`, `/hkx-instinct-projects`
 
+## Memory vault (M1)
+
+Optional **context** store on the **same** `hkx-homunculus` root (not a second data root). Orthogonal to instincts:
+
+| Layer | What it stores |
+| --- | --- |
+| observational-memory (`/om`) | Per-session observations/reflections |
+| Memory vault | Project/user decisions, constraints, notes (`hkx.memory.v1`) |
+| Instinct store | Cross-session **triggerable** behaviors (pending → personal) |
+
+```bash
+node scripts/instinct/cli.mjs memory recall
+node scripts/instinct/cli.mjs memory save --title "Decision" --body "..."   # preview
+node scripts/instinct/cli.mjs memory save --title "Decision" --body "..." --apply
+node scripts/instinct/cli.mjs memory validate
+```
+
+- Layout: `projects/<id>/memory/`, `memory/user/` (team dir stub only; no writes in M1)
+- Default recall scope: **project** (user only with `--scope user`)
+- `from-om` still writes **pending instincts only** (no silent vault dual-write)
+- Slash commands / full `unified-memory` skill: M2+
+
 ## Publish drafts
 
 ```bash

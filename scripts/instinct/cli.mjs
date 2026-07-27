@@ -3,9 +3,9 @@
  * Instinct store + evolve + OM adapter CLI (cross-platform Node ESM).
  *
  * Usage:
- *   node scripts/instinct/cli.mjs init|status|evolve|from-om|accept|export|import|promote|publish-draft|decay|prune|projects [flags]
+ *   node scripts/instinct/cli.mjs init|status|evolve|from-om|accept|export|import|promote|publish-draft|decay|prune|projects|memory [flags]
  *
- * Imports: lib/paths, store, cluster, generate, om-session, om-map, transfer, promote, publish, decay, prune, projects
+ * Imports: lib/paths, store, cluster, generate, om-session, om-map, transfer, promote, publish, decay, prune, projects, memory-*
  * Docs: docs/instinct-evolve-plan.md, commands/hkx-evolve.md, hkx-instinct-accept.md, hkx-instinct-prune.md, hkx-instinct-projects.md
  * Public surface: process exit 0/1/2; --json stdout schema
  * Auth: Phase 1-3 + publish-draft + confidence decay + P0 prune/projects
@@ -72,6 +72,11 @@ import {
 	DEFAULT_PENDING_TTL_DAYS,
 } from "./lib/prune.mjs";
 import { listProjectStats, formatProjectStats } from "./lib/projects.mjs";
+import {
+	recallMemories,
+	saveMemory,
+	validateMemories,
+} from "./lib/memory-store.mjs";
 import fs from "node:fs";
 
 function configureUtf8() {
@@ -103,7 +108,13 @@ Commands:
   decay                Apply time-based confidence decay (preview default)
   prune                Delete expired pending instincts (preview default)
   projects             List known projects and instinct statistics
+  memory <sub>         Memory vault (recall|save|validate) under homunculus
   help                 Show this help
+
+Memory subcommands:
+  memory recall [--scope project|user] [--tag t] [--id id] [--query s]
+  memory save --title T [--body|--body-file] [--scope project|user] [--tag t] [--id id] [--apply]
+  memory validate [--scope project|user|all]
 
 Flags:
   --json               Machine-readable stdout
@@ -115,9 +126,14 @@ Flags:
   --min-relevance <l>  low|medium|high|critical (from-om, default medium)
   --all                Accept all pending (accept)
   --force              Overwrite existing personal on accept
-  --scope <s>          project|global|all (accept/decay/prune; default varies)
-  --id <instinct-id>   Accept/promote specific id (repeatable)
+  --scope <s>          project|global|all|user (accept/decay/prune/memory; default varies)
+  --id <instinct-id>   Accept/promote/memory specific id (repeatable)
   --output <file>      Export target file (export)
+  --title <text>       Memory save title
+  --body <text>        Memory save body
+  --body-file <path>   Memory save body from file
+  --tag <name>         Memory tag filter or save tag (repeatable)
+  --query <substr>     Memory recall title/body/id filter
   --domain <name>      Filter by domain (export)
   --min-confidence <n> Min confidence 0-1 (export/import)
   --from-ecc <dir>     Import from ECC homunculus tree (import)
@@ -172,11 +188,23 @@ function parseArgs(argv) {
 		floor: /** @type {number|undefined} */ (undefined),
 		asOf: /** @type {string|undefined} */ (undefined),
 		maxAge: /** @type {number|undefined} */ (undefined),
+		memoryCmd: /** @type {string|undefined} */ (undefined),
+		title: /** @type {string|undefined} */ (undefined),
+		body: /** @type {string|undefined} */ (undefined),
+		bodyFile: /** @type {string|undefined} */ (undefined),
+		/** @type {string[]} */
+		tags: [],
+		query: /** @type {string|undefined} */ (undefined),
 	};
 	const rest = argv.slice(2);
 	if (rest.length === 0) return args;
 	args.command = rest[0];
-	for (let i = 1; i < rest.length; i++) {
+	let i = 1;
+	if (args.command === "memory" && rest[1] && !rest[1].startsWith("-")) {
+		args.memoryCmd = rest[1];
+		i = 2;
+	}
+	for (; i < rest.length; i++) {
 		const a = rest[i];
 		if (a === "--json") args.json = true;
 		else if (a === "--pending") args.pending = true;
@@ -192,7 +220,14 @@ function parseArgs(argv) {
 		else if (a === "--scope") args.scope = rest[++i] ?? args.scope;
 		else if (a === "--output") args.output = rest[++i];
 		else if (a === "--domain") args.domain = rest[++i];
-		else if (a === "--min-confidence") {
+		else if (a === "--title") args.title = rest[++i];
+		else if (a === "--body") args.body = rest[++i];
+		else if (a === "--body-file") args.bodyFile = rest[++i];
+		else if (a === "--query") args.query = rest[++i];
+		else if (a === "--tag") {
+			const t = rest[++i];
+			if (t) args.tags.push(t);
+		} else if (a === "--min-confidence") {
 			const n = Number.parseFloat(rest[++i] ?? "");
 			if (Number.isFinite(n)) args.minConfidence = n;
 		} else if (a === "--from-ecc") args.fromEcc = rest[++i];
@@ -1213,6 +1248,179 @@ function cmdProjects(args) {
 	return 0;
 }
 
+function cmdMemory(args) {
+	const sub = args.memoryCmd;
+	if (!sub || !["recall", "save", "validate"].includes(sub)) {
+		console.error("Usage: memory recall|save|validate [flags]\n  see: help");
+		return 1;
+	}
+	const { root, source, warnings } = resolveHomunculusDir(process.env);
+	for (const w of warnings) console.error(`[hkx-instinct] ${w}`);
+	const project = detectProject(args.cwd);
+	ensureLayout(root, project);
+
+	if (sub === "recall") {
+		const scope =
+			args.scope === "user" || args.scope === "project"
+				? args.scope
+				: "project";
+		const result = recallMemories(root, project, {
+			scope,
+			tag: args.tags[0],
+			id: args.ids[0],
+			query: args.query,
+		});
+		if (args.json) {
+			console.log(
+				JSON.stringify(
+					{
+						ok: true,
+						root,
+						source,
+						project,
+						scope: result.scope,
+						dir: result.dir,
+						count: result.items.length,
+						items: result.items.map((d) => ({
+							id: d.id,
+							scope: d.scope,
+							title: d.title,
+							tags: d.tags,
+							created: d.created,
+							source: d.source,
+							body: d.body,
+							filePath: d._filePath,
+						})),
+					},
+					null,
+					2,
+				),
+			);
+			return 0;
+		}
+		console.log(`Memory recall [${result.scope}] (${result.items.length})`);
+		console.log(`  data: ${root} (${source})`);
+		console.log(`  project: ${project.name} (${project.id})`);
+		if (result.dir) console.log(`  dir: ${result.dir}`);
+		console.log("");
+		if (!result.items.length) {
+			console.log("  (no memories matched)");
+			return 0;
+		}
+		for (const d of result.items) {
+			const tags = d.tags?.length ? ` tags=${d.tags.join(",")}` : "";
+			console.log(`  - ${d.id}: ${d.title}${tags}`);
+			if (d.body) {
+				const preview = d.body.split("\n").slice(0, 3).join(" ");
+				console.log(
+					`      ${preview.slice(0, 120)}${preview.length > 120 ? "…" : ""}`,
+				);
+			}
+		}
+		return 0;
+	}
+
+	if (sub === "save") {
+		if (!args.title) {
+			console.error("memory save requires --title");
+			return 1;
+		}
+		let body = args.body ?? "";
+		if (args.bodyFile) {
+			body = fs.readFileSync(args.bodyFile, "utf8");
+		}
+		const scope =
+			args.scope === "user" || args.scope === "project"
+				? args.scope
+				: "project";
+		const result = saveMemory(
+			root,
+			project,
+			{
+				title: args.title,
+				body,
+				scope,
+				tags: args.tags,
+				id: args.ids[0],
+				source: "manual",
+			},
+			{ apply: Boolean(args.apply) && !args.dryRun },
+		);
+		if (!result.ok) {
+			if (args.json) {
+				console.log(JSON.stringify(result, null, 2));
+			} else {
+				console.error(`[hkx-instinct] memory save: ${result.error}`);
+			}
+			return 1;
+		}
+		if (args.json) {
+			console.log(
+				JSON.stringify(
+					{
+						ok: true,
+						apply: result.apply,
+						filePath: result.filePath,
+						doc: result.doc,
+						preview: result.apply ? undefined : result.preview,
+					},
+					null,
+					2,
+				),
+			);
+			return 0;
+		}
+		console.log(
+			result.apply
+				? `Memory saved: ${result.filePath}`
+				: `Memory save preview (pass --apply to write): ${result.filePath}`,
+		);
+		console.log(`  id: ${result.doc?.id} scope: ${result.doc?.scope}`);
+		if (!result.apply && result.preview) {
+			console.log("---");
+			console.log(result.preview.trimEnd());
+		}
+		return 0;
+	}
+
+	// validate
+	const scope =
+		args.scope === "project" || args.scope === "user" || args.scope === "all"
+			? args.scope
+			: "all";
+	const result = validateMemories(root, project, { scope });
+	if (args.json) {
+		console.log(
+			JSON.stringify(
+				{
+					ok: result.ok,
+					root,
+					source,
+					project,
+					scope,
+					scanned: result.scanned,
+					okCount: result.okCount,
+					errors: result.errors,
+				},
+				null,
+				2,
+			),
+		);
+		return result.ok ? 0 : 1;
+	}
+	console.log(`Memory validate [${scope}]`);
+	console.log(`  scanned: ${result.scanned} ok: ${result.okCount}`);
+	if (result.errors.length) {
+		console.log(`  errors: ${result.errors.length}`);
+		for (const e of result.errors.slice(0, 20)) {
+			console.log(`    ! ${e.file}: ${e.error}`);
+		}
+		return 1;
+	}
+	console.log("  all good");
+	return 0;
+}
+
 function main() {
 	configureUtf8();
 	const args = parseArgs(process.argv);
@@ -1242,6 +1450,8 @@ function main() {
 				return cmdPrune(args);
 			case "projects":
 				return cmdProjects(args);
+			case "memory":
+				return cmdMemory(args);
 			case "help":
 			case "--help":
 			case "-h":

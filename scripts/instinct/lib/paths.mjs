@@ -274,6 +274,12 @@ export function layoutPaths(root, project, platform = process.platform) {
 				},
 		metaJson: isGlobal ? null : join(base, "meta.json"),
 		evolvedRoot: isGlobal ? join(root, "evolved") : join(base, "evolved"),
+		/** Project-scope memory vault (hkx.memory.v1); null when project is global */
+		projectMemory: isGlobal ? null : join(base, "memory"),
+		/** User-scope memory under data root */
+		userMemory: join(root, "memory", "user"),
+		/** Team stub dir only in M1 (no default write/recall) */
+		teamMemory: join(root, "memory", "team"),
 	};
 }
 
@@ -291,6 +297,8 @@ export function ensureLayout(root, project) {
 		layout.globalEvolved.skills,
 		layout.globalEvolved.commands,
 		layout.globalEvolved.agents,
+		layout.userMemory,
+		layout.teamMemory,
 	];
 	if (layout.projectInstincts) {
 		dirs.push(
@@ -301,6 +309,9 @@ export function ensureLayout(root, project) {
 			layout.projectEvolved.commands,
 			layout.projectEvolved.agents,
 		);
+	}
+	if (layout.projectMemory) {
+		dirs.push(layout.projectMemory);
 	}
 	for (const d of dirs) {
 		fs.mkdirSync(d, { recursive: true });
