@@ -30,6 +30,10 @@ import {
 	slugMemoryId,
 	validateMemoryDoc,
 } from "./memory-schema.mjs";
+import {
+	hasBlockingSecrets,
+	scanMemoryText,
+} from "./memory-secrets.mjs";
 
 const HANDOFF_TAG = "handoff";
 const HANDOFF_STUB = `## Status\n\n## Done\n\n## Do not touch\n\n## Next\n\n## Links\n`;
@@ -137,10 +141,11 @@ export function recallMemories(root, project, opts = {}) {
  * @param {string} root
  * @param {{ id: string }} project
  * @param {Partial<import('./memory-schema.mjs').MemoryDoc> & { title: string }} input
- * @param {{ apply?: boolean }} [opts]
+ * @param {{ apply?: boolean, forceSecrets?: boolean }} [opts]
  */
 export function saveMemory(root, project, input, opts = {}) {
 	const apply = Boolean(opts.apply);
+	const forceSecrets = Boolean(opts.forceSecrets);
 	const scope = input.scope ?? "project";
 	if (scope === "team") {
 		return {
@@ -173,6 +178,10 @@ export function saveMemory(root, project, input, opts = {}) {
 	if (!checked.ok) {
 		return { ok: false, error: checked.error, apply: false };
 	}
+	const secretScan = scanMemoryText(
+		`${checked.doc.title}\n${checked.doc.body ?? ""}`,
+	);
+	const high = secretScan.findings.filter((f) => f.severity === "high");
 	const dir = memoryDirForScope(root, project, scope);
 	const filePath = path.join(dir, `${checked.doc.id}.md`);
 	const resolved = path.resolve(filePath);
@@ -191,6 +200,15 @@ export function saveMemory(root, project, input, opts = {}) {
 			filePath,
 			doc: checked.doc,
 			preview: content,
+			findings: secretScan.findings.length ? secretScan.findings : undefined,
+		};
+	}
+	if (high.length && !forceSecrets) {
+		return {
+			ok: false,
+			error: `secret heuristic blocked write (${high.map((f) => f.kind).join(", ")}); pass --force to override`,
+			apply: false,
+			findings: secretScan.findings,
 		};
 	}
 	fs.mkdirSync(dir, { recursive: true });
@@ -227,9 +245,12 @@ export function validateMemories(root, project, opts = {}) {
 
 	/** @type {{ file: string, error: string }[]} */
 	const errors = [];
+	/** @type {{ file: string, id: string, scope: string, findings?: object[] }[]} */
+	const warnings = [];
 	/** @type {{ file: string, id: string, scope: string }[]} */
 	const okFiles = [];
 	let scanned = 0;
+	const strict = Boolean(opts.strict);
 
 	for (const t of targets) {
 		if (!fs.existsSync(t.dir)) continue;
@@ -271,6 +292,35 @@ export function validateMemories(root, project, opts = {}) {
 				});
 				continue;
 			}
+			const secretScan = scanMemoryText(
+				`${parsed.doc.title}\n${parsed.doc.body ?? ""}`,
+			);
+			const high = secretScan.findings.filter((f) => f.severity === "high");
+			const medium = secretScan.findings.filter(
+				(f) => f.severity === "medium",
+			);
+			if (high.length) {
+				errors.push({
+					file: filePath,
+					error: `secret heuristic (high): ${high.map((f) => f.kind).join(", ")}`,
+				});
+				continue;
+			}
+			if (medium.length) {
+				warnings.push({
+					file: filePath,
+					id: parsed.doc.id,
+					scope: parsed.doc.scope,
+					findings: medium,
+				});
+				if (strict) {
+					errors.push({
+						file: filePath,
+						error: `secret heuristic (medium, --strict): ${medium.map((f) => f.kind).join(", ")}`,
+					});
+					continue;
+				}
+			}
 			okFiles.push({
 				file: filePath,
 				id: parsed.doc.id,
@@ -284,6 +334,7 @@ export function validateMemories(root, project, opts = {}) {
 		scanned,
 		okCount: okFiles.length,
 		errors,
+		warnings,
 		okFiles,
 	};
 }
@@ -351,7 +402,10 @@ export function createHandoff(root, project, input, opts = {}) {
 			tags,
 			source: "session",
 		},
-		{ apply: Boolean(opts.apply) },
+		{
+			apply: Boolean(opts.apply),
+			forceSecrets: Boolean(opts.forceSecrets),
+		},
 	);
 }
 

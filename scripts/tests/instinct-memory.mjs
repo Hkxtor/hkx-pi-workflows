@@ -29,6 +29,14 @@ import {
 	promoteMemoryToPending,
 } from "../instinct/lib/memory-store.mjs";
 import { listPending } from "../instinct/lib/store.mjs";
+import {
+	scanMemoryText,
+	hasBlockingSecrets,
+} from "../instinct/lib/memory-secrets.mjs";
+import {
+	planEccMemoryImport,
+	applyEccMemoryImport,
+} from "../instinct/lib/memory-import-ecc.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(__dirname, "../..");
@@ -317,9 +325,7 @@ function check(name, cond, detail) {
 		check("pending file exists", fs.existsSync(promo.pendingPath));
 		check(
 			"vault still exists",
-			fs.existsSync(
-				path.join(layout.projectMemory, "prefer-token-bucket.md"),
-			),
+			fs.existsSync(path.join(layout.projectMemory, "prefer-token-bucket.md")),
 		);
 		const pendingList = listPending(tmp, project, "project");
 		check(
@@ -365,6 +371,114 @@ function check(name, cond, detail) {
 			{ env, encoding: "utf8" },
 		);
 		check("cli promote force exit 0", cliPromo.status === 0, cliPromo.stderr);
+
+		// M4 secrets (assemble at runtime so pre-commit secret scanners ignore fixtures)
+		const fakeSk = ["sk", "-", "abcdefghijklmnopqrstuvwxyz012345"].join("");
+		check("scan flags sk", hasBlockingSecrets(`key ${fakeSk}`));
+		check(
+			"placeholder not secret",
+			!hasBlockingSecrets("use ${API_KEY} and YOUR_TOKEN_HERE"),
+		);
+		const blocked = saveMemory(
+			tmp,
+			project,
+			{ title: "bad", body: `token ${fakeSk}`, id: "bad-secret" },
+			{ apply: true },
+		);
+		check("save apply blocked secret", !blocked.ok, blocked.error);
+		const prevSecret = saveMemory(
+			tmp,
+			project,
+			{ title: "bad", body: `token ${fakeSk}`, id: "bad-secret" },
+			{ apply: false },
+		);
+		check("save preview still ok", prevSecret.ok && !prevSecret.apply);
+
+		// plant high secret with force for validate
+		const forced = saveMemory(
+			tmp,
+			project,
+			{ title: "forced", body: `x ${fakeSk}`, id: "forced-secret" },
+			{ apply: true, forceSecrets: true },
+		);
+		check("forceSecrets write", forced.ok && forced.apply, forced.error);
+		const val = validateMemories(tmp, project, { scope: "project" });
+		check("validate fails on high secret", !val.ok);
+		check(
+			"validate error mentions secret",
+			val.errors.some((e) => /secret heuristic/i.test(e.error)),
+		);
+
+		// M4 ECC import
+		const fixture = path.join(
+			pkgRoot,
+			"scripts/instinct/fixtures/ecc-memory-mini",
+		);
+		const plan = planEccMemoryImport(fixture, tmp, project, {});
+		check("import plan ok", plan.ok, plan.error);
+		check(
+			"import plan has adds",
+			(plan.counts?.add ?? 0) >= 2,
+			JSON.stringify(plan.counts),
+		);
+		const teamItem = plan.items.find((i) => i.id === "rate-limit-shared");
+		check(
+			"team mapped to project tag",
+			Boolean(
+				teamItem?.doc &&
+					/** @type {any} */ (teamItem.doc).tags?.includes(
+						"imported-from-ecc-team",
+					),
+			),
+		);
+		const applied = applyEccMemoryImport(plan, tmp, project, { apply: true });
+		check("import apply ok", applied.ok, applied.error);
+		check(
+			"import wrote files",
+			(applied.written?.length ?? 0) >= 2,
+			String(applied.written?.length),
+		);
+		const imported = recallMemories(tmp, project, { id: "auth-cookies" });
+		check(
+			"recall imported auth-cookies",
+			imported.items.some((i) => i.id === "auth-cookies"),
+		);
+
+		const cliImp = spawnSync(
+			process.execPath,
+			[
+				cli,
+				"memory",
+				"import-ecc",
+				"--from",
+				fixture,
+				"--json",
+			],
+			{ env, encoding: "utf8" },
+		);
+		check("cli import-ecc preview exit 0", cliImp.status === 0, cliImp.stderr);
+		const cliImpJson = JSON.parse(cliImp.stdout);
+		check("cli import-ecc apply false", cliImpJson.apply === false);
+
+		const cliBlock = spawnSync(
+			process.execPath,
+			[
+				cli,
+				"memory",
+				"save",
+				"--title",
+				"cli-bad",
+				"--body",
+				fakeSk,
+				"--id",
+				"cli-bad",
+				"--apply",
+				"--json",
+			],
+			{ env, encoding: "utf8" },
+		);
+		check("cli save secret blocked", cliBlock.status !== 0);
+		check("scanMemoryText export", scanMemoryText("ok").findings.length === 0);
 	} finally {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	}

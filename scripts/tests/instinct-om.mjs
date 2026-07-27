@@ -49,7 +49,11 @@ function check(name, cond, detail) {
 {
 	const entries = loadSessionEntries(sessionFixture);
 	const proj = fullProjectionFromEntries(entries);
-	check("has reflections", proj.reflections.length === 3, String(proj.reflections.length));
+	check(
+		"has reflections",
+		proj.reflections.length === 3,
+		String(proj.reflections.length),
+	);
 	check(
 		"dropped low obs removed",
 		!proj.observations.some((o) => o.id === "b2b2b2b2b2b2"),
@@ -64,9 +68,16 @@ function check(name, cond, detail) {
 
 // map heuristics
 {
-	check("actionable prefer", looksActionable("Prefer functional patterns over classes in modules."));
+	check(
+		"actionable prefer",
+		looksActionable("Prefer functional patterns over classes in modules."),
+	);
 	check("not actionable short", !looksActionable("hi"));
-	check("domain testing", classifyDomain("Always write a failing regression test") === "testing" || classifyDomain("Always write a failing regression test") === "debugging");
+	check(
+		"domain testing",
+		classifyDomain("Always write a failing regression test") === "testing" ||
+			classifyDomain("Always write a failing regression test") === "debugging",
+	);
 	const conf = scoreConfidence("Prefer X", [{ relevance: "critical" }]);
 	check("confidence bounded", conf >= 0.3 && conf <= 0.9, String(conf));
 }
@@ -78,8 +89,15 @@ function check(name, cond, detail) {
 		project: { id: "aabbccddeeff", name: "demo" },
 		minRelevance: "medium",
 	});
-	check("at least 1 candidate", candidates.length >= 1, String(candidates.length));
-	check("skipped short hi", skipped.some((s) => s.reflectionId === "f6f6f6f6f6f6"));
+	check(
+		"at least 1 candidate",
+		candidates.length >= 1,
+		String(candidates.length),
+	);
+	check(
+		"skipped short hi",
+		skipped.some((s) => s.reflectionId === "f6f6f6f6f6f6"),
+	);
 	check(
 		"candidates have om- ids",
 		candidates.every((c) => String(c.id).startsWith("om-")),
@@ -112,7 +130,11 @@ function check(name, cond, detail) {
 		);
 		check("from-om write exit 0", run.status === 0, run.stderr || run.stdout);
 		const runJson = JSON.parse(run.stdout);
-		check("wrote pending", runJson.written.length >= 1, String(runJson.written.length));
+		check(
+			"wrote pending",
+			runJson.written.length >= 1,
+			String(runJson.written.length),
+		);
 
 		const project = { id: "aabbccddeeff", name: "demo" };
 		ensureLayout(tmp, project);
@@ -126,7 +148,11 @@ function check(name, cond, detail) {
 		);
 		check("accept exit 0", acc.status === 0, acc.stderr || acc.stdout);
 		const accJson = JSON.parse(acc.stdout);
-		check("accepted some", accJson.accepted.length >= 1, JSON.stringify(accJson));
+		check(
+			"accepted some",
+			accJson.accepted.length >= 1,
+			JSON.stringify(accJson),
+		);
 
 		const personal = loadAllInstincts(tmp, project, { includePending: false });
 		check(
@@ -134,7 +160,11 @@ function check(name, cond, detail) {
 			personal.some((i) => accJson.accepted.includes(i.id)),
 		);
 		const pendingAfter = listPending(tmp, project, "project");
-		check("pending cleared for accepted", pendingAfter.length === 0, String(pendingAfter.length));
+		check(
+			"pending cleared for accepted",
+			pendingAfter.length === 0,
+			String(pendingAfter.length),
+		);
 
 		// skip conflict
 		// re-from-om then accept without force should skip or re-add pending then skip
@@ -177,18 +207,12 @@ function check(name, cond, detail) {
 		);
 		const dryVaultJson = JSON.parse(dryVault.stdout);
 		check("vault dry to=vault", dryVaultJson.to === "vault");
-		check(
-			"vault dry no instinct written",
-			dryVaultJson.written.length === 0,
-		);
+		check("vault dry no instinct written", dryVaultJson.written.length === 0);
 		check(
 			"vault dry has vaultDocs count",
 			typeof dryVaultJson.counts.vaultDocs === "number",
 		);
-		check(
-			"vault dry no vaultWritten",
-			dryVaultJson.vaultWritten.length === 0,
-		);
+		check("vault dry no vaultWritten", dryVaultJson.vaultWritten.length === 0);
 
 		const dryBoth = spawnSync(
 			process.execPath,
@@ -204,11 +228,7 @@ function check(name, cond, detail) {
 			],
 			{ env, encoding: "utf8" },
 		);
-		check(
-			"from-om --to both dry exit 0",
-			dryBoth.status === 0,
-			dryBoth.stderr,
-		);
+		check("from-om --to both dry exit 0", dryBoth.status === 0, dryBoth.stderr);
 		const dryBothJson = JSON.parse(dryBoth.stdout);
 		check("both dry to=both", dryBothJson.to === "both");
 		check(

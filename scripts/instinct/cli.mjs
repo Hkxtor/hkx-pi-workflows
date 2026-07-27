@@ -80,6 +80,10 @@ import {
 	promoteMemoryToPending,
 } from "./lib/memory-store.mjs";
 import { mapProjectionToVaultDocs } from "./lib/om-vault-map.mjs";
+import {
+	planEccMemoryImport,
+	applyEccMemoryImport,
+} from "./lib/memory-import-ecc.mjs";
 import fs from "node:fs";
 
 function configureUtf8() {
@@ -119,7 +123,8 @@ Memory subcommands:
   memory save --title T [--body|--body-file] [--scope project|user] [--tag t] [--id id] [--apply]
   memory handoff --title T [--body|--body-file] [--scope project|user] [--apply]
   memory promote-instinct --id <memory-id> [--scope project|user] [--apply] [--force]
-  memory validate [--scope project|user|all]
+  memory import-ecc --from <repo|.ecc/memory> [--scope project|user|all] [--apply] [--force]
+  memory validate [--scope project|user|all] [--strict]
 
 Flags:
   --json               Machine-readable stdout
@@ -142,8 +147,10 @@ Flags:
   --query <substr>     Memory recall title/body/id filter
   --domain <name>      Filter by domain (export)
   --min-confidence <n> Min confidence 0-1 (export/import)
-  --from-ecc <dir>     Import from ECC homunculus tree (import)
-  --apply              Apply promote/decay/prune writes (else preview)
+  --from-ecc <dir>     Import instincts from ECC homunculus (import) OR memory import-ecc source
+  --from <path>        Alias for memory import-ecc source path
+  --strict             memory validate: fail on medium secret findings too
+  --apply              Apply promote/decay/prune/memory writes (else preview)
   --from-project <id>  Promote using version from project id
   --target <dir>       Publish root (default ~/.pi/agent)
   --kind <k>           skill|command|agent (repeatable; publish-draft)
@@ -202,6 +209,8 @@ function parseArgs(argv) {
 		tags: [],
 		query: /** @type {string|undefined} */ (undefined),
 		to: /** @type {string|undefined} */ (undefined),
+		fromPath: /** @type {string|undefined} */ (undefined),
+		strict: false,
 	};
 	const rest = argv.slice(2);
 	if (rest.length === 0) return args;
@@ -239,6 +248,8 @@ function parseArgs(argv) {
 			const n = Number.parseFloat(rest[++i] ?? "");
 			if (Number.isFinite(n)) args.minConfidence = n;
 		} else if (a === "--from-ecc") args.fromEcc = rest[++i];
+		else if (a === "--from") args.fromPath = rest[++i];
+		else if (a === "--strict") args.strict = true;
 		else if (a === "--from-project") args.fromProject = rest[++i];
 		else if (a === "--target") args.target = rest[++i];
 		else if (a === "--kind") {
@@ -1330,12 +1341,17 @@ function cmdMemory(args) {
 	const sub = args.memoryCmd;
 	if (
 		!sub ||
-		!["recall", "save", "validate", "handoff", "promote-instinct"].includes(
-			sub,
-		)
+		![
+			"recall",
+			"save",
+			"validate",
+			"handoff",
+			"promote-instinct",
+			"import-ecc",
+		].includes(sub)
 	) {
 		console.error(
-			"Usage: memory recall|save|handoff|promote-instinct|validate [flags]\n  see: help",
+			"Usage: memory recall|save|handoff|promote-instinct|import-ecc|validate [flags]\n  see: help",
 		);
 		return 1;
 	}
@@ -1429,7 +1445,10 @@ function cmdMemory(args) {
 				id: args.ids[0],
 				source: "manual",
 			},
-			{ apply: Boolean(args.apply) && !args.dryRun },
+			{
+				apply: Boolean(args.apply) && !args.dryRun,
+				forceSecrets: Boolean(args.force),
+			},
 		);
 		if (!result.ok) {
 			if (args.json) {
@@ -1491,14 +1510,14 @@ function cmdMemory(args) {
 				tags: args.tags,
 				id: args.ids[0],
 			},
-			{ apply: Boolean(args.apply) && !args.dryRun },
+			{
+				apply: Boolean(args.apply) && !args.dryRun,
+				forceSecrets: Boolean(args.force),
+			},
 		);
 		if (!hResult.ok) {
 			if (args.json) console.log(JSON.stringify(hResult, null, 2));
-			else
-				console.error(
-					`[hkx-instinct] memory handoff: ${hResult.error}`,
-				);
+			else console.error(`[hkx-instinct] memory handoff: ${hResult.error}`);
 			return 1;
 		}
 		if (args.json) {
@@ -1550,10 +1569,7 @@ function cmdMemory(args) {
 		});
 		if (!pResult.ok) {
 			if (args.json) console.log(JSON.stringify(pResult, null, 2));
-			else
-				console.error(
-					`[hkx-instinct] promote-instinct: ${pResult.error}`,
-				);
+			else console.error(`[hkx-instinct] promote-instinct: ${pResult.error}`);
 			return 1;
 		}
 		if (args.json) {
@@ -1566,10 +1582,78 @@ function cmdMemory(args) {
 				: `Promote preview (pass --apply to write pending): ${pResult.instinct?.id}`,
 		);
 		console.log(`  pending: ${pResult.pendingPath}`);
-		console.log(
-			`  vault unchanged: ${pResult.memoryPath || pResult.memoryId}`,
-		);
+		console.log(`  vault unchanged: ${pResult.memoryPath || pResult.memoryId}`);
 		console.log(`  trigger: ${pResult.instinct?.trigger}`);
+		return 0;
+	}
+
+	if (sub === "import-ecc") {
+		const from =
+			args.fromPath || args.fromEcc || args.source || args.ids[0];
+		if (!from) {
+			console.error(
+				"memory import-ecc requires --from <repo|.ecc/memory> (not instinct import --from-ecc)",
+			);
+			return 1;
+		}
+		const iScope =
+			args.scope === "project" ||
+			args.scope === "user" ||
+			args.scope === "all"
+				? args.scope
+				: "all";
+		const plan = planEccMemoryImport(from, root, project, {
+			scope: iScope,
+			force: Boolean(args.force),
+		});
+		if (!plan.ok) {
+			if (args.json) console.log(JSON.stringify(plan, null, 2));
+			else console.error(`[hkx-instinct] import-ecc: ${plan.error}`);
+			return 1;
+		}
+		const doApply = Boolean(args.apply) && !args.dryRun;
+		const applied = applyEccMemoryImport(plan, root, project, {
+			apply: doApply,
+			forceSecrets: Boolean(args.force),
+		});
+		if (args.json) {
+			console.log(
+				JSON.stringify(
+					{
+						ok: applied.ok,
+						apply: doApply,
+						from: path.resolve(from),
+						planCounts: plan.counts,
+						...applied,
+					},
+					null,
+					2,
+				),
+			);
+			return applied.ok ? 0 : 1;
+		}
+		console.log(
+			doApply
+				? `Memory import-ecc applied from ${from}`
+				: `Memory import-ecc preview (pass --apply to write) from ${from}`,
+		);
+		console.log(
+			`  plan: add=${plan.counts?.add ?? 0} update=${plan.counts?.update ?? 0} skip=${plan.counts?.skip ?? 0}`,
+		);
+		if (doApply) {
+			console.log(`  written: ${applied.written?.length ?? 0}`);
+		}
+		for (const it of (plan.items || []).slice(0, 25)) {
+			const mark =
+				it.action === "skip"
+					? "-"
+					: doApply
+						? "*"
+						: "~";
+			console.log(
+				`  ${mark} ${it.action} ${it.id || "?"} [${it.scope || ""}] ${it.reason || ""}`,
+			);
+		}
 		return 0;
 	}
 
@@ -1578,7 +1662,10 @@ function cmdMemory(args) {
 		args.scope === "project" || args.scope === "user" || args.scope === "all"
 			? args.scope
 			: "all";
-	const result = validateMemories(root, project, { scope });
+	const result = validateMemories(root, project, {
+		scope,
+		strict: Boolean(args.strict),
+	});
 	if (args.json) {
 		console.log(
 			JSON.stringify(
@@ -1588,9 +1675,11 @@ function cmdMemory(args) {
 					source,
 					project,
 					scope,
+					strict: Boolean(args.strict),
 					scanned: result.scanned,
 					okCount: result.okCount,
 					errors: result.errors,
+					warnings: result.warnings,
 				},
 				null,
 				2,
@@ -1600,6 +1689,12 @@ function cmdMemory(args) {
 	}
 	console.log(`Memory validate [${scope}]`);
 	console.log(`  scanned: ${result.scanned} ok: ${result.okCount}`);
+	if (result.warnings?.length) {
+		console.log(`  warnings: ${result.warnings.length}`);
+		for (const w of result.warnings.slice(0, 10)) {
+			console.log(`    ~ ${w.file}: medium secret findings`);
+		}
+	}
 	if (result.errors.length) {
 		console.log(`  errors: ${result.errors.length}`);
 		for (const e of result.errors.slice(0, 20)) {

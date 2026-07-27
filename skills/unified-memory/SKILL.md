@@ -52,7 +52,8 @@ node scripts/instinct/cli.mjs memory save --title "Decision" --body "..."       
 node scripts/instinct/cli.mjs memory save --title "Decision" --body "..." --apply
 node scripts/instinct/cli.mjs memory handoff --title "Slice" --body "..." --apply
 node scripts/instinct/cli.mjs memory promote-instinct --id prefer-token-bucket --apply
-node scripts/instinct/cli.mjs memory validate
+node scripts/instinct/cli.mjs memory import-ecc --from path/to/repo --apply
+node scripts/instinct/cli.mjs memory validate [--strict]
 node scripts/instinct/cli.mjs from-om --to vault --dry-run   # opt-in; default is instinct-only
 ```
 
@@ -87,6 +88,8 @@ Fails on bad frontmatter, scope/dir mismatch, or id≠filename stem.
 - **`from-om`**: default → **pending instincts only**. Opt-in `--to vault` / `--to both` (never default both).
 - **Vault → instinct**: explicit `memory promote-instinct` → **pending** only; vault file kept.
 - **Handoff**: `memory handoff` (tag `handoff`); recall with `--tag handoff`.
+- **Secrets (best-effort)**: high patterns block `--apply` writes; `validate` reports findings (not a compliance scanner).
+- **ECC import**: one-shot `memory import-ecc --from …` only — not continuous sync; not instinct `import --from-ecc`.
 
 ## Related
 

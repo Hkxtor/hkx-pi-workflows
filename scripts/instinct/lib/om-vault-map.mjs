@@ -84,8 +84,7 @@ export function mapProjectionToVaultDocs(projection, opts = {}) {
 		for (const sid of supportIds) {
 			const o = obsById.get(sid);
 			const r =
-				rank[/** @type {keyof typeof rank} */ (o?.relevance || "medium")] ??
-				1;
+				rank[/** @type {keyof typeof rank} */ (o?.relevance || "medium")] ?? 1;
 			bestRel = Math.max(bestRel, r);
 		}
 		if (bestRel < minRank) {
@@ -108,8 +107,7 @@ export function mapProjectionToVaultDocs(projection, opts = {}) {
 
 		const domain = classifyDomain(content);
 		const title =
-			content.split(/[.\n]/)[0]?.trim().slice(0, 80) ||
-			`OM reflection ${rid}`;
+			content.split(/[.\n]/)[0]?.trim().slice(0, 80) || `OM reflection ${rid}`;
 		docs.push({
 			id: vaultIdFromReflection(rid, content),
 			title,

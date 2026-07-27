@@ -411,7 +411,7 @@ Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning por
 
 Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
 
-Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/handoff/promote-instinct/validate; skill `unified-memory`, command `/hkx-unified-memory`). `from-om` default remains pending-instinct; opt-in `--to vault|both`.
+Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/handoff/promote-instinct/import-ecc/validate + secret heuristics; skill `unified-memory`, command `/hkx-unified-memory`). `from-om` default remains pending-instinct; opt-in `--to vault|both`. ECC memory import is one-shot read-only (`memory import-ecc`), distinct from instinct `import --from-ecc`.
 
 ## Dual-review ship gate: Santa Method
 

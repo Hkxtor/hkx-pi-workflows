@@ -1,7 +1,7 @@
 ---
 name: hkx-unified-memory
 description: "Pi-native memory vault router — recall/save/validate project and user context on the hkx-homunculus root (hkx.memory.v1; no second data root)."
-argument-hint: "[recall|save|handoff|promote-instinct|validate] [title or query] [--scope project|user] [--apply]"
+argument-hint: "[recall|save|handoff|promote-instinct|import-ecc|validate] [title or query] [--scope project|user] [--apply]"
 ---
 
 # /hkx-unified-memory — Memory Vault Router
@@ -48,7 +48,8 @@ Split `$ARGUMENTS` into **mode** (optional first token) and **rest**.
 | `save` / `write` / `add` | **save** |
 | `handoff` | **handoff** (tag `handoff`; same vault) |
 | `promote` / `promote-instinct` | **promote-instinct** (`--id` required) |
-| `validate` / `check` | **validate** |
+| `import-ecc` / `import` | **import-ecc** (`--from` path; not instinct `import --from-ecc`) |
+| `validate` / `check` | **validate** (`--strict` fails medium secrets too) |
 | `help` | print usage |
 | *(missing or other)* | If rest looks like a query → **recall** with `--query`; if empty → ask |
 
@@ -109,6 +110,18 @@ Creates **pending** instinct only; vault file unchanged. Weak/non-actionable bod
 ```bash
 node scripts/instinct/cli.mjs memory validate [--scope project|user|all] [--json]
 ```
+
+### import-ecc (one-shot ECC vault → hkx)
+
+```bash
+node scripts/instinct/cli.mjs memory import-ecc --from <repo|.ecc/memory> [--apply] [--force]
+```
+
+Distinct from instinct `import --from-ecc` (homunculus instincts). Team ECC → project + tag `imported-from-ecc-team`.
+
+### secrets
+
+`save`/`handoff --apply` refuse high-confidence secret patterns (`sk-…`, PEM, AKIA…, ghp_…); `--force` overrides. `validate` fails on high; `--strict` also fails medium.
 
 ### from-om bridge (related CLI, not a memory sub)
 
