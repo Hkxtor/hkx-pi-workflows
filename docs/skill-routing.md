@@ -43,6 +43,7 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | multi-path go/no-go tradeoff | `council` | `product-lens` | routine implementation |
 | dual independent review until ship-ready | `santa-method` | `verification-loop` first | `council` (decisions, not correctness) |
 | extract session patterns as instincts | `instinct-evolve` | commands `hkx-learn` / `hkx-learn-eval` | `growth-log` (human journal) |
+| durable project/user context vault | `unified-memory` | `/hkx-unified-memory` / CLI `memory` | `instinct-evolve` (behaviors) or `/om` (session) |
 | multi-session multi-PR construction plan | `blueprint` | `/hkx-plan-canvas` for approve | `/hkx-plan` for single-session |
 | browser annotate/approve a local plan | `plan-canvas` | after `/hkx-plan` or `/hkx-blueprint` | code review commands |
 | audit agents/skills/MCP token tax | `context-budget` | `skill-stocktake`, `workspace-surface-audit` | `strategic-compact` (mid-session) |
@@ -104,6 +105,7 @@ Order: classify with `research-ops` (or jump straight to `search-first` / `docum
 | Optional reflection scorecard | `agent-self-evaluation` |
 | Narrative recap | `session-summary` |
 | Capture reusable session patterns | `/hkx-learn` or `/hkx-learn-eval` → `instinct-evolve` |
+| Recall/save project memory notes | `/hkx-unified-memory` → `unified-memory` |
 
 ### Config and portfolio governance
 
@@ -194,6 +196,7 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 | `hkx-session-summary` | `session-summary` | Session recap |
 | `hkx-santa-loop` | `santa-method` | Dual independent review convergence |
 | `hkx-learn` / `hkx-learn-eval` | `instinct-evolve` | Session → pending instincts |
+| `hkx-unified-memory` | `unified-memory` | Homunculus vault recall/save/validate |
 | `hkx-blueprint` | `blueprint` | Multi-session construction plan |
 | `hkx-plan-canvas` | `plan-canvas` | Browser annotate/approve |
 | `hkx-context-budget` | `context-budget` | Install-surface token audit |

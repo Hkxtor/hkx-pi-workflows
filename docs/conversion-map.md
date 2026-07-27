@@ -34,8 +34,8 @@ Manifest shape (authoritative):
 | --- | ---: | --- | --- | --- |
 | agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 51 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 96 | `skills/` | yes | `~/.pi/agent/skills/` |
+| commands / prompts | 52 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| skills | 97 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 4 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
@@ -116,6 +116,7 @@ Session pattern capture and instinct inventory (pending → accept → evolve):
 - `hkx-instinct-decay`
 - `hkx-instinct-prune`
 - `hkx-instinct-projects`
+- `hkx-unified-memory` — memory vault router (`memory recall|save|validate` on homunculus)
 
 ### PRP operator commands
 
@@ -155,6 +156,7 @@ Representative examples:
 - `session-summary`
 - `santa-method`
 - `instinct-evolve`
+- `unified-memory`
 - `blueprint`
 - `plan-canvas`
 - `context-budget`
@@ -409,7 +411,7 @@ Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning por
 
 Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
 
-Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default) and `projects` (registry + counts).
+Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/validate; skill `unified-memory`, command `/hkx-unified-memory`).
 
 ## Dual-review ship gate: Santa Method
 
