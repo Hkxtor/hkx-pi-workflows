@@ -310,7 +310,7 @@ Four extensions are shipped intentionally:
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping; pre-authorizes `.pi-subagents/` artifact writes
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
-- `hkx-git-footer.ts` — git-first custom TUI footer (branch line + tokens/model); `/hkx-git-footer`, `HKX_GIT_FOOTER=off`
+- `hkx-git-footer.ts` — compact TUI footer (`model - [thinking] > [D] path > ctx`); `/hkx-git-footer`, `HKX_GIT_FOOTER=off`
 
 These are pi TypeScript extensions, not external shell hook packs.
 
