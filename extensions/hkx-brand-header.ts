@@ -3,7 +3,7 @@
  *
  * Replaces the built-in logo + keybinding hints with a short brand bar:
  *
- *   ╭─ HKX · π ──────────────────────────
+ *   ╭─ HKX ──────────────────────────────
  *   │  workflows  ·  <model>
  *   ╰────────────────────────────────────
  *
@@ -125,11 +125,8 @@ export function buildHeaderLines(options: {
 	const theme = options.theme;
 	const width = Math.max(24, options.width ?? 48);
 
-	// Brand title matches docs/README: "HKX · π" (accent + dim + borderAccent).
-	const brand =
-		theme.fg("accent", "HKX") +
-		theme.fg("dim", " · ") +
-		theme.fg("borderAccent", "π");
+	// Brand title is accent-only "HKX" (no · π suffix).
+	const brand = theme.fg("accent", "HKX");
 
 	const modelRaw = options.modelId?.trim() || "";
 	const model = modelRaw

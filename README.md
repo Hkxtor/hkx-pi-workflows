@@ -135,7 +135,7 @@ Brand look adapted from oh-my-pi colors for **official pi** (not a fork of OMP T
 | --- | --- | --- | --- |
 | Themes | `hkx-dark`, `hkx-light` (official 51-token schema) | Path B sets `theme: "hkx-dark"` (overwrites existing `theme`) | `/settings` → pick another theme |
 | Footer | `model [-thinking] > [D] path > branch > ctx > $cost` | on | `HKX_GIT_FOOTER=off` or `/hkx-git-footer` |
-| Header | compact framed `HKX · π` brand bar | on | `HKX_BRAND_HEADER=off` or `/hkx-brand-header` |
+| Header | compact framed `HKX` brand bar | on | `HKX_BRAND_HEADER=off` or `/hkx-brand-header` |
 | Working indicator | accent braille spinner | on | `HKX_WORKING_INDICATOR=off` or `/hkx-working-indicator` |
 
 **Path A:** themes + appearance extensions load from the package; select theme manually.

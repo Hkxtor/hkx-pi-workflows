@@ -277,7 +277,7 @@ const lines = buildHeaderLines({
 });
 console.log(JSON.stringify({
   lineCount: lines.length,
-  hasBrand: lines.some((l) => l.includes("HKX") && l.includes("π")),
+  hasBrand: lines.some((l) => l.includes("HKX")) && !lines.some((l) => l.includes("π")),
   hasModel: lines.some((l) => l.includes("grok-4.5")),
   hasWorkflows: lines.some((l) => l.includes("workflows")),
   hasFrame: lines.some((l) => l.includes("╭")) && lines.some((l) => l.includes("╰")),

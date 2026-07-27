@@ -145,7 +145,7 @@ Current extensions:
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
 - `hkx-git-footer.ts` — compact footer `model [-thinking] > [D] path > branch > ctx > $cost`; toggle `/hkx-git-footer`, disable with `HKX_GIT_FOOTER=off`
-- `hkx-brand-header.ts` — compact framed `HKX · π` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
+- `hkx-brand-header.ts` — compact framed `HKX` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 
 ### Themes

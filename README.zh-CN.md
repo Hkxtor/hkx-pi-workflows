@@ -135,7 +135,7 @@ pi -e .
 | --- | --- | --- | --- |
 | 主题 | `hkx-dark`、`hkx-light`（官方 51 token schema） | 路径 B 写入 `theme: "hkx-dark"`（会覆盖已有 `theme`） | `/settings` 另选主题 |
 | Footer | `model [-thinking] > [D] path > branch > ctx > $cost` | 开 | `HKX_GIT_FOOTER=off` 或 `/hkx-git-footer` |
-| Header | 简洁框线 `HKX · π` 品牌条 | 开 | `HKX_BRAND_HEADER=off` 或 `/hkx-brand-header` |
+| Header | 简洁框线 `HKX` 品牌条 | 开 | `HKX_BRAND_HEADER=off` 或 `/hkx-brand-header` |
 | Working indicator | accent braille 旋转指示 | 开 | `HKX_WORKING_INDICATOR=off` 或 `/hkx-working-indicator` |
 
 **路径 A：** 主题与外观扩展随包装载；主题需手动选择。
