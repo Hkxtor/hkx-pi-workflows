@@ -311,7 +311,7 @@ Six extensions are shipped intentionally:
 - `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping; pre-authorizes `.pi-subagents/` artifact writes
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
 - `hkx-git-footer.ts` — compact TUI footer (`model [-thinking] > [D] path > branch > ctx > $cost`); `/hkx-git-footer`, `HKX_GIT_FOOTER=off`
-- `hkx-brand-header.ts` — compact `HKX · π` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
+- `hkx-brand-header.ts` — compact framed `HKX · π` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 
 These are pi TypeScript extensions, not external shell hook packs.

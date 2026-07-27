@@ -262,6 +262,71 @@ console.log(JSON.stringify({
 
 check("footer helpers exercised", true, imported ? "real import" : "twin");
 
+// Header pure helper — prefer real module via strip-types
+{
+	const headerPath = path.join(root, "extensions", "hkx-brand-header.ts");
+	// Identity theme: real Theme.fg emits ANSI which visibleWidth strips.
+	// Bracket tags would inflate width and falsely truncate content.
+	const probe = `
+import { buildHeaderLines, visibleWidth } from ${JSON.stringify(headerPath)};
+const theme = { fg: (_c, t) => t };
+const lines = buildHeaderLines({
+  modelId: "grok-4.5",
+  theme,
+  width: 40,
+});
+console.log(JSON.stringify({
+  lineCount: lines.length,
+  hasBrand: lines.some((l) => l.includes("HKX") && l.includes("π")),
+  hasModel: lines.some((l) => l.includes("grok-4.5")),
+  hasWorkflows: lines.some((l) => l.includes("workflows")),
+  hasFrame: lines.some((l) => l.includes("╭")) && lines.some((l) => l.includes("╰")),
+  topWidth: visibleWidth(lines[1] || ""),
+  midWidth: visibleWidth(lines[2] || ""),
+  bottomWidth: visibleWidth(lines[3] || ""),
+  targetWidth: 40,
+  noModel: buildHeaderLines({ theme, width: 40 }).some((l) =>
+    l.includes("no-model"),
+  ),
+}));
+`;
+	const result = spawnSync(
+		process.execPath,
+		["--experimental-strip-types", "--input-type=module", "-e", probe],
+		{ encoding: "utf8", cwd: root },
+	);
+	if (result.status === 0 && result.stdout.trim()) {
+		try {
+			const data = JSON.parse(result.stdout.trim());
+			check(
+				"header import: line count",
+				data.lineCount === 5,
+				String(data.lineCount),
+			);
+			check("header import: brand title", data.hasBrand === true);
+			check("header import: model id", data.hasModel === true);
+			check("header import: workflows label", data.hasWorkflows === true);
+			check("header import: rounded frame", data.hasFrame === true);
+			check(
+				"header import: aligned widths",
+				data.topWidth === data.midWidth &&
+					data.midWidth === data.bottomWidth &&
+					data.topWidth === data.targetWidth,
+				`top=${data.topWidth} mid=${data.midWidth} bottom=${data.bottomWidth} target=${data.targetWidth}`,
+			);
+			check("header import: missing model fallback", data.noModel === true);
+		} catch (err) {
+			check("header import parse", false, err.message);
+		}
+	} else {
+		check(
+			"header real import unavailable (skipped)",
+			true,
+			`status=${result.status} stderr=${(result.stderr || "").slice(0, 120)}`,
+		);
+	}
+}
+
 // install.mjs mentions themes install target
 {
 	const installSrc = fs.readFileSync(
