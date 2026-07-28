@@ -16,7 +16,6 @@ Included surfaces:
 - `skills/` — skill folders; declared in `pi.skills`
 - `rules/` — repo/session rules (Path B / `install-global` only; not a native pi package resource)
 - `extensions/` — pi TypeScript extensions; declared in `pi.extensions`
-- `themes/` — official pi brand themes (`hkx-dark`, `hkx-light`); declared in `pi.themes` (Path A) and synced by Path B to `~/.pi/agent/themes/`
 - `configs/` — managed overlays: external extension configs + global agent settings (`agent-settings.json`) (Path B only)
 - `GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (Path B only)
 - `APPEND_SYSTEM.md` — source for global `~/.pi/agent/APPEND_SYSTEM.md` (Path B only)
@@ -64,8 +63,8 @@ Keep this package intentionally small. It should stay focused on a useful core w
 ### package.json dual-path contract
 
 - `keywords` must include `pi-package`.
-- Official pi resources only: `pi.extensions`, `pi.skills`, `pi.prompts`, `pi.themes`.
-- Brand themes live under `themes/*.json` with official pi 51 required color tokens (no OMP-only keys such as `statusLine*`, `pythonMode`).
+- Official pi resources only: `pi.extensions`, `pi.skills`, `pi.prompts`.
+- Do not reintroduce custom brand theme JSON or a `pi.themes` package field.
 - Agents/chains: top-level `pi-subagents.agents` / `pi-subagents.chains` (discovered by pi-subagents from installed packages).
 - Do not put `agents`, `chains`, `commands`, `rules`, or a custom `pi.name` under `pi` — validate rejects them.
 - Path A consumers need `pi-subagents` installed separately for agents/chains.
@@ -75,12 +74,6 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Notify-only extensions must not silently mutate project state.
 - Gate extensions should stay explicit, low-noise, and actionable.
 - Appearance extensions (`hkx-working-indicator`) default on with env + slash toggles; they must not write settings or files. Footer/header chrome is Path B via `npm:@narumitw/pi-statusline` (not first-party).
-
-### Themes
-
-- Ship only official-pi-compatible theme JSON under `themes/`.
-- Path B managed settings may set `theme: "hkx-dark"` (overwrites operator `theme`); document that behavior whenever it changes.
-- Do not bulk-import OMP `defaults/*.json` theme libraries.
 
 ### External extension configs
 
@@ -94,7 +87,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Source: `configs/agent-settings.json`.
 - Install deep-merges managed keys into `~/.pi/agent/settings.json` (does not wipe machine-local keys).
-- Managed scope: `packages` (authoritative list), `theme` (default `hkx-dark`), plus portable defaults such as `compaction` and `observational-memory`.
+- Managed scope: `packages` (authoritative list), plus portable defaults such as `compaction` and `observational-memory`. Do **not** manage operator `theme`.
 - Do **not** version machine-local keys here: `shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`.
 - After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays (permission + rpiv-advisor seed).
 

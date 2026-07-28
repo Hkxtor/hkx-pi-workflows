@@ -328,15 +328,6 @@ Four first-party extensions are shipped intentionally:
 
 Footer/header chrome is Path B only via `npm:@narumitw/pi-statusline` in `configs/agent-settings.json` (not vendored here). These first-party files are pi TypeScript extensions, not external shell hook packs.
 
-## Themes
-
-Official-pi brand themes (oh-my-pi palette adapted to 51 required tokens):
-
-- `themes/hkx-dark.json` — name `hkx-dark`
-- `themes/hkx-light.json` — name `hkx-light`
-
-Declared in `package.json` `pi.themes`. Path B also installs to `~/.pi/agent/themes/` and defaults managed settings `theme` to `hkx-dark`.
-
 ## External extension config overlays
 
 This package can version-control operator config for third-party extensions without vendoring their source.
@@ -356,7 +347,7 @@ Portable global settings and the desired pi package list are versioned here:
 
 - source: `configs/agent-settings.json`
 - install: deep-merge into `~/.pi/agent/settings.json`
-- managed keys: `packages` (authoritative), `theme` (default `hkx-dark`), plus portable defaults such as `compaction` and `observational-memory`
+- managed keys: `packages` (authoritative), plus portable defaults such as `compaction` and `observational-memory` (does **not** set operator theme)
 - not versioned here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, …)
 - after merge: `npm run install-global` runs `pi update --extensions`
 

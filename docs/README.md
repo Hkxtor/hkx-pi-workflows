@@ -39,7 +39,7 @@ Current package surface map.
 Read this when you need:
 
 - package identity
-- the shipped inventory of commands, skills, rules, agents, chains, extensions, themes, and MCP surfaces
+- the shipped inventory of commands, skills, rules, agents, chains, extensions, and MCP surfaces
 - intentionally excluded / deferred items
 - naming conventions
 
@@ -84,7 +84,7 @@ Read this when you need to decide:
 - whether guidance belongs in `rules/`
 - whether behavior must react to live tool events in `extensions/`
 - how `hkx-language-quality.ts` and `hkx-gateguard.ts` are intended to behave
-- where TUI appearance (themes / footer / header / working indicator) is documented (`architecture.md`, `conversion-map.md`, root README appearance section)
+- where TUI appearance (statusline / working indicator) is documented (`architecture.md`, `conversion-map.md`, root README appearance section)
 
 ## Outside This Directory
 

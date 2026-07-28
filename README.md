@@ -12,9 +12,8 @@ It provides a compact core set of:
 - **skills** — workflow and language guidance
 - **rules** — lightweight repo/session reminders (full install only)
 - **extensions** — low-noise quality, gatekeeping, and TUI appearance helpers
-- **themes** — brand themes `hkx-dark` / `hkx-light` (official pi theme schema; Path A via `pi.themes`)
 - **external extension configs** — managed overlays (e.g. `pi-permission-system` config; full install only)
-- **global agent settings** — `configs/agent-settings.json` → merge into `~/.pi/agent/settings.json` (full install only; includes default `theme: "hkx-dark"`)
+- **global agent settings** — `configs/agent-settings.json` → merge into `~/.pi/agent/settings.json` (full install only; does not force a theme)
 - **global context files** — install sources for `~/.pi/agent/AGENTS.md` and `~/.pi/agent/APPEND_SYSTEM.md` (full install only)
 
 This package is intentionally small. It focuses on a useful core workflow layer for pi, not a giant catalog of framework- or domain-specific packs.
@@ -42,15 +41,12 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 | `pi.extensions` | `extensions/*.ts` |
 | `pi.skills` | `skills/` |
 | `pi.prompts` | `commands/` (slash prompt templates) |
-| `pi.themes` | `themes/` (`hkx-dark`, `hkx-light`) |
 | `pi-subagents.agents` | `agents/` as package agents (`hkx.<name>`) |
 | `pi-subagents.chains` | `chains/` as package chains |
 
-**Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts/themes load without it.
+**Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Path A theme note:** themes are discoverable after install; Path A does **not** change your active `theme` setting. Select `hkx-dark` or `hkx-light` via `/settings` if you want them.
-
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json` (so no default `theme: hkx-dark`), permission-system config overlays, and rpiv-advisor config seed. Use Path B for those.
+**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, permission-system config overlays, and rpiv-advisor config seed. Use Path B for those.
 
 Update later with:
 
@@ -93,13 +89,12 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | Surface | Path A (`pi install`) | Path B (`npm run install-global`) |
 | --- | --- | --- |
 | extensions | yes (from package) | yes → `~/.pi/agent/extensions/` |
-| themes | yes (`pi.themes`; not auto-selected) | yes → `~/.pi/agent/themes/` + default `theme: hkx-dark` |
 | skills | yes (from package) | yes → `~/.pi/agent/skills/` |
 | commands / prompts | yes (`pi.prompts` → `commands/`) | yes → `commands/` **and** `prompts/` |
 | agents | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/agents/hkx/` |
 | chains | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/chains/` |
 | rules | no | yes → `~/.pi/agent/rules/` |
-| agent settings merge | no | yes (includes `theme: "hkx-dark"`, overwrites existing `theme`) |
+| agent settings merge | no | yes (packages + portable defaults; does **not** set `theme`) |
 | managed `packages` update | no (only this package entry) | yes (`pi update --extensions`) |
 | permission config overlay | no | yes |
 | rpiv-advisor config seed | no | yes (if missing) |
@@ -116,8 +111,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
 | extensions | `~/.pi/agent/extensions/` |
-| themes | `themes/*.json` → `~/.pi/agent/themes/` |
-| agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, `theme: "hkx-dark"`, portable defaults; preserves machine-local keys; **overwrites existing `theme`**) |
+| agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, portable defaults; preserves machine-local keys; does **not** set `theme`) |
 | pi packages | after settings merge: `pi update --extensions` |
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing) |
 | rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
@@ -129,18 +123,17 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 
 ## Appearance suite (TUI)
 
-Brand look adapted from oh-my-pi colors for **official pi** (not a fork of OMP TUI):
+This package no longer ships custom brand themes. Operators keep the pi default theme (or any theme chosen in `/settings`).
 
 | Piece | What you get | Default | Disable |
 | --- | --- | --- | --- |
-| Themes | `hkx-dark`, `hkx-light` (official 51-token schema) | Path B sets `theme: "hkx-dark"` (overwrites existing `theme`) | `/settings` → pick another theme |
 | Statusline | `@narumitw/pi-statusline` (replaces default footer) | Path B packages list | remove package / extension toggle per upstream docs |
 | Working indicator | accent braille spinner | on | `HKX_WORKING_INDICATOR=off` or `/hkx-working-indicator` |
 
-**Path A:** themes + first-party appearance extensions load from the package; select theme manually. Statusline is **not** on Path A unless you install `@narumitw/pi-statusline` yourself.
-**Path B:** also copies `themes/*.json` → `~/.pi/agent/themes/`, merges default `theme`, and installs `npm:@narumitw/pi-statusline` via managed packages.
+**Path A:** first-party appearance extensions load from the package. Statusline is **not** on Path A unless you install `@narumitw/pi-statusline` yourself.
+**Path B:** installs `npm:@narumitw/pi-statusline` via managed packages. Does **not** force a theme.
 
-Does **not** ship first-party footer/header extensions or OMP powerline / welcome dual-column intro.
+Does **not** ship custom themes, first-party footer/header extensions, or OMP powerline / welcome dual-column intro.
 
 ## Common Workflows
 

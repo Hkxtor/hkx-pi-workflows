@@ -24,11 +24,9 @@
  * - commands/ skills/ rules/ -> ~/.pi/agent/{commands,prompts,skills,rules}/
  *   (commands/ is also linked into prompts/ for current pi slash discovery)
  * - package.json pi.extensions -> ~/.pi/agent/extensions/
- * - themes/*.json            -> ~/.pi/agent/themes/ (brand themes; Path B needs this
- *                              because managed packages may not include this repo)
  * - configs/agent-settings.json
  *                            -> deep-merge into ~/.pi/agent/settings.json
- *                              (managed keys: packages, theme, portable defaults)
+ *                              (managed keys: packages, portable defaults)
  * - GLOBAL_AGENTS.md         -> ~/.pi/agent/AGENTS.md
  * - APPEND_SYSTEM.md         -> ~/.pi/agent/APPEND_SYSTEM.md
  * - .mcp.json                -> safe-merge into ~/.pi/agent/mcp.json
@@ -481,7 +479,6 @@ async function main() {
 	const failed = [];
 
 	await ensureDir(path.join(piHome, "extensions"));
-	await ensureDir(path.join(piHome, "themes"));
 	await ensureDir(path.join(piHome, "commands"));
 	await ensureDir(path.join(piHome, "prompts"));
 	await ensureDir(path.join(piHome, "skills"));
@@ -511,20 +508,6 @@ async function main() {
 			srcPath,
 			path.join(piHome, "extensions", path.basename(ext)),
 		);
-	}
-
-	// Themes (package.json pi.themes → ~/.pi/agent/themes/)
-	// Path B installs themes explicitly because configs/agent-settings.json may
-	// set theme: hkx-dark without listing this repo in packages.
-	const themesDir = path.join(repoRoot, "themes");
-	if (await pathExists(themesDir)) {
-		for (const themeFile of await fs.readdir(themesDir)) {
-			if (!themeFile.endsWith(".json")) continue;
-			await linkOrCopy(
-				path.join(themesDir, themeFile),
-				path.join(piHome, "themes", themeFile),
-			);
-		}
 	}
 
 	// Commands / prompt templates
@@ -747,9 +730,6 @@ async function main() {
 	}
 	console.log("Agents: ~/.pi/agent/agents/hkx/*.md  (runtime: hkx.<name>)");
 	console.log("Chains: ~/.pi/agent/chains/hkx-*.chain.json");
-	console.log(
-		"Themes: ~/.pi/agent/themes/hkx-*.json (default theme: hkx-dark)",
-	);
 	console.log(
 		"Settings: configs/agent-settings.json → merge ~/.pi/agent/settings.json",
 	);

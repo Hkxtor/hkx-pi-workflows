@@ -61,11 +61,6 @@ const requiredFiles = [
 	"extensions/hkx-subagent-supervisor-auto-reply.ts",
 	"extensions/hkx-language-quality.ts",
 	"extensions/hkx-working-indicator.ts",
-	// Brand themes (official pi 51-token schema; Path A pi.themes + Path B install).
-	"themes/hkx-dark.json",
-	"themes/hkx-light.json",
-	// Appearance smoke suite.
-	"scripts/tests/appearance-themes.mjs",
 	// MF-6: shared resolver / placeholder / unresolved-ref SSOT used by both
 	// apply-mcp-profile.mjs and install.mjs. validate must fail if this module
 	// disappears (the two install paths would diverge again).
@@ -385,109 +380,13 @@ async function main() {
 			'package.json pi.prompts should reference "./commands" (repo keeps commands/ on disk)',
 		);
 	}
-	if (!Array.isArray(pi.themes) || pi.themes.length === 0) {
+	if (Object.hasOwn(pi, "themes")) {
 		errors.push(
-			"package.json pi.themes must be a non-empty array (brand themes)",
+			"package.json pi.themes is not shipped by this package (custom themes removed)",
 		);
-	} else if (!pi.themes.some((t) => String(t).includes("themes"))) {
-		errors.push('package.json pi.themes should reference "./themes"');
 	}
 
-	// Brand theme JSON: official pi 51 required color tokens (no OMP-only keys)
-	const requiredThemeColors = [
-		"accent",
-		"border",
-		"borderAccent",
-		"borderMuted",
-		"success",
-		"error",
-		"warning",
-		"muted",
-		"dim",
-		"text",
-		"thinkingText",
-		"selectedBg",
-		"userMessageBg",
-		"userMessageText",
-		"customMessageBg",
-		"customMessageText",
-		"customMessageLabel",
-		"toolPendingBg",
-		"toolSuccessBg",
-		"toolErrorBg",
-		"toolTitle",
-		"toolOutput",
-		"mdHeading",
-		"mdLink",
-		"mdLinkUrl",
-		"mdCode",
-		"mdCodeBlock",
-		"mdCodeBlockBorder",
-		"mdQuote",
-		"mdQuoteBorder",
-		"mdHr",
-		"mdListBullet",
-		"toolDiffAdded",
-		"toolDiffRemoved",
-		"toolDiffContext",
-		"syntaxComment",
-		"syntaxKeyword",
-		"syntaxFunction",
-		"syntaxVariable",
-		"syntaxString",
-		"syntaxNumber",
-		"syntaxType",
-		"syntaxOperator",
-		"syntaxPunctuation",
-		"thinkingOff",
-		"thinkingMinimal",
-		"thinkingLow",
-		"thinkingMedium",
-		"thinkingHigh",
-		"thinkingXhigh",
-		"bashMode",
-	];
-	const forbiddenThemeColorKeys = [
-		"statusLineBg",
-		"statusLineSep",
-		"statusLineModel",
-		"pythonMode",
-		"link",
-	];
-	for (const themeRel of ["themes/hkx-dark.json", "themes/hkx-light.json"]) {
-		const themePath = path.join(root, themeRel);
-		try {
-			const theme = JSON.parse(await fs.readFile(themePath, "utf8"));
-			const expectedName = path.basename(themeRel, ".json");
-			if (theme.name !== expectedName) {
-				errors.push(
-					`${themeRel}: name must be "${expectedName}" (got ${theme.name})`,
-				);
-			}
-			if (!theme.colors || typeof theme.colors !== "object") {
-				errors.push(`${themeRel}: missing colors object`);
-			} else {
-				for (const key of requiredThemeColors) {
-					if (!(key in theme.colors)) {
-						errors.push(`${themeRel}: missing required color token "${key}"`);
-					}
-				}
-				for (const key of forbiddenThemeColorKeys) {
-					if (key in theme.colors) {
-						errors.push(
-							`${themeRel}: OMP-only color token "${key}" is not valid for official pi themes`,
-						);
-					}
-				}
-			}
-		} catch (err) {
-			if (err && err.code !== "ENOENT") {
-				errors.push(`${themeRel}: ${err.message}`);
-			}
-		}
-	}
-
-	// Path B default theme must match shipped brand dark theme
+	// Path B must not force a custom theme via managed settings
 	try {
 		const agentSettings = JSON.parse(
 			await fs.readFile(
@@ -495,9 +394,9 @@ async function main() {
 				"utf8",
 			),
 		);
-		if (agentSettings.theme !== "hkx-dark") {
+		if (Object.hasOwn(agentSettings, "theme")) {
 			errors.push(
-				`configs/agent-settings.json theme must be "hkx-dark" (got ${JSON.stringify(agentSettings.theme)})`,
+				`configs/agent-settings.json must not set theme (got ${JSON.stringify(agentSettings.theme)})`,
 			);
 		}
 	} catch (err) {
