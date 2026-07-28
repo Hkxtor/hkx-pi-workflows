@@ -1,12 +1,14 @@
 /**
- * Appearance suite smoke: brand themes + footer pure helpers.
+ * Appearance suite smoke: brand themes + remaining appearance extensions.
  *
  * - themes/hkx-*.json parse, name, 51 required official pi color tokens
  * - no OMP-only color keys that official schema rejects
- * - footer formatCost / buildFooterSegments contracts (via strip-types import
- *   when available; twin fallback otherwise)
+ * - package.json declares themes + remaining appearance extensions
+ * - install.mjs still installs themes
+ *
+ * Footer/header UI is now provided by npm:@narumitw/pi-statusline
+ * (Path B packages list), not first-party hkx-git-footer / hkx-brand-header.
  */
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -114,7 +116,7 @@ for (const name of ["hkx-dark", "hkx-light"]) {
 	);
 }
 
-// agent-settings default theme
+// agent-settings default theme + statusline package
 {
 	const settings = JSON.parse(
 		fs.readFileSync(path.join(root, "configs", "agent-settings.json"), "utf8"),
@@ -124,9 +126,18 @@ for (const name of ["hkx-dark", "hkx-light"]) {
 		settings.theme === "hkx-dark",
 		`got ${JSON.stringify(settings.theme)}`,
 	);
+	const packages = settings.packages ?? [];
+	check(
+		"agent-settings lists @narumitw/pi-statusline",
+		packages.some((p) => String(p).includes("@narumitw/pi-statusline")),
+	);
+	check(
+		"agent-settings does not ship removed footer/header as first-party",
+		!packages.some((p) => /hkx-git-footer|hkx-brand-header/.test(String(p))),
+	);
 }
 
-// package.json declares themes + appearance extensions
+// package.json declares themes + remaining appearance extensions
 {
 	const pkg = JSON.parse(
 		fs.readFileSync(path.join(root, "package.json"), "utf8"),
@@ -137,193 +148,23 @@ for (const name of ["hkx-dark", "hkx-light"]) {
 			pkg.pi.themes.some((t) => String(t).includes("themes")),
 	);
 	const exts = pkg.pi?.extensions ?? [];
-	for (const need of [
-		"hkx-git-footer.ts",
-		"hkx-brand-header.ts",
-		"hkx-working-indicator.ts",
-	]) {
-		check(
-			`package.json lists ${need}`,
-			exts.some((e) => String(e).includes(need)),
-		);
-	}
-}
-
-// Footer pure helpers — prefer real module via strip-types
-function twinFormatCost(total) {
-	if (total < 0.01) return `$${total.toFixed(4)}`;
-	return `$${total.toFixed(3)}`;
-}
-
-function twinBuildFooterSegments(options) {
-	const arrow = options.theme.fg("dim", " > ");
-	const left =
-		options.theme.fg("accent", options.modelName) +
-		options.theme.fg("dim", options.thinking);
-	const pathSeg =
-		options.theme.fg("dim", "[D] ") +
-		options.theme.fg("muted", options.cwdLabel);
-	const parts = [left, pathSeg];
-	if (options.branch) {
-		parts.push(options.theme.fg("success", options.branch));
-	}
-	const percentLabel =
-		options.percent === null ? "?" : options.percent.toFixed(1);
-	const ctxLabel = `ctx: ${percentLabel}%/${options.windowLabel}`;
-	let ctxColor = "dim";
-	if (options.percent !== null) {
-		if (options.percent > 90) ctxColor = "error";
-		else if (options.percent > 70) ctxColor = "warning";
-	}
-	parts.push(options.theme.fg(ctxColor, ctxLabel));
-	if (options.cost !== null) {
-		parts.push(options.theme.fg("dim", twinFormatCost(options.cost)));
-	}
-	return parts.join(arrow);
-}
-
-const formatCost = twinFormatCost;
-const buildFooterSegments = twinBuildFooterSegments;
-let imported = false;
-
-{
-	const footerPath = path.join(root, "extensions", "hkx-git-footer.ts");
-	const probe = `
-import { formatCost, buildFooterSegments } from ${JSON.stringify(footerPath)};
-const theme = { fg: (c, t) => \`[\${c}]\${t}\` };
-const line = buildFooterSegments({
-  modelName: "m",
-  thinking: " - [low]",
-  cwdLabel: "~/x",
-  branch: "main",
-  percent: 95,
-  windowLabel: "128k",
-  cost: 0.0123,
-  theme,
-});
-console.log(JSON.stringify({
-  costSmall: formatCost(0.0012),
-  costNormal: formatCost(0.0123),
-  line,
-  hasBranch: line.includes("main"),
-  hasCost: line.includes("$"),
-  hasCtx: line.includes("ctx:"),
-  errorColor: line.includes("[error]"),
-}));
-`;
-	const result = spawnSync(
-		process.execPath,
-		["--experimental-strip-types", "--input-type=module", "-e", probe],
-		{ encoding: "utf8", cwd: root },
+	check(
+		"package.json lists hkx-working-indicator.ts",
+		exts.some((e) => String(e).includes("hkx-working-indicator.ts")),
 	);
-	if (result.status === 0 && result.stdout.trim()) {
-		try {
-			const data = JSON.parse(result.stdout.trim());
-			imported = true;
-			check("footer import: formatCost small", data.costSmall === "$0.0012");
-			check("footer import: formatCost normal", data.costNormal === "$0.012");
-			check("footer import: includes branch", data.hasBranch === true);
-			check("footer import: includes cost", data.hasCost === true);
-			check("footer import: includes ctx", data.hasCtx === true);
-			check(
-				"footer import: high ctx uses error color",
-				data.errorColor === true,
-			);
-		} catch (err) {
-			check("footer import parse", false, err.message);
-		}
-	} else {
-		// Twin fallback
-		const theme = { fg: (c, t) => `[${c}]${t}` };
-		check("footer twin: formatCost small", formatCost(0.0012) === "$0.0012");
-		check("footer twin: formatCost normal", formatCost(0.0123) === "$0.012");
-		const line = buildFooterSegments({
-			modelName: "m",
-			thinking: "",
-			cwdLabel: "~/x",
-			branch: null,
-			percent: 10,
-			windowLabel: "128k",
-			cost: null,
-			theme,
-		});
+	for (const removed of ["hkx-git-footer.ts", "hkx-brand-header.ts"]) {
 		check(
-			"footer twin: omits empty branch and cost",
-			!line.includes("null") && !line.includes("$") && line.includes("ctx:"),
-			line,
-		);
-		check(
-			"footer real import unavailable (used twin)",
-			true,
-			`status=${result.status} stderr=${(result.stderr || "").slice(0, 120)}`,
+			`package.json does not list ${removed}`,
+			!exts.some((e) => String(e).includes(removed)),
 		);
 	}
 }
 
-check("footer helpers exercised", true, imported ? "real import" : "twin");
-
-// Header pure helper — prefer real module via strip-types
+// first-party footer/header sources must be gone
 {
-	const headerPath = path.join(root, "extensions", "hkx-brand-header.ts");
-	// Identity theme: real Theme.fg emits ANSI which visibleWidth strips.
-	// Bracket tags would inflate width and falsely truncate content.
-	const probe = `
-import { buildHeaderLines, visibleWidth } from ${JSON.stringify(headerPath)};
-const theme = { fg: (_c, t) => t };
-const lines = buildHeaderLines({
-  modelId: "grok-4.5",
-  theme,
-  width: 40,
-});
-console.log(JSON.stringify({
-  lineCount: lines.length,
-  hasBrand: lines.some((l) => l.includes("HKX")) && !lines.some((l) => l.includes("π")),
-  hasModel: lines.some((l) => l.includes("grok-4.5")),
-  hasWorkflows: lines.some((l) => l.includes("workflows")),
-  hasFrame: lines.some((l) => l.includes("╭")) && lines.some((l) => l.includes("╰")),
-  topWidth: visibleWidth(lines[1] || ""),
-  midWidth: visibleWidth(lines[2] || ""),
-  bottomWidth: visibleWidth(lines[3] || ""),
-  targetWidth: 40,
-  noModel: buildHeaderLines({ theme, width: 40 }).some((l) =>
-    l.includes("no-model"),
-  ),
-}));
-`;
-	const result = spawnSync(
-		process.execPath,
-		["--experimental-strip-types", "--input-type=module", "-e", probe],
-		{ encoding: "utf8", cwd: root },
-	);
-	if (result.status === 0 && result.stdout.trim()) {
-		try {
-			const data = JSON.parse(result.stdout.trim());
-			check(
-				"header import: line count",
-				data.lineCount === 5,
-				String(data.lineCount),
-			);
-			check("header import: brand title", data.hasBrand === true);
-			check("header import: model id", data.hasModel === true);
-			check("header import: workflows label", data.hasWorkflows === true);
-			check("header import: rounded frame", data.hasFrame === true);
-			check(
-				"header import: aligned widths",
-				data.topWidth === data.midWidth &&
-					data.midWidth === data.bottomWidth &&
-					data.topWidth === data.targetWidth,
-				`top=${data.topWidth} mid=${data.midWidth} bottom=${data.bottomWidth} target=${data.targetWidth}`,
-			);
-			check("header import: missing model fallback", data.noModel === true);
-		} catch (err) {
-			check("header import parse", false, err.message);
-		}
-	} else {
-		check(
-			"header real import unavailable (skipped)",
-			true,
-			`status=${result.status} stderr=${(result.stderr || "").slice(0, 120)}`,
-		);
+	for (const removed of ["hkx-git-footer.ts", "hkx-brand-header.ts"]) {
+		const p = path.join(root, "extensions", removed);
+		check(`extensions/${removed} removed`, !fs.existsSync(p));
 	}
 }
 

@@ -12,6 +12,7 @@
     "npm:@juicesharp/rpiv-advisor",
     "npm:@juicesharp/rpiv-i18n",
     "npm:@narumitw/pi-plan-mode",
+    "npm:@narumitw/pi-statusline",
     "npm:pi-until-done",
     "npm:pi-observational-memory",
     "npm:context-mode",

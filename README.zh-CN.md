@@ -134,14 +134,13 @@ pi -e .
 | 部件 | 效果 | 默认 | 关闭 |
 | --- | --- | --- | --- |
 | 主题 | `hkx-dark`、`hkx-light`（官方 51 token schema） | 路径 B 写入 `theme: "hkx-dark"`（会覆盖已有 `theme`） | `/settings` 另选主题 |
-| Footer | `model [-thinking] > [D] path > branch > ctx > $cost` | 开 | `HKX_GIT_FOOTER=off` 或 `/hkx-git-footer` |
-| Header | 简洁框线 `HKX` 品牌条 | 开 | `HKX_BRAND_HEADER=off` 或 `/hkx-brand-header` |
+| Statusline | `@narumitw/pi-statusline`（替换默认 footer） | 路径 B packages 列表 | 按上游文档移除 package / 关闭扩展 |
 | Working indicator | accent braille 旋转指示 | 开 | `HKX_WORKING_INDICATOR=off` 或 `/hkx-working-indicator` |
 
-**路径 A：** 主题与外观扩展随包装载；主题需手动选择。
-**路径 B：** 额外把 `themes/*.json` 同步到 `~/.pi/agent/themes/`，并合并默认 `theme`。
+**路径 A：** 主题与一等外观扩展随包装载；主题需手动选择。Statusline **不**在路径 A，除非自行安装 `@narumitw/pi-statusline`。
+**路径 B：** 额外把 `themes/*.json` 同步到 `~/.pi/agent/themes/`，合并默认 `theme`，并通过 managed packages 安装 `npm:@narumitw/pi-statusline`。
 
-**不移植** OMP 内置 status-line preset、powerline 分段，或 welcome 双栏渐变 intro。
+**不**自带一等 footer/header 扩展，也不移植 OMP powerline / welcome 双栏 intro。
 
 ## 常用工作流
 

@@ -60,8 +60,6 @@ const requiredFiles = [
 	"extensions/hkx-gateguard.ts",
 	"extensions/hkx-subagent-supervisor-auto-reply.ts",
 	"extensions/hkx-language-quality.ts",
-	"extensions/hkx-git-footer.ts",
-	"extensions/hkx-brand-header.ts",
 	"extensions/hkx-working-indicator.ts",
 	// Brand themes (official pi 51-token schema; Path A pi.themes + Path B install).
 	"themes/hkx-dark.json",

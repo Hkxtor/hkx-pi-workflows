@@ -134,14 +134,13 @@ Brand look adapted from oh-my-pi colors for **official pi** (not a fork of OMP T
 | Piece | What you get | Default | Disable |
 | --- | --- | --- | --- |
 | Themes | `hkx-dark`, `hkx-light` (official 51-token schema) | Path B sets `theme: "hkx-dark"` (overwrites existing `theme`) | `/settings` → pick another theme |
-| Footer | `model [-thinking] > [D] path > branch > ctx > $cost` | on | `HKX_GIT_FOOTER=off` or `/hkx-git-footer` |
-| Header | compact framed `HKX` brand bar | on | `HKX_BRAND_HEADER=off` or `/hkx-brand-header` |
+| Statusline | `@narumitw/pi-statusline` (replaces default footer) | Path B packages list | remove package / extension toggle per upstream docs |
 | Working indicator | accent braille spinner | on | `HKX_WORKING_INDICATOR=off` or `/hkx-working-indicator` |
 
-**Path A:** themes + appearance extensions load from the package; select theme manually.
-**Path B:** also copies `themes/*.json` → `~/.pi/agent/themes/` and merges default `theme`.
+**Path A:** themes + first-party appearance extensions load from the package; select theme manually. Statusline is **not** on Path A unless you install `@narumitw/pi-statusline` yourself.
+**Path B:** also copies `themes/*.json` → `~/.pi/agent/themes/`, merges default `theme`, and installs `npm:@narumitw/pi-statusline` via managed packages.
 
-Does **not** port OMP built-in status-line presets, powerline segments, or welcome dual-column intro.
+Does **not** ship first-party footer/header extensions or OMP powerline / welcome dual-column intro.
 
 ## Common Workflows
 

@@ -144,9 +144,9 @@ Current extensions:
 - `hkx-gateguard.ts` — fact-forcing gate; pre-authorizes `.pi-subagents/` chain artifact writes
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
-- `hkx-git-footer.ts` — compact footer `model [-thinking] > [D] path > branch > ctx > $cost`; toggle `/hkx-git-footer`, disable with `HKX_GIT_FOOTER=off`
-- `hkx-brand-header.ts` — compact framed `HKX` startup header; `/hkx-brand-header`, `HKX_BRAND_HEADER=off`
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
+
+Footer/header chrome is **not** first-party: Path B installs `npm:@narumitw/pi-statusline` via `configs/agent-settings.json` packages.
 
 ### Themes
 
@@ -157,7 +157,7 @@ Brand themes adapted from oh-my-pi colors into the **official pi** 51-token sche
 
 Path A loads them via `package.json` `pi.themes`. Path B also copies them to `~/.pi/agent/themes/` and may set `theme: "hkx-dark"` in managed settings (overwrites existing `theme`).
 
-Out of scope for this package: OMP built-in status-line segment engine, powerline presets, welcome dual-column gradient intro.
+Out of scope for this package: first-party footer/header extensions (use `@narumitw/pi-statusline`), OMP powerline presets, welcome dual-column gradient intro.
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 

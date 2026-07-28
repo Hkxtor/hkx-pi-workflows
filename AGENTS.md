@@ -74,7 +74,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Notify-only extensions must not silently mutate project state.
 - Gate extensions should stay explicit, low-noise, and actionable.
-- Appearance extensions (`hkx-git-footer`, `hkx-brand-header`, `hkx-working-indicator`) default on with env + slash toggles; they must not write settings or files.
+- Appearance extensions (`hkx-working-indicator`) default on with env + slash toggles; they must not write settings or files. Footer/header chrome is Path B via `npm:@narumitw/pi-statusline` (not first-party).
 
 ### Themes
 
