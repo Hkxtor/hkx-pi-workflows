@@ -36,6 +36,11 @@
     "observationsPoolTargetTokens": 16000,
     "agentMaxTurns": 16,
     "passive": false,
-    "debugLog": false
+    "debugLog": false,
+    "model": {
+      "provider": "meme",
+      "id": "deepseek-v4-flash",
+      "thinking": "high"
+    }
   }
 }
