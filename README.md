@@ -180,6 +180,7 @@ Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Win
 - `/hkx-prp-commit` / `/hkx-prp-pr` — natural-language commit targeting + template-aware GitHub PR
 - `/hkx-multi-workflow` — ECC `multi-*` router → existing chains / orch / `hkx-workflow` (no external ccg-workflow)
 - `/hkx-unified-memory` — memory vault on `hkx-homunculus` (`memory recall|save|handoff|promote-instinct|import-ecc|validate`; skill `unified-memory`)
+- `/hkx-hookify` / `list` / `configure` / `help` — operator behavior guardrails (pattern rules + `hkx-hookify` extension; skill `hookify-rules`)
 - skill: `instinct-evolve`
 - CLI: `node scripts/instinct/cli.mjs` (or `npm run instinct -- …`)
 
@@ -199,6 +200,7 @@ Representative agents:
 - `hkx.planner`
 - `hkx.tdd-guide`
 - `hkx.build-error-resolver`
+- `hkx.conversation-analyzer` — propose Hookify rules from conversation (read-only)
 
 ```ts
 subagent({

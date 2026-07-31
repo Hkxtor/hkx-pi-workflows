@@ -32,12 +32,12 @@ Manifest shape (authoritative):
 
 | Surface | Count | In repo | Path A | Path B target |
 | --- | ---: | --- | --- | --- |
-| agents | 25 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
+| agents | 26 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 52 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 97 | `skills/` | yes | `~/.pi/agent/skills/` |
+| commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| skills | 98 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
-| extensions | 4 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| extensions | 5 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
@@ -81,6 +81,18 @@ These are the main operator-facing entry points:
 - `hkx-update-codemaps`
 - `hkx-checkpoint`
 - `hkx-aside`
+
+### Hookify guardrail commands
+
+Operator-authored pattern guardrails (ECC hookify → Pi extension):
+
+- `hkx-hookify` — create rule from description or conversation analysis (confirm before write)
+- `hkx-hookify-list` — list project + global rules
+- `hkx-hookify-configure` — toggle `enabled`
+- `hkx-hookify-help` — events, format, limits
+
+Runtime: `extensions/hkx-hookify.ts`. Skill: `hookify-rules`. Agent: `conversation-analyzer`.  
+Project rules: `.pi/hookify.{name}.local.md`. Global: `~/.pi/agent/hookify/`. Kill-switch: `HKX_HOOKIFY=off`.
 
 ### Orchestration and loop commands
 
@@ -156,6 +168,7 @@ Representative examples:
 - `session-summary`
 - `santa-method`
 - `instinct-evolve`
+- `hookify-rules`
 - `unified-memory`
 - `blueprint`
 - `plan-canvas`
@@ -319,10 +332,11 @@ Operator entry that **routes** to these chains (and orch commands) without dupli
 
 ## Extensions
 
-Four first-party extensions are shipped intentionally:
+Five first-party extensions are shipped intentionally:
 
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping; pre-authorizes `.pi-subagents/` artifact writes
+- `hkx-hookify.ts` — operator Hookify rules (`warn` notify / `block` tool_call); loads `.pi/hookify.*.local.md` + `~/.pi/agent/hookify/`; `HKX_HOOKIFY=off`
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 
@@ -381,11 +395,23 @@ The package deliberately splits repo guidance from global guidance:
 These are intentionally left out of the core package unless a user asks for an optional pack:
 
 - framework- or domain-specific reviewer packs
-- shell hook packs and hookify flows
+- Claude Code / shell `hooks.json` packs (Hookify is Pi-native via `hkx-hookify` extension + `.pi/` rules — not a Claude hook port)
 - external wrapper commands that duplicate pi-native orchestration
 - session-history utilities tied to another session store
 - Claude Code continuous-learning hooks/observer-loop tied to a different home-directory layout (replaced by optional Pi-native instinct-evolve: `commands/hkx-evolve`, `scripts/instinct/`, skill `instinct-evolve`)
 - giant language/domain catalogs that would bloat the core package
+
+## Behavior guardrails: Hookify
+
+Pi-native port of ECC hookify (pattern rules, not Claude hooks):
+
+- commands: `hkx-hookify`, `hkx-hookify-list`, `hkx-hookify-configure`, `hkx-hookify-help`
+- skill: `hookify-rules`
+- agent: `conversation-analyzer` (`hkx.conversation-analyzer`)
+- extension: `hkx-hookify.ts`
+- tests: `scripts/tests/hookify-rules.mjs`
+- rules on disk: project `.pi/hookify.{name}.local.md`; optional global `~/.pi/agent/hookify/`
+- complements GateGuard (investigation) and instinct (cross-session learning); does not replace either
 
 ## Optional knowledge surface: Instinct Evolve
 

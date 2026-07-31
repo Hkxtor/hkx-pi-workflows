@@ -30,6 +30,8 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | Exa tool calls only | `exa-search` | (via `research-ops`) | standalone cited report |
 | security of Pi config / MCP / hooks | `security-scan` | `workspace-surface-audit` | `security-review` |
 | security of auth / permissions / threat model | `security-review` | `safety-guard` | `security-scan` |
+| prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hkx-hookify`, GateGuard only if first-edit facts needed | `instinct-evolve` (cross-session), `gateguard` (investigation) |
+| fact-force before risky first edit | `gateguard` | `safety-guard` | `hookify-rules` |
 | run checks after code change | `verification-loop` | language `*-workflow` | `delivery-gate` first |
 | session done / delivery hygiene | `delivery-gate` | `verification-loop` (if not green), `session-summary` | `agent-self-evaluation` first |
 | score my output quality | `agent-self-evaluation` | after `delivery-gate` | as a test runner |
@@ -201,6 +203,7 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 | `hkx-plan-canvas` | `plan-canvas` | Browser annotate/approve |
 | `hkx-context-budget` | `context-budget` | Install-surface token audit |
 | `hkx-security-scan` | `security-scan` | Config security scan |
+| `hkx-hookify` / `list` / `configure` / `help` | `hookify-rules` | Pattern guardrails; runtime `hkx-hookify` extension |
 | `hkx-orch-*` | matching `orch-*` | Orchestrated operations |
 | `hkx-skill-health` | (pairs with `skill-stocktake`) | Health = frontmatter; stocktake = overlap/quality |
 

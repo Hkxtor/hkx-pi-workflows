@@ -91,6 +91,38 @@ Complementary surfaces:
 - `skills/gateguard/SKILL.md` — prompt-level gate guidance and output format
 - `skills/safety-guard/SKILL.md` — runtime safety checks that do not overlap with the gate
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write intercom asks
+- `hkx-hookify.ts` — user-defined pattern rules (orthogonal to GateGuard)
+
+### hkx-hookify.ts
+
+Operator-authored behavior guardrails (ECC Hookify → Pi).
+
+Current behavior:
+
+- Loads project rules from `.pi/hookify.*.local.md` and optional global rules from `~/.pi/agent/hookify/`.
+- On `tool_call`: matches `bash` / `file` (edit, write, ast_grep_replace) rules; `warn` → `ui.notify` and allow; `block` → `{ block: true, reason }`.
+- On `before_agent_start`: soft `prompt` rules (notify + system/message inject; cannot hard-block submit).
+- On `agent_end`: soft `stop` rules (notify only).
+- Reloads when rule path mtimes change; skips invalid files with a one-shot warning.
+- Supports `pattern` or AND `conditions[]` (operators: regex_match, contains, equals, not_contains, starts_with, ends_with).
+
+Disable per-session:
+
+```text
+HKX_HOOKIFY=off
+```
+
+It does not:
+
+- replace GateGuard investigation gates
+- promote rules into instincts/skills automatically
+- hard-block user prompt submit or session end
+
+Complementary surfaces:
+
+- commands `/hkx-hookify`, `/hkx-hookify-list`, `/hkx-hookify-configure`, `/hkx-hookify-help`
+- skill `hookify-rules`
+- agent `conversation-analyzer`
 
 ### hkx-subagent-supervisor-auto-reply.ts
 

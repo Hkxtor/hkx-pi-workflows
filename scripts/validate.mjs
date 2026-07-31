@@ -56,8 +56,11 @@ const requiredFiles = [
 	"scripts/tests/rpiv-advisor-seed.mjs",
 	// GateGuard + supervisor auto-reply artifact policies.
 	"scripts/tests/gateguard-artifacts.mjs",
+	// Hookify rule parse/match/evaluate suite.
+	"scripts/tests/hookify-rules.mjs",
 	// Extensions (Path A + B).
 	"extensions/hkx-gateguard.ts",
+	"extensions/hkx-hookify.ts",
 	"extensions/hkx-subagent-supervisor-auto-reply.ts",
 	"extensions/hkx-language-quality.ts",
 	"extensions/hkx-working-indicator.ts",
