@@ -1,5 +1,5 @@
 ---
-name: hkx-recursive-decision-ledger
+name: recursive-decision-ledger
 description: Use when the user asks for repeated rollouts, marked decision processes, high-dimensional search, ensemble comparison, or recursive reasoning with a visible evidence trail.
 origin: ECC-converted-for-Pi
 ---
@@ -81,6 +81,6 @@ staleness threshold.
 
 ## Related Skills
 
-- `hkx-benchmark-optimization-loop` for measured variant comparison
-- `hkx-loop-design-check` for deciding whether the loop itself is safe
-- `hkx-agent-introspection-debugging` when recursive loops are stalling
+- `benchmark-optimization-loop` for measured variant comparison
+- `loop-design-check` for deciding whether the loop itself is safe
+- `agent-introspection-debugging` when recursive loops are stalling

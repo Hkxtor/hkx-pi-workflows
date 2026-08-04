@@ -1,5 +1,5 @@
 ---
-name: hkx-git-workflow
+name: git-workflow
 description: Pi-safe Git workflow patterns for branch strategy, commits, PRs, conflict resolution, releases, and history-sensitive operations.
 origin: HKX-converted-for-Pi
 ---
@@ -85,5 +85,5 @@ For public packages or deployable artifacts, capture:
 ## Pair With
 
 - `hkx-common-git-workflow` for persistent rules.
-- `hkx-github-ops` for GitHub issue, PR, CI, and release operations.
-- `hkx-verification-loop` before commit, PR, merge, or release.
+- `github-ops` for GitHub issue, PR, CI, and release operations.
+- `verification-loop` before commit, PR, merge, or release.

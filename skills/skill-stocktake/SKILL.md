@@ -1,5 +1,5 @@
 ---
-name: hkx-skill-stocktake
+name: skill-stocktake
 description: "Audit skill/command portfolio quality: overlap, staleness, weak descriptions, and discoverability. Use for periodic skill conflicts/stocktake reviews. Not workspace inventory, automation inventory, security scan, or delete-cleanup (config-gc)—propose merge/retire only; never delete without approval."
 origin: ECC-converted-for-Pi
 ---

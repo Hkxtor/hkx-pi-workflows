@@ -1,5 +1,5 @@
 ---
-name: hkx-intent-driven-development
+name: intent-driven-development
 description: Turn ambiguous or high-risk engineering requests into observable acceptance criteria before or during implementation. Use when success is unclear but the feature direction is already chosen. Not product-strategy diagnostics (product-lens), full capability SRS (product-capability), or multi-option decision councils (council).
 origin: HKX-converted-for-Pi
 ---

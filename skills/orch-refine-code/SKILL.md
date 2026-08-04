@@ -1,16 +1,16 @@
 ---
-name: hkx-orch-refine-code
+name: orch-refine-code
 description: Orchestrate a behavior-preserving refactor — confirm tests are green, restructure without changing behavior, keep tests green, review, and gated commit. Use when the structure should improve but behavior must not change.
 origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-refine-code
 
-Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SKILL.md).
+Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
 ## When to Use
 
 - Same behavior, **better structure**: extract modules, remove duplication, kill dead code, reduce nesting, rename for clarity.
-- Distinguish from siblings: if behavior is meant to change at all, this is the wrong skill (`hkx-orch-change-feature` / `hkx-orch-fix-defect`).
+- Distinguish from siblings: if behavior is meant to change at all, this is the wrong skill (`orch-change-feature` / `orch-fix-defect`).
 
 ## Operation Settings
 
@@ -20,7 +20,7 @@ Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SK
 
 ## How It Works
 
-1. Run the `hkx-orch-pipeline` engine with the settings above.
+1. Run the `orch-pipeline` engine with the settings above.
 2. For dead-code / duplication sweeps, delegate to the `refactor-cleaner` agent (it runs knip / depcheck / ts-prune and removes safely).
 3. Stop at **Gate 1** (restructure plan) and **Gate 2** (pre-commit).
 4. Commit as `refactor:` — the diff must be behavior-neutral.

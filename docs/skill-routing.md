@@ -30,24 +30,24 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | Exa tool calls only | `exa-search` | (via `research-ops`) | standalone cited report |
 | security of Pi config / MCP / hooks | `security-scan` | `workspace-surface-audit` | `security-review` |
 | security of auth / permissions / threat model | `security-review` | `safety-guard` | `security-scan` |
-| prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hkx-hookify`, GateGuard only if first-edit facts needed | `instinct-evolve` (cross-session), `gateguard` (investigation) |
+| prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hookify`, GateGuard only if first-edit facts needed | `instinct-evolve` (cross-session), `gateguard` (investigation) |
 | fact-force before risky first edit | `gateguard` | `safety-guard` | `hookify-rules` |
 | run checks after code change | `verification-loop` | language `*-workflow` | `delivery-gate` first |
 | session done / delivery hygiene | `delivery-gate` | `verification-loop` (if not green), `session-summary` | `agent-self-evaluation` first |
 | score my output quality | `agent-self-evaluation` | after `delivery-gate` | as a test runner |
 | what is installed in this workspace | `workspace-surface-audit` | `automation-audit-ops` | `config-gc` |
 | what automation is live / overlapping | `automation-audit-ops` | `workspace-surface-audit` | `skill-stocktake` |
-| skill overlap / portfolio health | `skill-stocktake` | `hkx-skill-health` command | `config-gc` |
+| skill overlap / portfolio health | `skill-stocktake` | `skill-health` command | `config-gc` |
 | clean up my config / too many skills | `config-gc` | after stocktake/audit | any read-only audit as delete tool |
 | why build this / product diagnostic | `product-lens` | `council` | `product-capability` first |
 | PRD → capability / interfaces | `product-capability` | `intent-driven-development` | `product-lens` only |
 | acceptance criteria for this change | `intent-driven-development` | `tdd-workflow` | `council` |
 | multi-path go/no-go tradeoff | `council` | `product-lens` | routine implementation |
 | dual independent review until ship-ready | `santa-method` | `verification-loop` first | `council` (decisions, not correctness) |
-| extract session patterns as instincts | `instinct-evolve` | commands `hkx-learn` / `hkx-learn-eval` | `growth-log` (human journal) |
-| durable project/user context vault | `unified-memory` | `/hkx-unified-memory` / CLI `memory` | `instinct-evolve` (behaviors) or `/om` (session) |
+| extract session patterns as instincts | `instinct-evolve` | commands `learn` / `learn-eval` | `growth-log` (human journal) |
+| durable project/user context vault | `unified-memory` | `/unified-memory` / CLI `memory` | `instinct-evolve` (behaviors) or `/om` (session) |
 | multi-session multi-PR construction plan | `blueprint` | `/hkx-plan-canvas` for approve | `/hkx-plan` for single-session |
-| browser annotate/approve a local plan | `plan-canvas` | after `/hkx-plan` or `/hkx-blueprint` | code review commands |
+| browser annotate/approve a local plan | `plan-canvas` | after `/hkx-plan` or `/blueprint` | code review commands |
 | audit agents/skills/MCP token tax | `context-budget` | `skill-stocktake`, `workspace-surface-audit` | `strategic-compact` (mid-session) |
 | UI design direction | `frontend-design-direction` | `design-system` | `browser-qa` |
 | design tokens / system audit | `design-system` | `make-interfaces-feel-better` | `accessibility` only |
@@ -102,12 +102,12 @@ Order: classify with `research-ops` (or jump straight to `search-first` / `docum
 | Phase | Skill / command |
 | --- | --- |
 | After edits | `verification-loop` |
-| High-stakes dual review | `santa-method` (`/hkx-santa-loop`) |
+| High-stakes dual review | `santa-method` (`/santa-loop`) |
 | Before ending session | `delivery-gate` |
 | Optional reflection scorecard | `agent-self-evaluation` |
 | Narrative recap | `session-summary` |
-| Capture reusable session patterns | `/hkx-learn` or `/hkx-learn-eval` → `instinct-evolve` |
-| Recall/save project memory notes | `/hkx-unified-memory` → `unified-memory` |
+| Capture reusable session patterns | `/learn` or `/learn-eval` → `instinct-evolve` |
+| Recall/save project memory notes | `/unified-memory` → `unified-memory` |
 
 ### Config and portfolio governance
 
@@ -116,7 +116,7 @@ Order: classify with `research-ops` (or jump straight to `search-first` / `docum
 | Read-only workspace map | `workspace-surface-audit` |
 | Read-only automation lanes | `automation-audit-ops` |
 | Skill/command quality and overlap | `skill-stocktake` |
-| Frontmatter health check | command `hkx-skill-health` |
+| Frontmatter health check | command `skill-health` |
 | Confirm-each-deletion cleanup | `config-gc` |
 
 Never start with `config-gc`. Inventory or stocktake first; delete only with explicit user confirmation.
@@ -194,18 +194,18 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 
 | Command | Skill | Notes |
 | --- | --- | --- |
-| `hkx-delivery-gate` | `delivery-gate` | Same delivery checklist lane |
+| `delivery-gate` | `delivery-gate` | Same delivery checklist lane |
 | `hkx-session-summary` | `session-summary` | Session recap |
-| `hkx-santa-loop` | `santa-method` | Dual independent review convergence |
-| `hkx-learn` / `hkx-learn-eval` | `instinct-evolve` | Session → pending instincts |
-| `hkx-unified-memory` | `unified-memory` | Homunculus vault recall/save/validate |
-| `hkx-blueprint` | `blueprint` | Multi-session construction plan |
+| `santa-loop` | `santa-method` | Dual independent review convergence |
+| `learn` / `learn-eval` | `instinct-evolve` | Session → pending instincts |
+| `unified-memory` | `unified-memory` | Homunculus vault recall/save/validate |
+| `blueprint` | `blueprint` | Multi-session construction plan |
 | `hkx-plan-canvas` | `plan-canvas` | Browser annotate/approve |
-| `hkx-context-budget` | `context-budget` | Install-surface token audit |
-| `hkx-security-scan` | `security-scan` | Config security scan |
-| `hkx-hookify` / `list` / `configure` / `help` | `hookify-rules` | Pattern guardrails; runtime `hkx-hookify` extension |
+| `context-budget` | `context-budget` | Install-surface token audit |
+| `security-scan` | `security-scan` | Config security scan |
+| `hookify` / `list` / `configure` / `help` | `hookify-rules` | Pattern guardrails; runtime `hkx-hookify` extension |
 | `hkx-orch-*` | matching `orch-*` | Orchestrated operations |
-| `hkx-skill-health` | (pairs with `skill-stocktake`) | Health = frontmatter; stocktake = overlap/quality |
+| `skill-health` | (pairs with `skill-stocktake`) | Health = frontmatter; stocktake = overlap/quality |
 
 Commands should stay thin. If guidance grows, keep it in the skill and point the command at that skill.
 

@@ -1,5 +1,5 @@
 ---
-name: hkx-automation-audit-ops
+name: automation-audit-ops
 description: "Read-only automation inventory: CI, hooks, MCP servers, extensions, scripts, scheduled jobs, wrappers, and overlapping automation lanes. Use when asking what automation is live, broken, or duplicated. Not full workspace surface maps, skill portfolio quality, or destructive config GC."
 origin: HKX-converted-for-Pi
 ---

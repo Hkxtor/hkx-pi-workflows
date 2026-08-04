@@ -64,7 +64,7 @@ hkx 侧已有两套相邻但未统一的记忆面：
 | UM-2 | 文档 schema：`hkx.memory.v1`（id、scope、title、tags、created/updated、body；可选 source=om\|manual\|session\|import） | P0 | **done** (M1) |
 | UM-3 | Scope 语义：project 默认 recall；user 仅显式；team 若做则 fail-closed gitignore / 审阅约定 | P0 | **done** (M1 stub team) |
 | UM-4 | CLI：`memory recall\|save\|handoff\|validate`（+ M3/M4 扩展），`--json`，写默认预览 + 显式 `--apply` | P0 | **done** (M1–M4) |
-| UM-5 | Thin commands：单一 `/hkx-unified-memory` 路由 | P1 | **done** (M2) |
+| UM-5 | Thin commands：单一 `/unified-memory` 路由 | P1 | **done** (M2) |
 | UM-6 | OM 对齐：书面映射 + 不破坏 `from-om` → pending；扩展有测试 | P0 | **done** (M3 `--to`) |
 | UM-7 | Instinct 对齐：`vault → pending` 显式命令；不自动 reverse-sync | P1 | **done** (M3 promote-instinct) |
 | UM-8 | Skill：`unified-memory` 描述何时用哪一层 | P0 | **done** (M2+) |
@@ -88,7 +88,7 @@ hkx 侧已有两套相邻但未统一的记忆面：
 - [x] Skill + conversion-map + README 说明 vault vs instinct vs OM  
   **证据**: `skills/unified-memory/SKILL.md`、`docs/conversion-map.md`、`README.md` / `README.zh-CN.md` 一句入口。
 - [x] `npm run validate` 通过；命令 frontmatter 合法  
-  **证据**: `commands/hkx-unified-memory.md` + package validate。
+  **证据**: `commands/unified-memory.md` + package validate。
 - [x] 明确写出：不启用 default-on capture / observer-loop  
   **证据**: 本 PRD Non-Goals；skill / conversion-map 边界说明。
 
@@ -98,7 +98,7 @@ hkx 侧已有两套相邻但未统一的记忆面：
 | --- | --- | --- | --- |
 | M0 | 本 PRD 定稿；路径/schema/OM 分流决策书面化 | **done** | 本文件 + plan-time locks |
 | M1 | 布局 + schema + `recall/save/validate` CLI + 测试 | **done** | local plan + commit `89c9949` |
-| M2 | thin commands + skill + conversion-map/README | **done** | commit `51cd8a7` · `/hkx-unified-memory` + skill `unified-memory` |
+| M2 | thin commands + skill + conversion-map/README | **done** | commit `51cd8a7` · `/unified-memory` + skill `unified-memory` |
 | M3 | handoff + vault→pending instinct + OM 分流扩展 | **done** | local plan + commit `a7550d2` |
 | M4 | 可选 ECC vault 只读导入；secret 扫描加强 | **done** | local plan + commit `bfa8297` |
 
@@ -107,7 +107,7 @@ hkx 侧已有两套相邻但未统一的记忆面：
 ```bash
 node scripts/instinct/cli.mjs memory recall|save|handoff|promote-instinct|import-ecc|validate
 node scripts/instinct/cli.mjs from-om [--to instinct|vault|both]
-# slash: /hkx-unified-memory
+# slash: /unified-memory
 ```
 
 ## Risks
@@ -128,7 +128,7 @@ node scripts/instinct/cli.mjs from-om [--to instinct|vault|both]
 | 1 | 挂载点：`homunculus/memory/{project,user,team}/` vs `projects/<id>/memory/` | **Canonical**: `projects/<12-hex>/memory/`（project）；root `memory/user/`（user）；root `memory/team/` **目录占位 only** |
 | 2 | team：完全推迟还是目录+gitignore | **Stub only**：`ensureLayout` 空目录；无 save/recall 默认含 team；完整 team 产品仍 Non-Goal |
 | 3 | from-om 默认 | **默认仅 pending instinct**；`--to vault\|both` 显式 opt-in（永不默认 both） |
-| 4 | 命令形态 | **单一** `/hkx-unified-memory` 路由 + CLI `memory *`（不做多条 `/hkx-memory-*`） |
+| 4 | 命令形态 | **单一** `/unified-memory` 路由 + CLI `memory *`（不做多条 `/hkx-memory-*`） |
 | 5 | 检索是否要 FTS | **不做 FTS**；id / tag / title·body 子串 + 列出 |
 
 ## Plan-time decisions (locked for M1; still authoritative)
@@ -138,7 +138,7 @@ node scripts/instinct/cli.mjs from-om [--to instinct|vault|both]
 | 挂载点 | **Canonical**: `projects/<12-hex>/memory/`（project）；root `memory/user/`（user）；root `memory/team/` **目录占位 only** |
 | team | M1：`ensureLayout` 创建空目录 + 文档约定；无 save/recall 默认包含 team |
 | from-om | **默认不变**（仅 pending instinct）；扩展用显式 flag（M3） |
-| 命令形态 | M1：**仅 CLI**；M2：thin `/hkx-unified-memory` |
+| 命令形态 | M1：**仅 CLI**；M2：thin `/unified-memory` |
 | 检索 | id / tag / title 子串 + 列出；**无 FTS** |
 
 ## Documentation close-out (this pass)
@@ -156,4 +156,4 @@ node scripts/instinct/cli.mjs from-om [--to instinct|vault|both]
 
 ---
 
-*End of PRD. Implementation lives under `scripts/instinct/lib/memory-*.mjs`, CLI `memory` / `from-om`, skill `unified-memory`, command `/hkx-unified-memory`.*
+*End of PRD. Implementation lives under `scripts/instinct/lib/memory-*.mjs`, CLI `memory` / `from-om`, skill `unified-memory`, command `/unified-memory`.*

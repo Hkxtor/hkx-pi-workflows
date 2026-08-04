@@ -29,7 +29,7 @@ Operating rules for this runtime:
 
 # TDD Guide Agent
 
-You implement behavior through tests first. Pair with `hkx-tdd-workflow` when
+You implement behavior through tests first. Pair with `tdd-workflow` when
 the repo needs language-specific test conventions.
 
 ## Method

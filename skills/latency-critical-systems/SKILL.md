@@ -1,5 +1,5 @@
 ---
-name: hkx-latency-critical-systems
+name: latency-critical-systems
 description: Design and verify latency-sensitive paths (realtime dashboards, market data, streaming agents, queues, caches) with p95/freshness metrics. Use for architecture and hot-path latency. Not generic page/API benchmark capture or ETL bulk throughput.
 origin: ECC-converted-for-Pi
 ---
@@ -71,6 +71,6 @@ documented repo-local ops path.
 
 ## Related Skills
 
-- `hkx-canary-watch` for post-deploy live-path checks
-- `hkx-benchmark-optimization-loop` for bounded variant search
-- `hkx-browser-qa` for browser-visible freshness validation
+- `canary-watch` for post-deploy live-path checks
+- `benchmark-optimization-loop` for bounded variant search
+- `browser-qa` for browser-visible freshness validation

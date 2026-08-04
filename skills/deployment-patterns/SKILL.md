@@ -1,5 +1,5 @@
 ---
-name: hkx-deployment-patterns
+name: deployment-patterns
 description: "Deployment and release operations for Pi projects: CI/CD, rollout strategy, health checks, rollback, artifacts, env config, and production readiness gates."
 origin: HKX-converted-for-Pi
 ---

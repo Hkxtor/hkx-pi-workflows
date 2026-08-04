@@ -1,5 +1,5 @@
 ---
-name: hkx-bun-runtime
+name: bun-runtime
 description: Pi Bun and TypeScript runtime patterns. Use when editing package scripts, TypeScript, tests, workers, file IO, process execution, builds, or Bun-vs-Node decisions.
 origin: HKX-converted-for-Pi
 ---

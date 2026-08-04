@@ -1,5 +1,5 @@
 ---
-name: hkx-eval-harness
+name: eval-harness
 description: Formal evaluation framework for agent sessions implementing eval-driven development (EDD) principles.
 origin: ECC-converted-for-Pi
 ---

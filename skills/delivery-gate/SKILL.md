@@ -1,5 +1,5 @@
 ---
-name: hkx-delivery-gate
+name: delivery-gate
 description: "Manual pre-completion delivery hygiene checklist: learning capture, disk space, rationalization signals, and standard build/type/lint/test gates. Use at session end after verification-loop is green. Not a substitute for focused post-change checks (verification-loop) or 5-axis self-scoring (agent-self-evaluation)."
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -21,7 +21,7 @@ This is the same pattern as CI pipeline gates — automated, deterministic check
 - Before declaring a session complete.
 - After a complex task (3+ files edited or 50+ lines changed).
 - When the user says "we're done" or "ship it."
-- When triggered via `/hkx-delivery-gate`.
+- When triggered via `/delivery-gate`.
 
 ## What It Checks
 
@@ -42,7 +42,7 @@ This is the same pattern as CI pipeline gates — automated, deterministic check
 Invoke via command:
 
 ```
-/hkx-delivery-gate
+/delivery-gate
 ```
 
 The command runs each check using Pi tools (`bash` for disk / git, `glob` for learning files, `grep` for rationalization patterns) and produces a report.
@@ -88,7 +88,7 @@ The gate checks the **habit** of touching learning libraries, not the **quality*
 
 ## Related
 
-- `hkx-agent-self-evaluation` — Reasoning quality assessment (accuracy, completeness, clarity, actionability, conciseness)
-- `hkx-quality-gate` — Standard build/type/lint/test gates
-- `hkx-gateguard` — Pre-action safety gate for destructive operations
-- `hkx-growth-log` — Learning capture methodology
+- `agent-self-evaluation` — Reasoning quality assessment (accuracy, completeness, clarity, actionability, conciseness)
+- `quality-gate` — Standard build/type/lint/test gates
+- `gateguard` — Pre-action safety gate for destructive operations
+- `growth-log` — Learning capture methodology

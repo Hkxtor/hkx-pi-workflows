@@ -1,5 +1,5 @@
 ---
-name: hkx-market-research
+name: market-research
 description: "Business market research: competitive analysis, market sizing, investor/fund diligence, and decision-oriented industry intelligence with sources. Use only for commercial/competitive/business questions. Not for general technical research (research-ops/deep-research), library docs (documentation-lookup), or pre-coding reuse checks (search-first)."
 origin: HKX-converted-for-Pi
 ---
@@ -96,5 +96,5 @@ Use Pi tools for research:
 
 ## Related Skills
 
-- `hkx-research-ops` — orchestrates when to use which research lane
-- `hkx-deep-research` — multi-source synthesis with citations
+- `research-ops` — orchestrates when to use which research lane
+- `deep-research` — multi-source synthesis with citations

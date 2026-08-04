@@ -1,5 +1,5 @@
 ---
-name: hkx-coding-standards
+name: coding-standards
 description: General maintainable coding standards for Pi-compatible changes (clarity, structure, safe defaults). Use when implementing or reviewing code style beyond language-specific workflows. Not TDD process (tdd-workflow), language toolchains (typescript/python/go/rust-workflow), or security threat review.
 ---
 

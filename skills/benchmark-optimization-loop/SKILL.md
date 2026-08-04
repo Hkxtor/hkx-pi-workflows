@@ -1,5 +1,5 @@
 ---
-name: hkx-benchmark-optimization-loop
+name: benchmark-optimization-loop
 description: Bounded measure-optimize loop across variants with a promotion gate. Use when making something faster by repeated measured tests, after a baseline exists. Not one-shot baseline capture (benchmark), p95/freshness architecture (latency-critical-systems), or bulk ETL throughput (data-throughput-accelerator).
 origin: ECC-converted-for-Pi
 ---
@@ -70,6 +70,6 @@ A variant cannot become the new default until:
 
 ## Related Skills
 
-- `hkx-benchmark` for single-path measurement and baseline comparison
-- `hkx-parallel-execution-optimizer` for safe concurrency lane planning
-- `hkx-latency-critical-systems` when the hot path is realtime or streaming
+- `benchmark` for single-path measurement and baseline comparison
+- `parallel-execution-optimizer` for safe concurrency lane planning
+- `latency-critical-systems` when the hot path is realtime or streaming

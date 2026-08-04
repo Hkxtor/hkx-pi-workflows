@@ -1,5 +1,5 @@
 ---
-name: hkx-github-ops
+name: github-ops
 description: "GitHub operations workflow for Pi projects: issues, PRs, CI checks, releases, changelogs, security alerts, and repository automation. Read-only by default."
 origin: HKX-converted-for-Pi
 ---

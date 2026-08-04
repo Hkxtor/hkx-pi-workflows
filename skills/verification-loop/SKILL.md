@@ -1,5 +1,5 @@
 ---
-name: hkx-verification-loop
+name: verification-loop
 description: "Post-change verification: choose and run focused format, lint, typecheck, unit, language, smoke, or release checks after code or prompt edits. Use immediately after implementation. Not session-end hygiene (delivery-gate) or subjective quality scoring (agent-self-evaluation)."
 origin: HKX-converted-for-Pi
 ---

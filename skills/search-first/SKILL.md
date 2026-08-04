@@ -1,5 +1,5 @@
 ---
-name: hkx-search-first
+name: search-first
 description: Research-before-coding gate for Pi projects. Use before adding dependencies, integrations, helpers, tools, abstractions, MCPs, or custom implementations. Not for open-ended topic research, market diligence, or library doc lookups (use research-ops / documentation-lookup).
 origin: HKX-converted-for-Pi
 ---

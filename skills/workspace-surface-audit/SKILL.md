@@ -1,5 +1,5 @@
 ---
-name: hkx-workspace-surface-audit
+name: workspace-surface-audit
 description: "Read-only workspace inventory: repo stack, MCP, plugins, extensions, skills, commands, rules, env surfaces, and missing operator workflows. Use for \"what do we have installed?\" maps. Not skill-quality stocktake, automation-lane audit, security scan, or confirm-delete cleanup (config-gc)."
 origin: HKX-converted-for-Pi
 ---

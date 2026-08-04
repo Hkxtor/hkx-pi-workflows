@@ -1,5 +1,5 @@
 ---
-name: hkx-content-hash-cache-pattern
+name: content-hash-cache-pattern
 description: Cache expensive file-processing results using content hashes instead of paths, so cache hits survive renames and invalidate automatically when the file changes.
 origin: ECC-converted-for-Pi
 ---
@@ -49,5 +49,5 @@ Use **file content** as the cache identity, not the file path.
 
 ## Related Skills
 
-- `hkx-data-throughput-accelerator` for large ingestion and backfill speedups
-- `hkx-benchmark-optimization-loop` when you need to prove the cache actually helps
+- `data-throughput-accelerator` for large ingestion and backfill speedups
+- `benchmark-optimization-loop` when you need to prove the cache actually helps

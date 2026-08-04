@@ -1,5 +1,5 @@
 ---
-name: hkx-accessibility
+name: accessibility
 description: "Accessibility implementation and audit for Pi UI: keyboard, focus, ARIA, semantics, and WCAG 2.2 AA. Use when building or reviewing interactive UI for a11y. Not visual polish-only passes, design-system tokens, or full post-deploy browser QA suites (browser-qa may cover a11y as one phase)."
 origin: HKX-converted-for-Pi
 ---

@@ -1,5 +1,5 @@
 ---
-name: hkx-regex-vs-llm-structured-text
+name: regex-vs-llm-structured-text
 description: "Choose regex or LLM for structured-text parsing using a hybrid default: start with deterministic parsing for the common case, then escalate only low-confidence edge cases."
 origin: ECC-converted-for-Pi
 ---
@@ -60,5 +60,5 @@ Flag items for LLM review when they show signs like:
 
 ## Related Skills
 
-- `hkx-content-hash-cache-pattern` for caching repeated document processing
-- `hkx-cost-aware-llm-pipeline` for controlled LLM escalation
+- `content-hash-cache-pattern` for caching repeated document processing
+- `cost-aware-llm-pipeline` for controlled LLM escalation

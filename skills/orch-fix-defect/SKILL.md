@@ -1,18 +1,18 @@
 ---
-name: hkx-orch-fix-defect
+name: orch-fix-defect
 description: Orchestrate fixing a bug — reproduce it as a failing regression test, fix to green, review, and gated commit — by delegating each phase to the matching Pi agent. Use when existing behavior is broken or wrong.
 origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-fix-defect
 
-Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SKILL.md).
+Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
 ## When to Use
 
 - Something is **broken**: wrong output, an error, a crash, a regression.
 - Distinguish from siblings:
-  - behavior is correct but you want it different → `hkx-orch-change-feature`.
-  - the capability does not exist yet → `hkx-orch-add-feature`.
+  - behavior is correct but you want it different → `orch-change-feature`.
+  - the capability does not exist yet → `orch-add-feature`.
 
 ## Operation Settings
 
@@ -22,8 +22,8 @@ Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SK
 
 ## How It Works
 
-1. Run the `hkx-orch-pipeline` engine with the settings above.
-2. If the root cause is unclear, scope it with `code-explorer` before the red test; escalate build breaks to `build-error-resolver` / `/hkx-build-fix`.
+1. Run the `orch-pipeline` engine with the settings above.
+2. If the root cause is unclear, scope it with `code-explorer` before the red test; escalate build breaks to `build-error-resolver` / `/build-fix`.
 3. Stop at **Gate 1** (only if a plan was produced) and **Gate 2** (pre-commit).
 4. Add `security-reviewer` if the defect sits in a security-sensitive path.
 

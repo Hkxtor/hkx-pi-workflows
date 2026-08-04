@@ -1,5 +1,5 @@
 ---
-name: hkx-redis-patterns
+name: redis-patterns
 description: Redis data structure patterns, caching strategies, distributed locks, rate limiting, and connection management for production applications (compact Pi version).
 origin: ECC-converted-for-Pi
 ---

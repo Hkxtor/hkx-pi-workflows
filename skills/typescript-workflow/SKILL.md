@@ -1,5 +1,5 @@
 ---
-name: hkx-typescript-workflow
+name: typescript-workflow
 description: "TypeScript/JavaScript development workflow for Pi projects: implementation, typing, tests, and validation. Use when editing TS/JS application code. Not Bun runtime internals (bun-runtime), frontend design direction, or Rust/Python/Go workflows."
 ---
 

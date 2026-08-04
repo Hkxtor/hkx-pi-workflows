@@ -1,5 +1,5 @@
 ---
-name: hkx-frontend-design-direction
+name: frontend-design-direction
 description: Set product-specific frontend design direction (layout language, hierarchy, visual intent) before implementation. Use when building or improving web UI that needs stronger design judgment. Not token systems (design-system), React patterns (frontend-patterns), micro-polish (make-interfaces-feel-better), WCAG audits (accessibility), or post-deploy browser QA (browser-qa).
 origin: ECC-converted-for-Pi
 ---

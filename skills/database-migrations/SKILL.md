@@ -1,5 +1,5 @@
 ---
-name: hkx-database-migrations
+name: database-migrations
 description: Safe database migration workflow for schema changes, indexes, backfills, rollbacks, and zero-downtime deploys across SQL and ORM-backed Pi projects.
 origin: HKX-converted-for-Pi
 ---

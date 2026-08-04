@@ -3,7 +3,7 @@
  *
  * GateGuard notes (first create):
  * 1. Importers/callers: scripts/instinct/cli.mjs (new `prune` subcommand);
- *    docs: commands/hkx-instinct-prune.md, docs/conversion-map.md, skills/instinct-evolve.
+ *    docs: commands/instinct-prune.md, docs/conversion-map.md, skills/instinct-evolve.
  * 2. Public exports: DEFAULT_PENDING_TTL_DAYS, ageDays, resolvePendingCreated,
  *    planPrune, applyPrune. Reuses loadRegistry/listProjectIds (promote.mjs),
  *    parseActivityDate (decay.mjs), parseInstinctFile, layoutPaths.

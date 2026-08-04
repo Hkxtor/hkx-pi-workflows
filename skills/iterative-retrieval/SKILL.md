@@ -1,5 +1,5 @@
 ---
-name: hkx-iterative-retrieval
+name: iterative-retrieval
 description: Pi pattern for progressively refining repository context before delegating to agents or implementing changes.
 origin: HKX-converted-for-Pi
 ---

@@ -1,5 +1,5 @@
 ---
-name: hkx-browser-qa
+name: browser-qa
 description: "Post-deploy browser automation QA with the Pi browser tool: smoke, interaction, visual regression, and honest a11y scope—read-only by default. Use after features are deployed or locally runnable in a browser. Not unit/e2e test authoring (e2e-testing), design direction, or pure WCAG checklist work without a live page (accessibility)."
 origin: HKX-converted-for-Pi
 ---
@@ -101,5 +101,5 @@ credentials/tokens/PII before saving any screenshot.
 - Default: the Pi `browser` tool (Chromium with stealth patches).
 - Screenshots taken with `tab.screenshot({ save: <path> })` persist across run calls for
   baseline comparison; review committed baselines into the repo under `qa/baselines/`.
-- Pair with `hkx-canary-watch` for post-deploy monitoring.
-- Pair with `hkx-accessibility` for the deeper WCAG audit pass when automated checks surface issues.
+- Pair with `canary-watch` for post-deploy monitoring.
+- Pair with `accessibility` for the deeper WCAG audit pass when automated checks surface issues.

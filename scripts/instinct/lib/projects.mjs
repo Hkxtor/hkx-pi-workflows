@@ -3,7 +3,7 @@
  *
  * GateGuard notes (first create):
  * 1. Importers/callers: scripts/instinct/cli.mjs (new `projects` subcommand);
- *    docs: commands/hkx-instinct-projects.md, docs/conversion-map.md,
+ *    docs: commands/instinct-projects.md, docs/conversion-map.md,
  *    skills/instinct-evolve. Reuses promote.mjs loadRegistry/listProjectIds.
  * 2. Public exports: listProjectStats, formatProjectStats, countInstinctFiles.
  *    Does not mutate store; read-only over projects.json + projects/<id>/.

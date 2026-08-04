@@ -1,5 +1,5 @@
 ---
-name: hkx-blueprint
+name: blueprint
 description: "Turn a one-line objective into a multi-session construction plan. Each step is cold-start executable with context brief, deps, verification, and exit criteria. Use for multi-PR work. Not for single-PR or just-do-it tasks (use /hkx-plan)."
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -9,7 +9,7 @@ origin: ECC-converted-for-Pi
 
 Turn a one-line objective into a step-by-step construction plan that a **fresh** agent can execute cold.
 
-Operator entry: `/hkx-blueprint`.
+Operator entry: `/blueprint`.
 
 ## When to Activate
 

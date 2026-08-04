@@ -1,5 +1,5 @@
 ---
-name: hkx-prompt-optimizer
+name: prompt-optimizer
 description: Analyze a draft prompt, identify missing context and workflow gaps, match it to Pi commands/skills/agents, and output a stronger prompt the user can paste.
 origin: ECC-converted-for-Pi
 ---
@@ -54,7 +54,7 @@ Return:
 - name affected surfaces
 - define success and validation
 - state constraints and out-of-scope items
-- choose the right workflow entrypoint (`/hkx-plan`, `/hkx-orch-fix-defect`, skills, or agents)
+- choose the right workflow entrypoint (`/hkx-plan`, `/orch-fix-defect`, skills, or agents)
 - keep the final prompt concrete enough that the next agent can act without guessing
 
 ## Do Not Use When
@@ -65,4 +65,4 @@ Return:
 ## Related Skills
 
 - `hkx-plan-orchestrate` when the improved prompt should chain multiple agents
-- `hkx-search-first` when the prompt needs research-before-coding guidance
+- `search-first` when the prompt needs research-before-coding guidance

@@ -1,5 +1,5 @@
 ---
-name: hkx-kubernetes-patterns
+name: kubernetes-patterns
 description: Kubernetes workload patterns, resource management, RBAC, probes, autoscaling, ConfigMap/Secret handling, and kubectl debugging for production-grade deployments.
 origin: HKX-converted-for-Pi
 ---
@@ -743,7 +743,7 @@ spec:
 
 ## Related Skills
 
-- `hkx-docker-patterns` — Multi-stage Dockerfiles and image security
-- `hkx-deployment-patterns` — CI/CD pipelines, rollback strategy, health check endpoints
-- `hkx-security-review` — Broader security hardening context
-- `hkx-git-workflow` — GitOps integration with K8s (ArgoCD / Flux patterns)
+- `docker-patterns` — Multi-stage Dockerfiles and image security
+- `deployment-patterns` — CI/CD pipelines, rollback strategy, health check endpoints
+- `security-review` — Broader security hardening context
+- `git-workflow` — GitOps integration with K8s (ArgoCD / Flux patterns)

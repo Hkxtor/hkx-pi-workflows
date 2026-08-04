@@ -1,5 +1,5 @@
 ---
-name: hkx-terminal-ops
+name: terminal-ops
 description: Evidence-first terminal workflow for Pi projects. Use when running commands, checking repo state, debugging CI/build failures, making narrow fixes, or reporting exact verification status.
 origin: HKX-converted-for-Pi
 ---

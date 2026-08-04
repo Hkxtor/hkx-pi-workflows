@@ -1,5 +1,5 @@
 ---
-name: hkx-loop-design-check
+name: loop-design-check
 description: "Judgment-layer design and review of autonomous agent loops: decidable goals, loop type, skeletons, and failure modes (spin, Goodhart, wrong-answer-to-completion). Use when designing or reviewing a loop contract. Not runtime failure debugging (agent-introspection-debugging) or parallel lane mechanics (parallel-execution-optimizer)—those are mechanism-layer complements."
 origin: HKX-converted-for-Pi
 ---

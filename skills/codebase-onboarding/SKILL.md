@@ -1,5 +1,5 @@
 ---
-name: hkx-codebase-onboarding
+name: codebase-onboarding
 description: "Generate onboarding maps for unfamiliar repos: reconnaissance, architecture, entry points, conventions, commands, and starter guidance. Use for handoffs or first-week orientation. Not raw ownership/inventory scans (repo-scan) or launch readiness audits (production-audit)."
 origin: HKX-converted-for-Pi
 ---

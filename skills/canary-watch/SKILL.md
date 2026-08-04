@@ -1,5 +1,5 @@
 ---
-name: hkx-canary-watch
+name: canary-watch
 description: "Post-deploy canary checks on a live URL: HTTP health, console/network errors, assets, SSE, and coarse performance regressions. Use after deploy. Not E2E test authoring (e2e-testing) or full visual-regression browser QA suites (browser-qa)."
 origin: HKX-converted-for-Pi
 ---

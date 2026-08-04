@@ -1,5 +1,5 @@
 ---
-name: hkx-config-gc
+name: config-gc
 description: Confirm-each-deletion garbage collection for .pi/ and ~/.pi/ redundant, stale, orphaned, or low-value config. Use only after inventory/stocktake when the user wants cleanup ("config GC", "too many skills"). Not a read-only audit—prefer workspace-surface-audit / skill-stocktake / automation-audit-ops first. Never delete without explicit confirmation.
 origin: HKX-converted-for-Pi
 ---
@@ -74,5 +74,5 @@ Use Pi tools for scanning:
 
 ## Complementary Skills
 
-- `hkx-workspace-surface-audit` — the additive counterpart: recommends what to install or enable. Config-gc is the subtractive half of the same lifecycle. Run audit first to see what's missing, then gc to clean what's stale.
-- `hkx-security-review` — pairs well with the permissions channel.
+- `workspace-surface-audit` — the additive counterpart: recommends what to install or enable. Config-gc is the subtractive half of the same lifecycle. Run audit first to see what's missing, then gc to clean what's stale.
+- `security-review` — pairs well with the permissions channel.

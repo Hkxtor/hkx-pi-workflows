@@ -141,7 +141,7 @@ pi -e .
 
 - `hkx-pr-review`
 - `hkx-adversarial-review`
-- `hkx-security-scan`
+- `security-scan`
 
 ```bash
 /run-chain hkx-pr-review "Review current local diff"
@@ -152,7 +152,7 @@ pi -e .
 - `hkx-feature-flow`
 - `hkx-fix-defect`
 - `hkx-refactor-flow`
-- `hkx-build-fix`
+- `build-fix`
 
 ```ts
 subagent({
@@ -167,20 +167,20 @@ subagent({
 
 将跨会话 **instincts** 聚类为 skill/command/agent 草稿（Linux + Windows Node CLI）：
 
-- `/hkx-instinct-status` — 列出项目/全局 instincts
-- `/hkx-instinct-from-om` — OM session reflections → **pending** instincts
-- `/hkx-instinct-accept` — pending → personal（人工审核门）
-- `/hkx-instinct-export` / `/hkx-instinct-import` — 导入导出 bundle
-- `/hkx-instinct-promote` — 跨项目提升到 global
-- `/hkx-evolve` — 分析聚类；可选 `--generate` 写入数据根 `evolved/` 草稿
-- `/hkx-publish-draft` — 预览/发布草稿到 `~/.pi/agent`（需 `--apply`）
-- `/hkx-instinct-decay` — 置信度按周衰减（默认预览，`--apply` 写回）
-- `/hkx-instinct-prune` — 清理过期 **pending** instincts（默认 TTL 30 天；默认预览，`--apply` 删除）
-- `/hkx-instinct-projects` — 列出已知项目与 instinct 计数
-- `/hkx-prp-commit` / `/hkx-prp-pr` — 自然语言选文件提交 + 模板感知 GitHub PR
-- `/hkx-multi-workflow` — ECC `multi-*` 路由到现有 chains / orch / `hkx-workflow`（无外部 ccg-workflow）
-- `/hkx-unified-memory` — 同根 `hkx-homunculus` 记忆库（`memory recall|save|handoff|promote-instinct|import-ecc|validate`；skill `unified-memory`）
-- `/hkx-hookify` / `list` / `configure` / `help` — 行为护栏（模式规则 + `hkx-hookify` 扩展；skill `hookify-rules`）
+- `/instinct-status` — 列出项目/全局 instincts
+- `/instinct-from-om` — OM session reflections → **pending** instincts
+- `/instinct-accept` — pending → personal（人工审核门）
+- `/instinct-export` / `/instinct-import` — 导入导出 bundle
+- `/instinct-promote` — 跨项目提升到 global
+- `/evolve` — 分析聚类；可选 `--generate` 写入数据根 `evolved/` 草稿
+- `/publish-draft` — 预览/发布草稿到 `~/.pi/agent`（需 `--apply`）
+- `/instinct-decay` — 置信度按周衰减（默认预览，`--apply` 写回）
+- `/instinct-prune` — 清理过期 **pending** instincts（默认 TTL 30 天；默认预览，`--apply` 删除）
+- `/instinct-projects` — 列出已知项目与 instinct 计数
+- `/prp-commit` / `/prp-pr` — 自然语言选文件提交 + 模板感知 GitHub PR
+- `/multi-workflow` — ECC `multi-*` 路由到现有 chains / orch / `workflow`（无外部 ccg-workflow）
+- `/unified-memory` — 同根 `hkx-homunculus` 记忆库（`memory recall|save|handoff|promote-instinct|import-ecc|validate`；skill `unified-memory`）
+- `/hookify` / `list` / `configure` / `help` — 行为护栏（模式规则 + `hkx-hookify` 扩展；skill `hookify-rules`）
 - skill：`instinct-evolve`
 - CLI：`node scripts/instinct/cli.mjs`（或 `npm run instinct -- …`）
 

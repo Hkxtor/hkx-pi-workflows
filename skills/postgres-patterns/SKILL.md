@@ -1,5 +1,5 @@
 ---
-name: hkx-postgres-patterns
+name: postgres-patterns
 description: PostgreSQL database patterns for query optimization, schema design, indexing, and security. Based on Supabase best practices.
 origin: ECC-converted-for-Pi
 ---
@@ -140,7 +140,7 @@ SELECT pg_reload_conf();
 
 - Agent: `database-reviewer` — Full database review workflow (Pi agent, if available)
 - Skill: `clickhouse-io` — ClickHouse analytics patterns (not included in Pi core)
-- Skill: `hkx-backend-patterns` — API and backend patterns
+- Skill: `backend-patterns` — API and backend patterns
 
 ---
 

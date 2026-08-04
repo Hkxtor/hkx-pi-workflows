@@ -1,5 +1,5 @@
 ---
-name: hkx-agent-introspection-debugging
+name: agent-introspection-debugging
 description: "Debug live/repeated Pi agent failures: loops without progress, context loss, misread tool output, compaction/retry breakage. Use when an agent run is misbehaving. Not loop-contract design (loop-design-check) or architecture audits before shipping (agent-architecture-audit)."
 origin: HKX-converted-for-Pi
 ---

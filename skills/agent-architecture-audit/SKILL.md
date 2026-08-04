@@ -1,5 +1,5 @@
 ---
-name: hkx-agent-architecture-audit
+name: agent-architecture-audit
 description: Audit Pi agent architecture changes across prompts, tools, memory, MCP, retries, compaction, rendering, auth, and persistence. Use before shipping or debugging agent behavior regressions.
 origin: HKX-converted-for-Pi
 ---

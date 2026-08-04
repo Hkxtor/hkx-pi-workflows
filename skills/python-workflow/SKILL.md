@@ -1,5 +1,5 @@
 ---
-name: hkx-python-workflow
+name: python-workflow
 description: Python development workflow for testing, typing, security hygiene, and maintainability on Pi projects. Use when editing Python code. Not generic coding-standards-only asks or other language workflows.
 ---
 

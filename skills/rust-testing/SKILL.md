@@ -1,5 +1,5 @@
 ---
-name: hkx-rust-testing
+name: rust-testing
 description: Rust testing patterns for Pi crates, native bindings, async cancellation, and platform-sensitive builds. Use when adding or fixing Rust tests/regressions. Not general implementation workflow (rust-workflow) or non-test design patterns (rust-patterns).
 origin: HKX-converted-for-Pi
 ---

@@ -1,5 +1,5 @@
 ---
-name: hkx-production-audit
+name: production-audit
 description: "Local-evidence production readiness audit: release/install paths, CI, deploy, migrations, observability, and launch-critical flows. Use when asking \"is this safe to ship?\". Not general repo inventory (repo-scan) or onboarding docs (codebase-onboarding)."
 origin: HKX-converted-for-Pi
 ---

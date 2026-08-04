@@ -1,5 +1,5 @@
 ---
-name: hkx-deep-research
+name: deep-research
 description: Multi-source deep research with cited synthesis for thorough topic reports. Use when the user wants exhaustive evidence and source attribution after research-ops has framed the question, or explicitly asks for a deep/cited report. Not for quick lookups, library docs, Exa tool how-to, market/investor diligence, or pre-coding search-first decisions.
 origin: HKX-converted-for-Pi
 ---

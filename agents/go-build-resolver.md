@@ -119,7 +119,7 @@ Final: `Build Status: SUCCESS/FAILED | Errors Fixed: N | Files Modified: list`
 
 ## When NOT to Use
 
-- Code needs refactoring -> use command `hkx-refactor-clean`
+- Code needs refactoring -> use command `refactor-clean`
 - Architecture changes needed -> use `/plan` or command `hkx-plan`
 - New features required -> use `/plan` or command `hkx-plan`
 - Tests failing -> use skill `tdd-workflow`

@@ -1,5 +1,5 @@
 ---
-name: hkx-security-review
+name: security-review
 description: Threat-model security review of Pi auth, secrets in code, tool permissions, extensions/MCP trust boundaries, browser/eval/bash/ssh tools, internal URLs, provider APIs, and release/install paths. Use when reviewing code or architecture for security risk. Not a config inventory scan (use security-scan).
 origin: HKX-converted-for-Pi
 ---

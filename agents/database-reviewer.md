@@ -45,7 +45,7 @@ You focus on correctness, safety, and performance of database work.
 1. Read the schema, migration, and affected call sites together.
 2. Trace read/write paths before recommending indexes or contract changes.
 3. Prefer repo-native migration patterns and naming conventions.
-4. Use `hkx-postgres-patterns` and `hkx-database-migrations` as the reference lane when relevant.
+4. Use `postgres-patterns` and `database-migrations` as the reference lane when relevant.
 5. Report exact risks, or implement the smallest safe fix if the task is mutating.
 
 ## Output Contract

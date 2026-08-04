@@ -141,7 +141,7 @@ Does **not** ship custom themes, first-party footer/header extensions, or OMP po
 
 - `hkx-pr-review`
 - `hkx-adversarial-review`
-- `hkx-security-scan`
+- `security-scan`
 
 ```bash
 /run-chain hkx-pr-review "Review current local diff"
@@ -152,7 +152,7 @@ Does **not** ship custom themes, first-party footer/header extensions, or OMP po
 - `hkx-feature-flow`
 - `hkx-fix-defect`
 - `hkx-refactor-flow`
-- `hkx-build-fix`
+- `build-fix`
 
 ```ts
 subagent({
@@ -167,20 +167,20 @@ subagent({
 
 Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Windows Node CLI):
 
-- `/hkx-instinct-status` — list project/global instincts
-- `/hkx-instinct-from-om` — map OM session reflections → **pending** instincts
-- `/hkx-instinct-accept` — pending → personal (human review gate)
-- `/hkx-instinct-export` / `/hkx-instinct-import` — portable bundles (+ optional ECC tree import)
-- `/hkx-instinct-promote` — cross-project → global promotion (explicit `--apply`)
-- `/hkx-evolve` — analyze clusters; optional `--generate` drafts under data root `evolved/`
-- `/hkx-publish-draft` — preview/publish drafts into `~/.pi/agent` (requires `--apply`)
-- `/hkx-instinct-decay` — weekly confidence decay (preview default; `--apply` writes)
-- `/hkx-instinct-prune` — delete expired **pending** instincts (TTL 30d; preview default; `--apply` deletes)
-- `/hkx-instinct-projects` — list known projects + instinct counts
-- `/hkx-prp-commit` / `/hkx-prp-pr` — natural-language commit targeting + template-aware GitHub PR
-- `/hkx-multi-workflow` — ECC `multi-*` router → existing chains / orch / `hkx-workflow` (no external ccg-workflow)
-- `/hkx-unified-memory` — memory vault on `hkx-homunculus` (`memory recall|save|handoff|promote-instinct|import-ecc|validate`; skill `unified-memory`)
-- `/hkx-hookify` / `list` / `configure` / `help` — operator behavior guardrails (pattern rules + `hkx-hookify` extension; skill `hookify-rules`)
+- `/instinct-status` — list project/global instincts
+- `/instinct-from-om` — map OM session reflections → **pending** instincts
+- `/instinct-accept` — pending → personal (human review gate)
+- `/instinct-export` / `/instinct-import` — portable bundles (+ optional ECC tree import)
+- `/instinct-promote` — cross-project → global promotion (explicit `--apply`)
+- `/evolve` — analyze clusters; optional `--generate` drafts under data root `evolved/`
+- `/publish-draft` — preview/publish drafts into `~/.pi/agent` (requires `--apply`)
+- `/instinct-decay` — weekly confidence decay (preview default; `--apply` writes)
+- `/instinct-prune` — delete expired **pending** instincts (TTL 30d; preview default; `--apply` deletes)
+- `/instinct-projects` — list known projects + instinct counts
+- `/prp-commit` / `/prp-pr` — natural-language commit targeting + template-aware GitHub PR
+- `/multi-workflow` — ECC `multi-*` router → existing chains / orch / `workflow` (no external ccg-workflow)
+- `/unified-memory` — memory vault on `hkx-homunculus` (`memory recall|save|handoff|promote-instinct|import-ecc|validate`; skill `unified-memory`)
+- `/hookify` / `list` / `configure` / `help` — operator behavior guardrails (pattern rules + `hkx-hookify` extension; skill `hookify-rules`)
 - skill: `instinct-evolve`
 - CLI: `node scripts/instinct/cli.mjs` (or `npm run instinct -- …`)
 

@@ -1,5 +1,5 @@
 ---
-name: hkx-security-scan
+name: security-scan
 description: "Inventory-style security scan of Pi config surfaces: agent config, extension packages, MCP servers, commands, skills, rules, hooks, secrets handling, permissions, and dependency exposure. Use when setting up or changing Pi automation/config. Not a code threat model or auth design review (use security-review)."
 origin: HKX-converted-for-Pi
 ---
@@ -59,6 +59,6 @@ Evidence: redacted, minimal, no secrets
 
 ## Pair With
 
-- `hkx-security-review` for code-level security review.
-- `hkx-safety-guard` before mutating config or external systems.
-- `hkx-mcp-server-patterns` for MCP server capability design.
+- `security-review` for code-level security review.
+- `safety-guard` before mutating config or external systems.
+- `mcp-server-patterns` for MCP server capability design.

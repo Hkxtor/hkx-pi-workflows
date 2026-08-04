@@ -1,5 +1,5 @@
 ---
-name: hkx-hexagonal-architecture
+name: hexagonal-architecture
 description: Design or refactor Pi services with ports-and-adapters boundaries across TypeScript, Rust, Python, and Go without leaking framework or infrastructure details.
 origin: HKX-converted-for-Pi
 ---

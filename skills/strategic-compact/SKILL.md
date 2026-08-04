@@ -1,5 +1,5 @@
 ---
-name: hkx-strategic-compact
+name: strategic-compact
 description: Pi context hygiene guidance for compacting at phase boundaries while preserving plans, evidence, and next actions.
 origin: HKX-converted-for-Pi
 ---

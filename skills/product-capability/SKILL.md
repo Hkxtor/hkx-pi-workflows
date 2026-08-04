@@ -1,5 +1,5 @@
 ---
-name: hkx-product-capability
+name: product-capability
 description: "PRD-to-capability planning: translate product intent into constraints, invariants, interfaces, and unresolved decisions before multi-service build. Use when a product ask needs an implementation-ready capability plan. Not pure \"why\" diagnostics (product-lens), testable acceptance bullets only (intent-driven-development), or go/no-go multi-voice decisions (council)."
 origin: ECC-converted-for-Pi
 ---
@@ -100,11 +100,11 @@ End with the exact handoff:
 
 If useful, point to the next Pi lane:
 
-- `hkx-project-flow-ops`
-- `hkx-workspace-surface-audit`
-- `hkx-api-connector-builder`
-- `hkx-tdd-workflow`
-- `hkx-verification-loop`
+- `project-flow-ops`
+- `workspace-surface-audit`
+- `api-connector-builder`
+- `tdd-workflow`
+- `verification-loop`
 
 ## Output Format
 

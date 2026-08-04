@@ -53,4 +53,4 @@ Rationale: parallel fan-out without a completion contract produces zombie tasks 
 - Use structured Pi tools over shell equivalents.
 - Treat external mutation, publishing, deploying, merging, and destructive operations as approval-gated.
 - Keep generated workflow artifacts free of private host state and credentials.
-- Dual independent review for high-stakes ship gates: `/hkx-santa-loop` (skill `santa-method`).
+- Dual independent review for high-stakes ship gates: `/santa-loop` (skill `santa-method`).

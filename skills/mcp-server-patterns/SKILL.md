@@ -1,5 +1,5 @@
 ---
-name: hkx-mcp-server-patterns
+name: mcp-server-patterns
 description: "MCP server operations and design for Pi projects: tools, resources, prompts, schemas, stdio/http transports, idempotency, errors, security, and current-doc verification."
 origin: HKX-converted-for-Pi
 ---

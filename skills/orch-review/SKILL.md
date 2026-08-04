@@ -1,5 +1,5 @@
 ---
-name: hkx-orch-review
+name: orch-review
 description: Multi-dimension review workflow for code diffs using Pi reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. Pi-native port of the orch-review workflow.
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -15,7 +15,7 @@ This is the Pi-native port of the ECC `orch-review.workflow.js` — it replaces 
 
 - Before merging a PR or committing changes.
 - After implementing a feature or fixing a bug.
-- When triggered via `/hkx-orch-review`.
+- When triggered via `/orch-review`.
 - As the review phase of a multi-step development workflow.
 
 ## How It Works
@@ -125,7 +125,7 @@ If any review dimension failed to run, say so explicitly — never present a cle
 
 ## Related
 
-- `hkx-code-review` — Single-pass code review command
-- `hkx-review-pr` — PR-specific review orchestration
-- `hkx-quality-gate` — Build/type/lint/test gates
-- `hkx-build-fix` — Incremental build error resolution
+- `code-review` — Single-pass code review command
+- `review-pr` — PR-specific review orchestration
+- `quality-gate` — Build/type/lint/test gates
+- `build-fix` — Incremental build error resolution

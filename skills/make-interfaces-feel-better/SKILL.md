@@ -1,5 +1,5 @@
 ---
-name: hkx-make-interfaces-feel-better
+name: make-interfaces-feel-better
 description: "Design-engineering polish: spacing, typography, borders, shadows, motion, hit areas, icons, wrapping, and interaction states. Use when reviewing or improving how an existing UI feels. Not design-system creation, architecture patterns, WCAG compliance audits, or browser automation QA."
 origin: ECC-converted-for-Pi
 ---

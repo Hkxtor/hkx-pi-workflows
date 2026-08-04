@@ -1,5 +1,5 @@
 ---
-name: hkx-documentation-lookup
+name: documentation-lookup
 description: Resolve current library, framework, SDK, API, CLI, or cloud-service docs via configured docs MCP tools. Use when the answer depends on version-specific external product behavior. Not for general web research, market diligence, or repo-local business logic.
 origin: HKX-converted-for-Pi
 ---
@@ -45,6 +45,6 @@ Caveats:
 
 ## Pair With
 
-- `hkx-search-first` before adding dependencies or abstractions.
-- `hkx-api-connector-builder` when implementing a new integration after docs lookup.
-- `hkx-security-review` when docs involve auth, permissions, secrets, payments, or user data.
+- `search-first` before adding dependencies or abstractions.
+- `api-connector-builder` when implementing a new integration after docs lookup.
+- `security-review` when docs involve auth, permissions, secrets, payments, or user data.

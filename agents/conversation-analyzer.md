@@ -80,7 +80,7 @@ behaviors:
 - `pattern` must be specific enough to avoid false positives.
 - Prefer `bash` for command habits, `file` for edit/write path or content habits, `prompt` for user-request constraints (soft only).
 - Do **not** invent GateGuard-style investigation checklists; Hookify is pattern matching.
-- Do **not** write files. Parent / `/hkx-hookify` handles confirmation and disk writes.
+- Do **not** write files. Parent / `/hookify` handles confirmation and disk writes.
 
 ## Process
 

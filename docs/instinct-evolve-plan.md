@@ -21,7 +21,7 @@ Ship a Pi-native **instinct inventory + evolve-to-draft** loop inside `hkx-pi-wo
 ## Architecture (locked)
 
 ```
-OM session ledger  ──(adapter + human accept)──►  Instinct store  ──(/hkx-evolve)──►  evolved/ drafts
+OM session ledger  ──(adapter + human accept)──►  Instinct store  ──(/evolve)──►  evolved/ drafts
  (per-session JSONL)                              (cross-session XDG/LocalAppData)     (review before formal skills)
 ```
 
@@ -30,7 +30,7 @@ OM session ledger  ──(adapter + human accept)──►  Instinct store  ─�
 | Session memory | `pi-observational-memory` | Session JSONL under Pi sessions dir (`om.*` custom entries) |
 | Instinct store | this feature | Independent data root (see platform paths below) |
 | Evolve | this feature | `evolved/{skills,commands,agents}/` drafts only |
-| Formal skills | package + `/hkx-skill-create` | package / user skill dirs after human review |
+| Formal skills | package + `/skill-create` | package / user skill dirs after human review |
 
 ### Runtime choice (cross-platform)
 
@@ -121,7 +121,7 @@ Order:
 | Exit codes | `0` ok, `1` usage/business fail, `2` unexpected—document for CI |
 | `--json` | stdout machine-readable JSON (UTF-8); diagnostics on stderr |
 | Progress / boxes | ASCII-only UI in CLI (no Unicode block chars that break Windows cp1252) unless UTF-8 reconfigured successfully |
-| Command markdown | `/hkx-evolve` runbook must show **both** Linux and Windows invocation examples |
+| Command markdown | `/evolve` runbook must show **both** Linux and Windows invocation examples |
 | No bash-only scripts in critical path | Optional `.sh` helpers are non-blocking; Windows users never need them |
 
 ### C6. OM adapter (Phase 2) paths
@@ -275,8 +275,8 @@ Optional `package.json` script:
 | P1-3 | `cluster.mjs` — evolve rules |
 | P1-4 | `generate.mjs` + `atomic-write.mjs` |
 | P1-5 | `cli.mjs` — `init` / `status` / `evolve [--generate] [--json]` |
-| P1-6 | `commands/hkx-evolve.md` — **Linux + Windows** runbooks |
-| P1-7 | `commands/hkx-instinct-status.md` |
+| P1-6 | `commands/evolve.md` — **Linux + Windows** runbooks |
+| P1-7 | `commands/instinct-status.md` |
 | P1-8 | Unit + integration tests including path simulation |
 | P1-9 | Manual Windows checklist (or documented deferral with owner) |
 
@@ -360,7 +360,7 @@ node .\scripts\instinct\cli.mjs evolve --generate
 1. Instincts can be stored and evolved on Linux with default XDG path  
 2. Same CLI works on Windows Node with LocalAppData default (manual or CI)  
 3. Cross-platform path rules C1–C5 implemented and unit-tested where possible  
-4. `/hkx-evolve` runbook dual-OS  
+4. `/evolve` runbook dual-OS  
 5. `npm test` + `npm run validate` pass  
 
 **Phase 2**

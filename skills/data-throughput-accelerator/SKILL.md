@@ -1,5 +1,5 @@
 ---
-name: hkx-data-throughput-accelerator
+name: data-throughput-accelerator
 description: Speed up large ingestion, backfill, export, ETL, warehouse load, or table sync while preserving correctness. Use for bulk data throughput problems. Not interactive p95 latency design or simple before/after microbenchmarks.
 origin: ECC-converted-for-Pi
 ---

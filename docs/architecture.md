@@ -48,10 +48,10 @@ Use a command when you want:
 
 Examples:
 
-- `hkx-review-pr`
-- `hkx-build-fix`
-- `hkx-update-docs`
-- `hkx-quality-gate`
+- `review-pr`
+- `build-fix`
+- `update-docs`
+- `quality-gate`
 
 A command should **not** become a giant knowledge base. If the content is reusable beyond one command, move the detailed reasoning into a skill and keep the command as the entry wrapper.
 

@@ -1,5 +1,5 @@
 ---
-name: hkx-cost-aware-llm-pipeline
+name: cost-aware-llm-pipeline
 description: "Cost-control patterns for LLM-backed systems: route by task complexity, enforce budgets, retry only transient failures, and avoid resending stable prompt context."
 origin: ECC-converted-for-Pi
 ---
@@ -71,4 +71,4 @@ Before shipping, make these explicit:
 ## Related Skills
 
 - `hkx-model-route` for interactive task-level model recommendations
-- `hkx-eval-harness` when quality must be measured against the cheaper route
+- `eval-harness` when quality must be measured against the cheaper route

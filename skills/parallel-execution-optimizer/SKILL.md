@@ -1,5 +1,5 @@
 ---
-name: hkx-parallel-execution-optimizer
+name: parallel-execution-optimizer
 description: Plan and run Pi parallel reads, agents, checks, and independent work lanes without sacrificing correctness.
 origin: HKX-converted-for-Pi
 ---

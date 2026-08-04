@@ -1,5 +1,5 @@
 ---
-name: hkx-ops-pack
+name: ops-pack
 description: "Router for the HKX Pi operations pack: terminal execution, GitHub ops, git workflow, project flow, deployment, Docker, Kubernetes, automation audit, workspace audit, canary checks, MCP server operations, safety guardrails, and security scans."
 origin: HKX-converted-for-Pi
 ---
@@ -14,19 +14,19 @@ post-deploy health, or inspect MCP/plugin workspace state.
 
 | Need | Skill |
 | --- | --- |
-| Evidence-first local command execution | `hkx-terminal-ops` |
-| GitHub issues, PRs, CI, releases | `hkx-github-ops` |
-| Git branches, commits, PR text, conflicts, releases | `hkx-git-workflow` |
-| Backlog and PR flow classification | `hkx-project-flow-ops` |
-| Deployment strategy and release gates | `hkx-deployment-patterns` |
-| Dockerfile and Compose operations | `hkx-docker-patterns` |
-| Kubernetes manifests, probes, RBAC, autoscaling, kubectl debugging | `hkx-kubernetes-patterns` |
-| Automation inventory and overlap audit | `hkx-automation-audit-ops` |
-| Workspace, plugin, MCP, env surface audit | `hkx-workspace-surface-audit` |
-| Post-deploy URL and endpoint verification | `hkx-canary-watch` |
-| MCP server design and operational review | `hkx-mcp-server-patterns` |
-| Destructive-operation and scoped-write guardrails | `hkx-safety-guard` |
-| Pi config, extension, MCP, secret, and permission scanning | `hkx-security-scan` |
+| Evidence-first local command execution | `terminal-ops` |
+| GitHub issues, PRs, CI, releases | `github-ops` |
+| Git branches, commits, PR text, conflicts, releases | `git-workflow` |
+| Backlog and PR flow classification | `project-flow-ops` |
+| Deployment strategy and release gates | `deployment-patterns` |
+| Dockerfile and Compose operations | `docker-patterns` |
+| Kubernetes manifests, probes, RBAC, autoscaling, kubectl debugging | `kubernetes-patterns` |
+| Automation inventory and overlap audit | `automation-audit-ops` |
+| Workspace, plugin, MCP, env surface audit | `workspace-surface-audit` |
+| Post-deploy URL and endpoint verification | `canary-watch` |
+| MCP server design and operational review | `mcp-server-patterns` |
+| Destructive-operation and scoped-write guardrails | `safety-guard` |
+| Pi config, extension, MCP, secret, and permission scanning | `security-scan` |
 
 ## Operating Defaults
 
@@ -41,19 +41,19 @@ post-deploy health, or inspect MCP/plugin workspace state.
 
 ## Router
 
-- "Run/check/debug this repo" -> `hkx-terminal-ops`.
-- "GitHub issue/PR/CI/release" -> `hkx-github-ops`.
-- "Commit/branch/rebase/conflict/release notes" -> `hkx-git-workflow`.
-- "Which PRs/issues should we merge/close/park?" -> `hkx-project-flow-ops`.
-- "Deploy/release/rollback/health check" -> `hkx-deployment-patterns`.
-- "Dockerfile/compose/container networking" -> `hkx-docker-patterns`.
-- "K8s manifests/probes/RBAC/HPA/CrashLoopBackOff debugging" -> `hkx-kubernetes-patterns`.
-- "What automation exists or overlaps?" -> `hkx-automation-audit-ops`.
-- "What plugins/MCP/env/config can this workspace use?" -> `hkx-workspace-surface-audit`.
-- "Check staging/prod after deploy" -> `hkx-canary-watch`.
-- "Build or review MCP server/tools/resources" -> `hkx-mcp-server-patterns`.
-- "This could delete, publish, deploy, rewrite, bill, or mutate externally" -> `hkx-safety-guard`.
-- "Scan Pi config/extensions/MCP/commands/skills/rules for security risk" -> `hkx-security-scan`.
+- "Run/check/debug this repo" -> `terminal-ops`.
+- "GitHub issue/PR/CI/release" -> `github-ops`.
+- "Commit/branch/rebase/conflict/release notes" -> `git-workflow`.
+- "Which PRs/issues should we merge/close/park?" -> `project-flow-ops`.
+- "Deploy/release/rollback/health check" -> `deployment-patterns`.
+- "Dockerfile/compose/container networking" -> `docker-patterns`.
+- "K8s manifests/probes/RBAC/HPA/CrashLoopBackOff debugging" -> `kubernetes-patterns`.
+- "What automation exists or overlaps?" -> `automation-audit-ops`.
+- "What plugins/MCP/env/config can this workspace use?" -> `workspace-surface-audit`.
+- "Check staging/prod after deploy" -> `canary-watch`.
+- "Build or review MCP server/tools/resources" -> `mcp-server-patterns`.
+- "This could delete, publish, deploy, rewrite, bill, or mutate externally" -> `safety-guard`.
+- "Scan Pi config/extensions/MCP/commands/skills/rules for security risk" -> `security-scan`.
 
 ## Output
 

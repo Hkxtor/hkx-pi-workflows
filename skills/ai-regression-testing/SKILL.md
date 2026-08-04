@@ -1,5 +1,5 @@
 ---
-name: hkx-ai-regression-testing
+name: ai-regression-testing
 description: Write regression tests for Pi agent, provider, tool-call, streaming, mock-model, sandbox, and fallback behavior. Use when AI-assisted changes could miss their own blind spots.
 origin: HKX-converted-for-Pi
 ---

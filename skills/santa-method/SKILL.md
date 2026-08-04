@@ -1,5 +1,5 @@
 ---
-name: hkx-santa-method
+name: santa-method
 description: "Multi-agent adversarial verification with convergence loop. Two independent reviewers must both PASS before output ships. Use for high-stakes code, docs, or claims. Not deterministic lint/test (verification-loop) or multi-option decisions (council)."
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -11,7 +11,7 @@ Make a list. Check it twice. If it's naughty, fix it until it's nice.
 
 A single agent reviewing its own output shares the same blind spots that produced the output. Two **independent** reviewers with **no shared review context** break that failure mode.
 
-Operator entry: `/hkx-santa-loop`.
+Operator entry: `/santa-loop`.
 
 ## When to Activate
 
@@ -28,7 +28,7 @@ Operator entry: `/hkx-santa-loop`.
 | Deterministic build/lint/type/test | `verification-loop` |
 | Ambiguous product/architecture tradeoff | `council` |
 | Internal drafts / exploratory work | just continue |
-| Single-pass PR review is enough | `hkx-code-review` / `hkx-adversarial-review` chain |
+| Single-pass PR review is enough | `code-review` / `hkx-adversarial-review` chain |
 
 ## Architecture
 
@@ -186,7 +186,7 @@ Result: ship-ready | needs user decision
 | `verification-loop` | Run first for deterministic checks |
 | `hkx-adversarial-review` chain | Multi-angle one-shot review; Santa adds dual-pass convergence |
 | `council` | Decisions under ambiguity, not correctness verification |
-| `instinct-evolve` | Repeated Santa misses can become pending instincts via `/hkx-learn-eval` |
+| `instinct-evolve` | Repeated Santa misses can become pending instincts via `/learn-eval` |
 | Delegation Completion Contract | Parent owns collection of both reviewers before verdict |
 
 ## Notes

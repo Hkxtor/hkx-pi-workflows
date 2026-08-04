@@ -1,5 +1,5 @@
 ---
-name: hkx-backend-patterns
+name: backend-patterns
 description: Backend design guidance for APIs, services, data access, validation, and operational behavior.
 ---
 

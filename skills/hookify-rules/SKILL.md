@@ -1,5 +1,5 @@
 ---
-name: hkx-hookify-rules
+name: hookify-rules
 description: "Write and maintain Hookify behavior-guardrail rules for Pi: Markdown+YAML pattern files enforced by the hkx-hookify extension. Use when creating, editing, listing, or toggling hookify rules, or when the user wants to prevent a repeated agent behavior. Not for GateGuard investigation gates, instinct evolve, or full security threat review."
 origin: ECC-converted-for-Pi
 ---
@@ -119,10 +119,10 @@ HKX_HOOKIFY=off
 
 | Command | Job |
 | --- | --- |
-| `/hkx-hookify [description]` | Draft + confirm + write a project rule (no args → conversation analysis) |
-| `/hkx-hookify-list` | Table of project + global rules |
-| `/hkx-hookify-configure` | Toggle `enabled` |
-| `/hkx-hookify-help` | Full operator help |
+| `/hookify [description]` | Draft + confirm + write a project rule (no args → conversation analysis) |
+| `/hookify-list` | Table of project + global rules |
+| `/hookify-configure` | Toggle `enabled` |
+| `/hookify-help` | Full operator help |
 
 Creation must **propose first** and only write after user confirmation. Default `action: warn`.
 

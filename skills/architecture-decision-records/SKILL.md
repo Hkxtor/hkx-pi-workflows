@@ -1,5 +1,5 @@
 ---
-name: hkx-architecture-decision-records
+name: architecture-decision-records
 description: Capture durable Pi project architecture decisions as ADRs with context, alternatives, consequences, lifecycle, and approval-gated writes.
 origin: HKX-converted-for-Pi
 ---
@@ -76,7 +76,7 @@ Respect existing ADR directories, naming, numbering, and templates when present.
 
 ## Pair With
 
-- `hkx-api-design` for API decisions.
-- `hkx-database-migrations` for data-shape decisions.
-- `hkx-security-review` for auth, secret, permission, or tool-surface decisions.
-- `hkx-codebase-onboarding` when reading an unfamiliar decision history.
+- `api-design` for API decisions.
+- `database-migrations` for data-shape decisions.
+- `security-review` for auth, secret, permission, or tool-surface decisions.
+- `codebase-onboarding` when reading an unfamiliar decision history.

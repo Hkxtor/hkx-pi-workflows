@@ -1,5 +1,5 @@
 ---
-name: hkx-api-connector-builder
+name: api-connector-builder
 description: Build Pi-compatible API connectors, providers, plugins, or MCP integrations by matching the host repo's existing integration architecture.
 origin: HKX-converted-for-Pi
 ---
@@ -74,7 +74,7 @@ Residual risk:
 
 ## Pair With
 
-- `hkx-documentation-lookup` for current vendor API behavior.
-- `hkx-error-handling` for failure contracts.
-- `hkx-security-review` for auth, secrets, and permissions.
-- `hkx-mcp-server-patterns` for MCP tools/resources/prompts.
+- `documentation-lookup` for current vendor API behavior.
+- `error-handling` for failure contracts.
+- `security-review` for auth, secrets, and permissions.
+- `mcp-server-patterns` for MCP tools/resources/prompts.

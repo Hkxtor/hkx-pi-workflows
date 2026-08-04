@@ -1,6 +1,6 @@
 ---
 name: hkx-plan-canvas
-description: "Open local plan/HTML artifacts in a loopback browser canvas for annotate/chat/approve review. Use after /hkx-plan or /hkx-blueprint. Not for live apps or remote URLs."
+description: "Open local plan/HTML artifacts in a loopback browser canvas for annotate/chat/approve review. Use after /hkx-plan or /blueprint. Not for live apps or remote URLs."
 version: 1.0.0
 origin: ECC-converted-for-Pi
 ---
@@ -19,7 +19,7 @@ Operator entry: `/hkx-plan-canvas`.
 
 ### Do Not Use When
 
-- Code diff review → `/hkx-code-review` / `/hkx-santa-loop`
+- Code diff review → `/code-review` / `/santa-loop`
 - Running a product web app
 - Remote URLs (local files only)
 
@@ -85,7 +85,7 @@ Prefer fenced `mermaid` blocks in plan markdown; the canvas renders them when th
 
 | Surface | Relationship |
 | --- | --- |
-| `/hkx-plan`, `/hkx-blueprint` | Produce artifacts this reviews |
+| `/hkx-plan`, `/blueprint` | Produce artifacts this reviews |
 | Delegation Completion Contract | Agent owns the await loop until verdict |
 
 ## Notes

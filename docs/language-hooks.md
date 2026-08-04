@@ -120,7 +120,7 @@ It does not:
 
 Complementary surfaces:
 
-- commands `/hkx-hookify`, `/hkx-hookify-list`, `/hkx-hookify-configure`, `/hkx-hookify-help`
+- commands `/hookify`, `/hookify-list`, `/hookify-configure`, `/hookify-help`
 - skill `hookify-rules`
 - agent `conversation-analyzer`
 

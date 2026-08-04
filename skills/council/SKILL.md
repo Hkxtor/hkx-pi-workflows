@@ -1,5 +1,5 @@
 ---
-name: hkx-council
+name: council
 description: Four-voice structured disagreement for ambiguous tradeoffs and go/no-go calls. Use only when multiple valid paths exist and a single answer is premature. Not routine product diagnostics, capability planning, or acceptance-criteria capture.
 origin: ECC-converted-for-Pi
 ---
@@ -36,10 +36,10 @@ Examples:
 
 | Instead of council | Use |
 | --- | --- |
-| Verifying whether output is correct | `santa-method` (`/hkx-santa-loop`) |
+| Verifying whether output is correct | `santa-method` (`/santa-loop`) |
 | Breaking a feature into implementation steps | `planner` |
 | Designing system architecture | `architect` |
-| Reviewing code for bugs or security | `code-reviewer` or `santa-method` (`/hkx-santa-loop`) |
+| Reviewing code for bugs or security | `code-reviewer` or `santa-method` (`/santa-loop`) |
 | Straight factual questions | just answer directly |
 | Obvious execution tasks | just do the task |
 
@@ -168,7 +168,7 @@ Do **not** write ad-hoc notes to shadow paths from this skill.
 If the council materially changes the recommendation:
 
 - use Pi knowledge storage (`knowledge-ops` if available) to store the lesson in the right durable location
-- or use an Pi session checkpoint (`/hkx-checkpoint`) if the outcome belongs in session memory
+- or use an Pi session checkpoint (`/checkpoint`) if the outcome belongs in session memory
 - or update the relevant GitHub / Linear issue directly if the decision changes active execution truth
 
 Only persist a decision when it changes something real.
@@ -193,10 +193,10 @@ If the user wants another round:
 
 ## Related Skills
 
-- `santa-method` (`/hkx-santa-loop`) — adversarial dual-review convergence
+- `santa-method` (`/santa-loop`) — adversarial dual-review convergence
 - `knowledge-ops` — persist durable decision deltas correctly (Pi knowledge storage if available)
-- `hkx-search-first` — gather external reference material before the council if needed
-- `hkx-architecture-decision-records` — formalize the outcome when the decision becomes long-lived system policy
+- `search-first` — gather external reference material before the council if needed
+- `architecture-decision-records` — formalize the outcome when the decision becomes long-lived system policy
 
 ## Example
 

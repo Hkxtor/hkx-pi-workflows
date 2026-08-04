@@ -1,5 +1,5 @@
 ---
-name: hkx-benchmark
+name: benchmark
 description: Measure performance baselines, before/after PR regressions, and stack comparisons. Use when you need numbers first. Not the optimization loop itself (benchmark-optimization-loop), latency architecture (latency-critical-systems), or ETL throughput redesign (data-throughput-accelerator).
 origin: HKX-converted-for-Pi
 ---
@@ -122,7 +122,7 @@ Use pi-native tools:
 
 ## Integration
 
-- Pair with `hkx-canary-watch` skill for post-deploy monitoring
+- Pair with `canary-watch` skill for post-deploy monitoring
 - Pair with `hkx-web-performance` rule for Core Web Vitals guidance
 - Run before/after comparison on every performance-sensitive PR
 

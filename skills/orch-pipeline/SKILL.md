@@ -1,5 +1,5 @@
 ---
-name: hkx-orch-pipeline
+name: orch-pipeline
 description: Shared orchestration engine for the hkx-orch-* skill family. Defines the gated Research-Plan-TDD-Review-Commit pipeline, the size classifier, the agent map, and the two human gates that the operation skills delegate to. Not usually invoked directly.
 origin: HKX-converted-for-Pi
 ---
@@ -8,7 +8,7 @@ origin: HKX-converted-for-Pi
 
 The `hkx-orch-*` skills are thin wrappers. They classify the request, choose which phases of this pipeline run, and delegate each phase to an existing Pi agent or command. This file is that pipeline.
 
-> Invoke an operation skill (`hkx-orch-add-feature`, `hkx-orch-fix-defect`, …) rather than this engine directly.
+> Invoke an operation skill (`orch-add-feature`, `orch-fix-defect`, …) rather than this engine directly.
 
 ## When to Use
 
@@ -19,11 +19,11 @@ The `hkx-orch-*` skills are thin wrappers. They classify the request, choose whi
 
 | Skill | Operation | Trigger | First move |
 |---|---|---|---|
-| `hkx-orch-add-feature` | feature | capability does not exist yet | research + plan a new slice |
-| `hkx-orch-change-feature` | tweak | works, but desired behavior differs | amend existing behavior and its tests |
-| `hkx-orch-fix-defect` | fix | broken; behavior is wrong | reproduce as a failing test, then fix |
-| `hkx-orch-refine-code` | refactor | behavior stays, structure improves | restructure while keeping tests green |
-| `hkx-orch-build-mvp` | mvp | bootstrap from a design/spec doc | ingest doc → vertical slices |
+| `orch-add-feature` | feature | capability does not exist yet | research + plan a new slice |
+| `orch-change-feature` | tweak | works, but desired behavior differs | amend existing behavior and its tests |
+| `orch-fix-defect` | fix | broken; behavior is wrong | reproduce as a failing test, then fix |
+| `orch-refine-code` | refactor | behavior stays, structure improves | restructure while keeping tests green |
+| `orch-build-mvp` | mvp | bootstrap from a design/spec doc | ingest doc → vertical slices |
 
 ## Step 0 — Classify Size (right-sizing)
 
@@ -42,10 +42,10 @@ Phase 0 (Intake) always runs. Tie-breaker: anything touching a security trigger 
 
 Each phase delegates — it does not do the work inline.
 
-- **0. Intake** — restate the request. For `hkx-orch-build-mvp`, read the spec/design doc and extract scope, locked decisions, and a feature list.
+- **0. Intake** — restate the request. For `orch-build-mvp`, read the spec/design doc and extract scope, locked decisions, and a feature list.
 - **1. Research & Reuse** — use `find` / `search` / `read` for local code, then docs lookup via configured MCP tools, then package registries. Prefer adopting a proven implementation over net-new code.
 - **2. Plan** — delegate to the `planner` agent. Output a `task_list` ordered as thin vertical slices. → **GATE 1.**
-- **3. Scaffold** — `hkx-orch-build-mvp` only: stand up the first end-to-end slice.
+- **3. Scaffold** — `orch-build-mvp` only: stand up the first end-to-end slice.
 - **4. Implement (TDD)** — drive each task through the `tdd-guide` agent (or the `tdd-workflow` skill): red → green → refactor. Honor the operation's first-move rule.
 - **5. Review** — `code-reviewer` agent. Add `security-reviewer` whenever the diff touches a security trigger.
 - **6. Commit** — conventional commits (`feat:` / `fix:` / `refactor:` / …), one per logical chunk. → **GATE 2.**
@@ -65,8 +65,8 @@ Everything between the gates flows without stopping.
 |---|---|---|
 | Intake / understand | `code-explorer` | trace existing paths before a tweak, fix, or refactor |
 | Plan | `planner` | `architect`, `code-architect` for structural calls |
-| Implement | `tdd-guide` (or `tdd-workflow` skill) | `build-error-resolver` / `/hkx-build-fix` on build breaks |
-| Review | `code-reviewer` / `/hkx-code-review` | language reviewer (`python-reviewer`, `typescript-reviewer`, `rust-reviewer`, `go-reviewer`) |
+| Implement | `tdd-guide` (or `tdd-workflow` skill) | `build-error-resolver` / `/build-fix` on build breaks |
+| Review | `code-reviewer` / `/code-review` | language reviewer (`python-reviewer`, `typescript-reviewer`, `rust-reviewer`, `go-reviewer`) |
 | Security | `security-reviewer` | — |
 
 Match the language reviewer to the repo.

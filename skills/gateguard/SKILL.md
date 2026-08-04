@@ -1,5 +1,5 @@
 ---
-name: hkx-gateguard
+name: gateguard
 description: Pi fact-forcing pre-action gate that requires concrete repository evidence before risky edits, new files, commands, or destructive actions.
 origin: HKX-converted-for-Pi
 ---

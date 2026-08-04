@@ -1,5 +1,5 @@
 ---
-name: hkx-safety-guard
+name: safety-guard
 description: Pi operator guardrails for destructive commands, scoped writes, production systems, migrations, deployments, and autonomous agent loops.
 origin: HKX-converted-for-Pi
 ---
@@ -62,6 +62,6 @@ Verification before mutation:
 ## Pair With
 
 - `hkx-common-security` for default mutation boundaries.
-- `hkx-database-migrations` for data changes.
-- `hkx-deployment-patterns` and `hkx-canary-watch` for deploys.
-- `hkx-git-workflow` for history-sensitive operations.
+- `database-migrations` for data changes.
+- `deployment-patterns` and `canary-watch` for deploys.
+- `git-workflow` for history-sensitive operations.

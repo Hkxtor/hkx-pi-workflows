@@ -6,13 +6,13 @@
  *   node scripts/instinct/cli.mjs init|status|evolve|from-om|accept|export|import|promote|publish-draft|decay|prune|projects|memory [flags]
  *
  * Imports: lib/paths, store, cluster, generate, om-session, om-map, transfer, promote, publish, decay, prune, projects, memory-*
- * Docs: docs/instinct-evolve-plan.md, commands/hkx-evolve.md, hkx-instinct-accept.md, hkx-instinct-prune.md, hkx-instinct-projects.md
+ * Docs: docs/instinct-evolve-plan.md, commands/evolve.md, hkx-instinct-accept.md, hkx-instinct-prune.md, hkx-instinct-projects.md
  * Public surface: process exit 0/1/2; --json stdout schema
  * Auth: Phase 1-3 + publish-draft + confidence decay + P0 prune/projects
  * Verify: npm test; HKX_HOMUNCULUS_DIR=... node scripts/instinct/cli.mjs from-om|accept|prune|projects
  *
  * GateGuard (edit):
- * 1. Callers: package.json scripts.instinct; commands/hkx-instinct-*; scripts/tests/instinct-*.mjs;
+ * 1. Callers: package.json scripts.instinct; commands/instinct-*; scripts/tests/instinct-*.mjs;
  *    install.mjs copies under ~/.pi/agent/hkx-pi-workflows/scripts/instinct/; README + conversion-map.
  * 2. Public surface: subcommand switch + parseArgs flags + stdout/JSON schemas; exit 0/1/2.
  * 3. Formats: HKX_HOMUNCULUS_DIR absolute; project 12-hex; instinct ids [a-z0-9][a-z0-9._-]*;

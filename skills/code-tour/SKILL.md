@@ -1,5 +1,5 @@
 ---
-name: hkx-code-tour
+name: code-tour
 description: Create reusable CodeTour-style walkthrough artifacts with verified repository file and line anchors.
 origin: HKX-converted-for-Pi
 ---

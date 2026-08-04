@@ -1,6 +1,6 @@
 ---
 name: instinct-evolve
-description: "Maintain cross-session instinct inventory and cluster them into skill/command/agent drafts. Use for /hkx-evolve, instinct status, or promoting session patterns into reusable assets. Linux and Windows supported via Node CLI."
+description: "Maintain cross-session instinct inventory and cluster them into skill/command/agent drafts. Use for /evolve, instinct status, or promoting session patterns into reusable assets. Linux and Windows supported via Node CLI."
 version: 1.0.0
 origin: HKX-native-for-Pi
 ---
@@ -11,7 +11,7 @@ Pi-native **instinct inventory + evolve-to-draft** loop. Complements `pi-observa
 
 ## When to Activate
 
-- User runs `/hkx-evolve` or asks to cluster learned patterns into skills
+- User runs `/evolve` or asks to cluster learned patterns into skills
 - Reviewing project/global instincts and confidence
 - Preparing drafts under `evolved/` before promoting to formal skills
 - Discussing continuous learning / instincts on Pi (not Claude Code hooks)
@@ -19,13 +19,13 @@ Pi-native **instinct inventory + evolve-to-draft** loop. Complements `pi-observa
 ### Do Not Use When
 
 - Only need long-session recall → use observational-memory (`/om:view`)
-- Extract patterns from **git history** only → `/hkx-skill-create`
+- Extract patterns from **git history** only → `/skill-create`
 - Writing a human growth journal → `growth-log` skill
 
 ## Architecture
 
 ```
-OM session ledger  --(Phase 2 adapter)-->  Instinct store  --(/hkx-evolve)-->  evolved/ drafts
+OM session ledger  --(Phase 2 adapter)-->  Instinct store  --(/evolve)-->  evolved/ drafts
 ```
 
 | Layer | Role |
@@ -120,7 +120,7 @@ node scripts/instinct/cli.mjs projects           # registry + personal/inherited
 
 - Pending age: `created` → `updated` → `last_seen` → mtime
 - Does not delete personal/inherited (use decay for confidence)
-- Commands: `/hkx-instinct-prune`, `/hkx-instinct-projects`
+- Commands: `/instinct-prune`, `/instinct-projects`
 
 ## Memory vault (M1)
 
@@ -142,8 +142,8 @@ node scripts/instinct/cli.mjs memory validate
 - Layout: `projects/<id>/memory/`, `memory/user/` (team dir stub only; no writes in M1)
 - Default recall scope: **project** (user only with `--scope user`)
 - `from-om` default: **pending instincts only**; opt-in `--to vault|both`
-- Vault handoff / promote: `memory handoff`, `memory promote-instinct` (skill `unified-memory`, `/hkx-unified-memory`)
-- Slash: `/hkx-unified-memory`
+- Vault handoff / promote: `memory handoff`, `memory promote-instinct` (skill `unified-memory`, `/unified-memory`)
+- Slash: `/unified-memory`
 
 ## Publish drafts
 
@@ -181,9 +181,9 @@ See [om-adapter.md](references/om-adapter.md).
 1. `init` / ensure layout
 2. Add instincts:
    - manual under `projects/<id>/instincts/personal/` (or global)
-   - session extract: `/hkx-learn` or quality-gated `/hkx-learn-eval` → **pending**
-   - OM file: `/hkx-instinct-from-om` → **pending**
-3. `/hkx-instinct-accept` after human review of pending
+   - session extract: `/learn` or quality-gated `/learn-eval` → **pending**
+   - OM file: `/instinct-from-om` → **pending**
+3. `/instinct-accept` after human review of pending
 4. `status` to review personal inventory
 5. `evolve` to analyze; `evolve --generate` for drafts
 6. Human review drafts → optional formal skill via skill-create / manual copy / publish-draft

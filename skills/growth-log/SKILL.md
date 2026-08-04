@@ -1,5 +1,5 @@
 ---
-name: hkx-growth-log
+name: growth-log
 description: Use after a complex task, failure, or when reviewing what was learned. Teaches how to write growth logs that extract reusable patterns — not diary entries. Works with any note-taking system (Markdown, Notion, Obsidian, plain text).
 origin: HKX-converted-for-Pi
 ---

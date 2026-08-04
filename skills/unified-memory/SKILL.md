@@ -25,8 +25,8 @@ Pi-native **memory vault** for durable, inspectable context. Complements:
 ### Do Not Use When
 
 - Only need in-session OM → observational-memory / `/om`
-- Capturing a reusable **behavior rule** → `/hkx-learn` → pending instinct
-- Clustering instincts → `instinct-evolve` / `/hkx-evolve`
+- Capturing a reusable **behavior rule** → `/learn` → pending instinct
+- Clustering instincts → `instinct-evolve` / `/evolve`
 - Secrets, credentials, or default-on background capture (out of scope)
 
 ## Architecture
@@ -57,7 +57,7 @@ node scripts/instinct/cli.mjs memory validate [--strict]
 node scripts/instinct/cli.mjs from-om --to vault --dry-run   # opt-in; default is instinct-only
 ```
 
-Slash entry: **`/hkx-unified-memory`**.
+Slash entry: **`/unified-memory`**.
 
 Flags: `--json`, `--scope project|user` (validate: `all`), `--apply` (writes), `--tag` / `--id` / `--query`, `--force` (promote), from-om `--to instinct|vault|both`.
 
@@ -93,6 +93,6 @@ Fails on bad frontmatter, scope/dir mismatch, or id≠filename stem.
 
 ## Related
 
-- Command: `/hkx-unified-memory`
+- Command: `/unified-memory`
 - Skill: `instinct-evolve`
 - PRD (closed, versioned): `docs/prds/unified-memory-instinct-om.prd.md`

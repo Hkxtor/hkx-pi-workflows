@@ -1,5 +1,5 @@
 ---
-name: hkx-agent-self-evaluation
+name: agent-self-evaluation
 description: Optional 5-axis self-scorecard (accuracy, completeness, clarity, actionability, conciseness) with concrete evidence after non-trivial work. Use after delivery-gate when a quality reflection is requested or useful. Not a substitute for running tests (verification-loop) or delivery hygiene (delivery-gate).
 origin: HKX-converted-for-Pi
 ---

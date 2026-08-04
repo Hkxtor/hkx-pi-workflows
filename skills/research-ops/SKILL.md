@@ -1,5 +1,5 @@
 ---
-name: hkx-research-ops
+name: research-ops
 description: Primary entry for evidence-first current-state research on Pi projects. Use when the user wants fresh facts, comparisons, enrichment, or a recommendation from public evidence plus local context. Route specialized depth to deep-research, Exa tool calls to exa-search, business diligence to market-research, and library/API docs to documentation-lookup. Not for pre-coding "should we build or reuse" checks (use search-first).
 origin: HKX-converted-for-Pi
 ---
@@ -10,15 +10,15 @@ Use when the user asks to research something current, compare options, enrich
 people or companies, or turn repeated lookups into a monitored workflow.
 
 This is the operator wrapper around the research stack. It is not a replacement
-for `hkx-deep-research` or `hkx-exa-search`; it tells you when and how to use
+for `deep-research` or `exa-search`; it tells you when and how to use
 them together.
 
 ## Skill Stack
 
 Pull these skills into the workflow when relevant:
 
-- `hkx-exa-search` for fast current-web discovery via Exa MCP
-- `hkx-deep-research` for multi-source synthesis with citations
+- `exa-search` for fast current-web discovery via Exa MCP
+- `deep-research` for multi-source synthesis with citations
 
 ## When to Use
 
@@ -64,8 +64,8 @@ Choose the right lane before searching:
 
 ### 3. Take the lightest useful evidence path first
 
-- Use `hkx-exa-search` for fast discovery
-- Escalate to `hkx-deep-research` when synthesis or multiple sources matter
+- Use `exa-search` for fast discovery
+- Escalate to `deep-research` when synthesis or multiple sources matter
 
 ### 4. Report with explicit evidence boundaries
 

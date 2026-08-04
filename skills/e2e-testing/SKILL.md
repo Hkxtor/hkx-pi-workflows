@@ -1,5 +1,5 @@
 ---
-name: hkx-e2e-testing
+name: e2e-testing
 description: "Author and triage end-to-end tests: Playwright/browser journeys, CLI/install smoke, artifacts, and flakes. Use when writing or fixing E2E coverage. Not ad-hoc post-deploy browser QA (browser-qa) or production canary watches (canary-watch)."
 origin: HKX-converted-for-Pi
 ---

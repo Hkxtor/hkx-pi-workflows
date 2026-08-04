@@ -1,5 +1,5 @@
 ---
-name: hkx-project-flow-ops
+name: project-flow-ops
 description: "Project-flow operations for Pi repos: classify issues and PRs into merge, fix, rebuild, close, or park; coordinate public GitHub state with internal execution notes."
 origin: HKX-converted-for-Pi
 ---

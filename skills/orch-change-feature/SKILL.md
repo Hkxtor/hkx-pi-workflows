@@ -1,18 +1,18 @@
 ---
-name: hkx-orch-change-feature
+name: orch-change-feature
 description: Orchestrate altering an existing, working feature to new desired behavior — update its tests to the new spec, change the implementation to match, review, and gated commit. Use when behavior is not broken but should be different.
 origin: HKX-converted-for-Pi
 ---
 
 # HKX orch-change-feature
 
-Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SKILL.md).
+Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
 ## When to Use
 
 - An existing feature **works**, but the desired behavior is different ("change", "adjust", "make it also …", "instead of X do Y").
 - Distinguish from siblings:
-  - **not** broken → not `hkx-orch-fix-defect` (no bug to reproduce).
-  - **not** new → not `hkx-orch-add-feature` (the capability already exists).
+  - **not** broken → not `orch-fix-defect` (no bug to reproduce).
+  - **not** new → not `orch-add-feature` (the capability already exists).
 
 ## Operation Settings
 
@@ -22,7 +22,7 @@ Thin wrapper over the shared engine in [`hkx-orch-pipeline`](../orch-pipeline/SK
 
 ## How It Works
 
-1. Run the `hkx-orch-pipeline` engine with the settings above.
+1. Run the `orch-pipeline` engine with the settings above.
 2. Keep the plan light — only `standard`+ size warrants the full `planner` pass.
 3. Stop at **Gate 1** (plan / changed-test approval) and **Gate 2** (pre-commit).
 4. Add `security-reviewer` if the change touches a security trigger.

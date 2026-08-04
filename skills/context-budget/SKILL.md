@@ -1,5 +1,5 @@
 ---
-name: hkx-context-budget
+name: context-budget
 description: "Audit Pi context overhead across agents, skills, rules, prompts, MCP, and AGENTS files. Flag bloat and rank token-saving actions. Use when sessions feel heavy or before adding surfaces."
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -9,7 +9,7 @@ origin: ECC-converted-for-Pi
 
 Inventory token tax from installed Pi surfaces and recommend cuts.
 
-Operator entry: `/hkx-context-budget`.
+Operator entry: `/context-budget`.
 
 ## When to Activate
 

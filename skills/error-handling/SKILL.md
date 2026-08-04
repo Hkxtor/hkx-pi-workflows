@@ -1,5 +1,5 @@
 ---
-name: hkx-error-handling
+name: error-handling
 description: Robust Pi error handling across TypeScript, Rust, Python, providers, tools, MCP, streaming, auth, retries, and TUI rendering. Use when designing failures or debugging swallowed errors.
 origin: HKX-converted-for-Pi
 ---
@@ -10,9 +10,9 @@ Use this when adding or changing failure behavior. Pi errors are part of the
 agent contract: the user, model, renderer, retry loop, and tests may all depend
 on the exact shape.
 
-This skill is part of the Engineering Pack. Pair it with `hkx-api-design` for
-API errors, `hkx-database-migrations` for migration recovery, and
-`hkx-e2e-testing` when the failure must be proven through a user-visible flow.
+This skill is part of the Engineering Pack. Pair it with `api-design` for
+API errors, `database-migrations` for migration recovery, and
+`e2e-testing` when the failure must be proven through a user-visible flow.
 
 ## Principles
 

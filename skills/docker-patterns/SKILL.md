@@ -1,5 +1,5 @@
 ---
-name: hkx-docker-patterns
+name: docker-patterns
 description: "Docker and Docker Compose operations for Pi projects: Dockerfile review, build context, non-root images, networking, volumes, health checks, and compose workflows."
 origin: HKX-converted-for-Pi
 ---

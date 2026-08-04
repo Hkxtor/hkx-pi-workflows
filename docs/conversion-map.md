@@ -65,31 +65,31 @@ The command set is split into a few stable families.
 
 These are the main operator-facing entry points:
 
-- `hkx-workflow`
+- `workflow`
 - `hkx-plan`
 - `hkx-plan-prd`
-- `hkx-blueprint`
+- `blueprint`
 - `hkx-plan-canvas`
-- `hkx-build-fix`
-- `hkx-code-review`
-- `hkx-review-pr`
-- `hkx-refactor-clean`
-- `hkx-security-scan`
-- `hkx-test-coverage`
-- `hkx-quality-gate`
-- `hkx-update-docs`
-- `hkx-update-codemaps`
-- `hkx-checkpoint`
-- `hkx-aside`
+- `build-fix`
+- `code-review`
+- `review-pr`
+- `refactor-clean`
+- `security-scan`
+- `test-coverage`
+- `quality-gate`
+- `update-docs`
+- `update-codemaps`
+- `checkpoint`
+- `aside`
 
 ### Hookify guardrail commands
 
 Operator-authored pattern guardrails (ECC hookify → Pi extension):
 
-- `hkx-hookify` — create rule from description or conversation analysis (confirm before write)
-- `hkx-hookify-list` — list project + global rules
-- `hkx-hookify-configure` — toggle `enabled`
-- `hkx-hookify-help` — events, format, limits
+- `hookify` — create rule from description or conversation analysis (confirm before write)
+- `hookify-list` — list project + global rules
+- `hookify-configure` — toggle `enabled`
+- `hookify-help` — events, format, limits
 
 Runtime: `extensions/hkx-hookify.ts`. Skill: `hookify-rules`. Agent: `conversation-analyzer`.  
 Project rules: `.pi/hookify.{name}.local.md`. Global: `~/.pi/agent/hookify/`. Kill-switch: `HKX_HOOKIFY=off`.
@@ -98,56 +98,56 @@ Project rules: `.pi/hookify.{name}.local.md`. Global: `~/.pi/agent/hookify/`. Ki
 
 These coordinate larger workflows or bounded multi-step execution:
 
-- `hkx-multi-workflow` — thin ECC `multi-*` router → existing chains / orch / `hkx-workflow` (no ccg-workflow runtime)
-- `hkx-orch-review`
-- `hkx-orch-add-feature`
-- `hkx-orch-build-mvp`
-- `hkx-orch-change-feature`
-- `hkx-orch-fix-defect`
-- `hkx-orch-refine-code`
-- `hkx-loop-start`
-- `hkx-loop-status`
-- `hkx-delivery-gate`
+- `multi-workflow` — thin ECC `multi-*` router → existing chains / orch / `workflow` (no ccg-workflow runtime)
+- `orch-review`
+- `orch-add-feature`
+- `orch-build-mvp`
+- `orch-change-feature`
+- `orch-fix-defect`
+- `orch-refine-code`
+- `loop-start`
+- `loop-status`
+- `delivery-gate`
 - `hkx-session-summary`
 - `hkx-model-route`
-- `hkx-santa-loop`
+- `santa-loop`
 
 ### Learning and instinct commands
 
 Session pattern capture and instinct inventory (pending → accept → evolve):
 
-- `hkx-learn`
-- `hkx-learn-eval`
-- `hkx-evolve`
-- `hkx-instinct-status`
-- `hkx-instinct-from-om`
-- `hkx-instinct-accept`
-- `hkx-instinct-promote`
-- `hkx-instinct-export`
-- `hkx-instinct-import`
-- `hkx-instinct-decay`
-- `hkx-instinct-prune`
-- `hkx-instinct-projects`
-- `hkx-unified-memory` — memory vault router (`memory recall|save|handoff|promote-instinct|import-ecc|validate` on homunculus)
+- `learn`
+- `learn-eval`
+- `evolve`
+- `instinct-status`
+- `instinct-from-om`
+- `instinct-accept`
+- `instinct-promote`
+- `instinct-export`
+- `instinct-import`
+- `instinct-decay`
+- `instinct-prune`
+- `instinct-projects`
+- `unified-memory` — memory vault router (`memory recall|save|handoff|promote-instinct|import-ecc|validate` on homunculus)
 
 ### PRP operator commands
 
 Thin ECC-derived commit/PR helpers (prompt-only; pair with git + `gh`):
 
-- `hkx-prp-commit`
-- `hkx-prp-pr`
+- `prp-commit`
+- `prp-pr`
 
 ### Package and harness support commands
 
 These support repository maintenance and operator workflows:
 
-- `hkx-project-init`
-- `hkx-recipes`
-- `hkx-cost-report`
-- `hkx-skill-create`
-- `hkx-skill-health`
-- `hkx-harness-audit`
-- `hkx-context-budget`
+- `project-init`
+- `recipes`
+- `cost-report`
+- `skill-create`
+- `skill-health`
+- `harness-audit`
+- `context-budget`
 
 ## Skills
 
@@ -308,14 +308,14 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 
 - `hkx-pr-review`
 - `hkx-adversarial-review`
-- `hkx-security-scan`
+- `security-scan`
 - `hkx-go-review`
 - `hkx-python-review`
 - `hkx-rust-review`
 
 ### Build-fix chains
 
-- `hkx-build-fix`
+- `build-fix`
 - `hkx-typescript-build-fix`
 - `hkx-python-build-fix`
 - `hkx-go-build-fix`
@@ -328,7 +328,7 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 - `hkx-refactor-flow`
 - `hkx-docs-update`
 
-Operator entry that **routes** to these chains (and orch commands) without duplicating them: `hkx-multi-workflow`.
+Operator entry that **routes** to these chains (and orch commands) without duplicating them: `multi-workflow`.
 
 ## Extensions
 
@@ -398,14 +398,14 @@ These are intentionally left out of the core package unless a user asks for an o
 - Claude Code / shell `hooks.json` packs (Hookify is Pi-native via `hkx-hookify` extension + `.pi/` rules — not a Claude hook port)
 - external wrapper commands that duplicate pi-native orchestration
 - session-history utilities tied to another session store
-- Claude Code continuous-learning hooks/observer-loop tied to a different home-directory layout (replaced by optional Pi-native instinct-evolve: `commands/hkx-evolve`, `scripts/instinct/`, skill `instinct-evolve`)
+- Claude Code continuous-learning hooks/observer-loop tied to a different home-directory layout (replaced by optional Pi-native instinct-evolve: `commands/evolve`, `scripts/instinct/`, skill `instinct-evolve`)
 - giant language/domain catalogs that would bloat the core package
 
 ## Behavior guardrails: Hookify
 
 Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 
-- commands: `hkx-hookify`, `hkx-hookify-list`, `hkx-hookify-configure`, `hkx-hookify-help`
+- commands: `hookify`, `hookify-list`, `hookify-configure`, `hookify-help`
 - skill: `hookify-rules`
 - agent: `conversation-analyzer` (`hkx.conversation-analyzer`)
 - extension: `hkx-hookify.ts`
@@ -417,8 +417,8 @@ Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 
 Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning port):
 
-- session extract: `hkx-learn`, `hkx-learn-eval` (pending instincts; human accept)
-- inventory/evolve: `hkx-evolve`, `hkx-instinct-status`, accept/promote/export/import/decay/from-om
+- session extract: `learn`, `learn-eval` (pending instincts; human accept)
+- inventory/evolve: `evolve`, `instinct-status`, accept/promote/export/import/decay/from-om
 - skill: `instinct-evolve`
 - CLI: `scripts/instinct/cli.mjs` (Node, Linux + Windows)
 - data root: Linux XDG / Windows LocalAppData (`HKX_HOMUNCULUS_DIR` override)
@@ -426,19 +426,19 @@ Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning por
 
 Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
 
-Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/handoff/promote-instinct/import-ecc/validate + secret heuristics; skill `unified-memory`, command `/hkx-unified-memory`). `from-om` default remains pending-instinct; opt-in `--to vault|both`. ECC memory import is one-shot read-only (`memory import-ecc`), distinct from instinct `import --from-ecc`.
+Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/handoff/promote-instinct/import-ecc/validate + secret heuristics; skill `unified-memory`, command `/unified-memory`). `from-om` default remains pending-instinct; opt-in `--to vault|both`. ECC memory import is one-shot read-only (`memory import-ecc`), distinct from instinct `import --from-ecc`.
 
 ## Dual-review ship gate: Santa Method
 
 - skill: `santa-method`
-- command: `hkx-santa-loop`
+- command: `santa-loop`
 - related chain: `hkx-adversarial-review` (multi-angle one-shot; Santa adds dual-pass convergence)
 - related rule: Delegation Completion Contract in `rules/hkx-common-development-workflow.md` and `GLOBAL_AGENTS.md`
 
 ## Multi-session plans: Blueprint + Plan Canvas
 
 - skills: `blueprint`, `plan-canvas`
-- commands: `hkx-blueprint`, `hkx-plan-canvas`
+- commands: `blueprint`, `hkx-plan-canvas`
 - CLI: `scripts/plan-canvas.cjs` (`npm run plan-canvas` / bin `hkx-plan-canvas`)
 - artifacts: `.pi/plans/*.blueprint.md` / `*.plan.md`
 - state: `~/.pi/plan-canvas/` (`HKX_PLAN_CANVAS_*` env)
@@ -447,7 +447,7 @@ Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default),
 ## Context hygiene: Context Budget
 
 - skill: `context-budget`
-- command: `hkx-context-budget`
+- command: `context-budget`
 - scans `~/.pi/agent` + package surfaces; no auto-delete
 
 ## Naming Rules

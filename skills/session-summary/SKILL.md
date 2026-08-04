@@ -108,7 +108,7 @@ Do not persist without explicit user approval.
 
 ## Related
 
-- `hkx-agent-self-evaluation` — Quality assessment of delivered work
-- `hkx-delivery-gate` — Pre-completion checklist
-- `hkx-growth-log` — Learning capture methodology
-- `hkx-architecture-decision-records` — ADR creation workflow
+- `agent-self-evaluation` — Quality assessment of delivered work
+- `delivery-gate` — Pre-completion checklist
+- `growth-log` — Learning capture methodology
+- `architecture-decision-records` — ADR creation workflow

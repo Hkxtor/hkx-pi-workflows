@@ -1,5 +1,5 @@
 ---
-name: hkx-tdd-workflow
+name: tdd-workflow
 description: Test-first workflow for features, bug fixes, and refactors on Pi projects. Use when writing or changing behavior that should be locked by tests. Not general coding style (coding-standards), post-change verification only (verification-loop), or language-specific test tooling details.
 ---
 

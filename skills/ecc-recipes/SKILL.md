@@ -1,5 +1,5 @@
 ---
-name: hkx-ecc-recipes
+name: ecc-recipes
 description: Map a described workflow to the right Pi command group with run-order and stop condition, and browse all command-group recipe families. Adds family-grouping, run-order, and when-to-stop on top of the flat command catalog. Advisory only.
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -17,7 +17,7 @@ This skill adds **family grouping + run-order + stop condition** on top of a fla
 - "What's the command sequence to build an MVP / fix a defect / refactor?"
 - "Show me all Pi command-group recipes" (catalog mode)
 - "How many workflow pipelines does the project have?"
-- User invokes `/hkx-recipes` with or without a description.
+- User invokes `/recipes` with or without a description.
 
 ### Do Not Use When
 
@@ -48,7 +48,7 @@ Group command names by leading prefix; map known singletons by hand. Families ar
 | `hkx-build-*` / `hkx-review-*` / `hkx-test-*` | Per-language CI triad | Fix → Review → Test in the relevant language |
 | `hkx-update-*` | Doc or codemap refresh | Read current state → update → verify |
 | `hkx-plan*` | Planning and PRD drafting | `/hkx-plan-prd` then `/hkx-plan` or standalone |
-| singletons | `hkx-workflow`, `hkx-quality-gate`, `hkx-security-scan`, etc. | Standalone or glue between groups |
+| singletons | `workflow`, `quality-gate`, `security-scan`, etc. | Standalone or glue between groups |
 
 Any command not matching a prefix rule → list it under **singletons** with its one-line description from frontmatter.
 
@@ -94,11 +94,11 @@ Read full docs:
 
 ## Examples
 
-**Catalog:** `/hkx-recipes` → prints the family table and total count.
+**Catalog:** `/recipes` → prints the family table and total count.
 
-**Match:** `/hkx-recipes plan and implement a feature` → Best fit: `hkx-workflow` (research, plan, execute, verify, review). Run-order: `/hkx-workflow plan a feature` then work through phases. STOP: all gates pass and review approved.
+**Match:** `/recipes plan and implement a feature` → Best fit: `workflow` (research, plan, execute, verify, review). Run-order: `/workflow plan a feature` then work through phases. STOP: all gates pass and review approved.
 
-**Match:** `/hkx-recipes fix a build issue` → Best fit: `hkx-build-fix` (detect and fix incrementally). Run-order: `/hkx-build-fix`. STOP: build passes.
+**Match:** `/recipes fix a build issue` → Best fit: `build-fix` (detect and fix incrementally). Run-order: `/build-fix`. STOP: build passes.
 
 ## Non-Goals
 

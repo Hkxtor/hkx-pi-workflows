@@ -1,5 +1,5 @@
 ---
-name: hkx-product-lens
+name: product-lens
 description: "Product diagnostic layer: validate the \"why\", pressure-test direction, and run product/journey prioritization before an implementation contract. Use early when the problem or value is unclear. Not PRD-to-capability specs (product-capability), engineering acceptance criteria (intent-driven-development), or multi-path council votes (council)."
 origin: ECC-converted-for-Pi
 ---
@@ -8,7 +8,7 @@ origin: ECC-converted-for-Pi
 
 This lane owns product diagnosis, not implementation-ready specification writing.
 
-If the user needs a durable PRD-to-SRS or capability-contract artifact, hand off to `hkx-product-capability`.
+If the user needs a durable PRD-to-SRS or capability-contract artifact, hand off to `product-capability`.
 
 ## When to Use
 
@@ -36,7 +36,7 @@ Like YC office hours but automated. Asks the hard questions:
 
 Output: a `PRODUCT-BRIEF.md` with answers, risks, and a go/no-go recommendation.
 
-If the result is "yes, build this," the next lane is `hkx-product-capability`, not more founder-theater.
+If the result is "yes, build this," the next lane is `product-capability`, not more founder-theater.
 
 ### Mode 2: Founder Review
 
@@ -86,7 +86,7 @@ All modes output actionable docs, not essays. Every recommendation has a specifi
 ## Integration
 
 Pair with:
-- `hkx-e2e-testing` to verify the user journey audit findings
-- `hkx-design-system` for visual polish assessment
-- `hkx-canary-watch` for post-launch monitoring
-- `hkx-product-capability` when the product brief needs to become an implementation-ready capability plan
+- `e2e-testing` to verify the user journey audit findings
+- `design-system` for visual polish assessment
+- `canary-watch` for post-launch monitoring
+- `product-capability` when the product brief needs to become an implementation-ready capability plan

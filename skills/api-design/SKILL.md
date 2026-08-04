@@ -1,5 +1,5 @@
 ---
-name: hkx-api-design
+name: api-design
 description: Pi-compatible API design workflow for REST, HTTP, JSON-RPC, internal tool APIs, webhooks, resources, pagination, errors, versioning, and rate limits.
 origin: HKX-converted-for-Pi
 ---

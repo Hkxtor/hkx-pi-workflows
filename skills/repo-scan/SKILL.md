@@ -1,5 +1,5 @@
 ---
-name: hkx-repo-scan
+name: repo-scan
 description: Local repository inventory and ownership audit before major refactors, legacy cleanup, dependency review, or architecture reorganization. Use for structural inventory evidence. Not newcomer onboarding guides (codebase-onboarding) or production-readiness risk audits (production-audit).
 origin: HKX-converted-for-Pi
 ---

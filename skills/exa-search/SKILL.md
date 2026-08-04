@@ -1,5 +1,5 @@
 ---
-name: hkx-exa-search
+name: exa-search
 description: Exa MCP tool skill for neural web/code/company/people search calls. Use when a research workflow already chose Exa and you need web_search_exa or get_code_context_exa. Not a standalone research router or cited-report author—route goals through research-ops; use documentation-lookup for SDK/API docs and market-research for business diligence.
 origin: HKX-converted-for-Pi
 ---
@@ -134,6 +134,6 @@ search. It has less depth but covers quick lookups.
 
 ## Related Skills
 
-- `hkx-deep-research` — Full research workflow using multiple search sources
-- `hkx-market-research` — Business-oriented research with decision frameworks
-- `hkx-research-ops` — Orchestrates when to use which research lane
+- `deep-research` — Full research workflow using multiple search sources
+- `market-research` — Business-oriented research with decision frameworks
+- `research-ops` — Orchestrates when to use which research lane

@@ -1,5 +1,5 @@
 ---
-name: hkx-agent-harness-construction
+name: agent-harness-construction
 description: Design or revise Pi agent tools, command prompts, skill prompts, observations, recovery paths, and action-space boundaries. Use when adding or changing model-callable capabilities.
 origin: HKX-converted-for-Pi
 ---
