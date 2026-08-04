@@ -196,5 +196,4 @@ Return:
 
 - `/workflow` — in-session 6-phase without mandatory multi-agent fan-out
 - `/recipes` — browse/match command families (advisory)
-- `/hkx-model-route` — model selection hints (not external wrappers)
 - Skills: `parallel-execution-optimizer`, `orch-pipeline`, language `*-workflow`

@@ -70,5 +70,4 @@ Before shipping, make these explicit:
 
 ## Related Skills
 
-- `hkx-model-route` for interactive task-level model recommendations
 - `eval-harness` when quality must be measured against the cheaper route

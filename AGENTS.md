@@ -55,7 +55,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 ### Commands / Skills / Rules
 
 - Keep guidance concise and operator-friendly.
-- Command files live under `commands/`. Keep the `hkx-` prefix only for names that would collide with pi native/extension slash commands (`hkx-plan`, `hkx-plan-*`, `hkx-model-route`, `hkx-session-summary`); other commands use bare names.
+- Command files live under `commands/`. Keep the `hkx-` prefix only for names that would collide with pi native/extension slash commands (`hkx-plan`, `hkx-plan-*`, `hkx-session-summary`); other commands use bare names.
 - In `package.json`, map commands as `pi.prompts: ["./commands"]` — never invent `pi.commands`.
 - Rules are Path B only; do not put `rules` under the official `pi` manifest.
 - Avoid placeholder text and fake workflows.

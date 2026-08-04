@@ -109,7 +109,6 @@ These coordinate larger workflows or bounded multi-step execution:
 - `loop-status`
 - `delivery-gate`
 - `hkx-session-summary`
-- `hkx-model-route`
 - `santa-loop`
 
 ### Learning and instinct commands
