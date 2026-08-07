@@ -340,6 +340,57 @@ const mergeAgentSettings = ctx.__mergeAgentSettings;
 	);
 }
 
+// ---------------------------------------------------------------------------
+// Case F (removal migration): a config key retired from the managed source
+// must be deleted from existing global settings. The source no longer
+// mentions it, so ordinary deep-merge alone would leave stale plugin options
+// indefinitely. Unmanaged machine-local keys must remain untouched.
+// ---------------------------------------------------------------------------
+{
+	const goodSrc = path.join(tmpDir, "agent-settings-good-f.json");
+	const dest = path.join(tmpDir, "settings-f.json");
+	await fs.writeFile(
+		goodSrc,
+		JSON.stringify({ packages: ["some-pkg"], compaction: { enabled: true } }),
+	);
+	await fs.writeFile(
+		dest,
+		JSON.stringify({
+			localKey: "keep",
+			"observational-memory": { observeAfterTokens: 48000 },
+		}),
+	);
+
+	let ret;
+	let thrown = null;
+	try {
+		ret = await mergeAgentSettings(goodSrc, dest);
+	} catch (err) {
+		thrown = err;
+	}
+	let out = null;
+	let parseError = null;
+	try {
+		out = JSON.parse(await fs.readFile(dest, "utf8"));
+	} catch (err) {
+		parseError = err;
+	}
+	check(
+		"F: retired observational-memory config is removed",
+		out !== null && !Object.hasOwn(out, "observational-memory"),
+		`parseError=${String(parseError)} out=${JSON.stringify(out)}`,
+	);
+	check(
+		"F: retired-key cleanup preserves unrelated local settings",
+		thrown === null &&
+			parseError === null &&
+			ret === true &&
+			out?.localKey === "keep" &&
+			out?.compaction?.enabled === true,
+		`thrown=${String(thrown)} parseError=${String(parseError)} ret=${JSON.stringify(ret)} out=${JSON.stringify(out)}`,
+	);
+}
+
 for (const p of pass) console.log("ok:", p);
 if (fail.length === 0) {
 	console.log(`ALL ${pass.length} MF-7 CHECKS PASS`);

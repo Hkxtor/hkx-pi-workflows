@@ -63,7 +63,7 @@ Read this when you need:
 
 - data roots on Linux vs Windows
 - evolve thresholds and CLI surface
-- boundary with `pi-observational-memory`
+- legacy OM session-import boundary
 
 ### `prds/unified-memory-instinct-om.prd.md`
 

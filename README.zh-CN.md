@@ -168,7 +168,7 @@ subagent({
 将跨会话 **instincts** 聚类为 skill/command/agent 草稿（Linux + Windows Node CLI）：
 
 - `/instinct-status` — 列出项目/全局 instincts
-- `/instinct-from-om` — OM session reflections → **pending** instincts
+- `/instinct-from-om` — 导入 legacy OM session JSONL reflections → **pending** instincts
 - `/instinct-accept` — pending → personal（人工审核门）
 - `/instinct-export` / `/instinct-import` — 导入导出 bundle
 - `/instinct-promote` — 跨项目提升到 global

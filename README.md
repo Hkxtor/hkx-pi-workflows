@@ -168,7 +168,7 @@ subagent({
 Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Windows Node CLI):
 
 - `/instinct-status` — list project/global instincts
-- `/instinct-from-om` — map OM session reflections → **pending** instincts
+- `/instinct-from-om` — import legacy OM session JSONL reflections → **pending** instincts
 - `/instinct-accept` — pending → personal (human review gate)
 - `/instinct-export` / `/instinct-import` — portable bundles (+ optional ECC tree import)
 - `/instinct-promote` — cross-project → global promotion (explicit `--apply`)

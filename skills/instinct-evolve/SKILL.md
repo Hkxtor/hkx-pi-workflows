@@ -7,7 +7,7 @@ origin: HKX-native-for-Pi
 
 # Instinct Evolve
 
-Pi-native **instinct inventory + evolve-to-draft** loop. Complements `pi-observational-memory` (session memory) by storing **cross-session** atomic behaviors and clustering them into draft skills/commands/agents.
+Pi-native **instinct inventory + evolve-to-draft** loop for storing **cross-session** atomic behaviors and clustering them into draft skills/commands/agents.
 
 ## When to Activate
 
@@ -18,19 +18,19 @@ Pi-native **instinct inventory + evolve-to-draft** loop. Complements `pi-observa
 
 ### Do Not Use When
 
-- Only need long-session recall → use observational-memory (`/om:view`)
+- Need to import observations from a legacy OM session JSONL → use `/instinct-from-om` first
 - Extract patterns from **git history** only → `/skill-create`
 - Writing a human growth journal → `growth-log` skill
 
 ## Architecture
 
-```
-OM session ledger  --(Phase 2 adapter)-->  Instinct store  --(/evolve)-->  evolved/ drafts
+```text
+Legacy OM session JSONL  --(optional adapter)-->  Instinct store  --(/evolve)-->  evolved/ drafts
 ```
 
 | Layer | Role |
 | --- | --- |
-| observational-memory | Per-session observations/reflections |
+| Legacy OM session JSONL | Optional import source for prior-session observations/reflections |
 | Instinct store | Cross-session YAML/MD instincts (project + global) |
 | Evolve | Cluster → skill/command/agent **drafts** only |
 
@@ -128,7 +128,7 @@ Optional **context** store on the **same** `hkx-homunculus` root (not a second d
 
 | Layer | What it stores |
 | --- | --- |
-| observational-memory (`/om`) | Per-session observations/reflections |
+| Legacy OM session JSONL | Optional import source for prior-session observations/reflections |
 | Memory vault | Project/user decisions, constraints, notes (`hkx.memory.v1`) |
 | Instinct store | Cross-session **triggerable** behaviors (pending → personal) |
 
@@ -164,7 +164,7 @@ node scripts/instinct/cli.mjs promote
 node scripts/instinct/cli.mjs promote --apply
 ```
 
-## OM import (Phase 2)
+## Legacy OM JSONL import (Phase 2)
 
 ```bash
 node scripts/instinct/cli.mjs from-om --session /path/to/session.jsonl --dry-run
@@ -182,7 +182,7 @@ See [om-adapter.md](references/om-adapter.md).
 2. Add instincts:
    - manual under `projects/<id>/instincts/personal/` (or global)
    - session extract: `/learn` or quality-gated `/learn-eval` → **pending**
-   - OM file: `/instinct-from-om` → **pending**
+   - legacy OM session file: `/instinct-from-om` → **pending**
 3. `/instinct-accept` after human review of pending
 4. `status` to review personal inventory
 5. `evolve` to analyze; `evolve --generate` for drafts

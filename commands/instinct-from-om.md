@@ -1,12 +1,12 @@
 ---
 name: instinct-from-om
-description: "Map pi-observational-memory session reflections into pending instincts (dry-run safe)."
+description: "Import legacy OM session reflections into pending instincts (dry-run safe)."
 argument-hint: "[--session path] [--dry-run] [--min-relevance medium]"
 ---
 
-# /instinct-from-om — OM session -> pending instincts
+# /instinct-from-om — Legacy OM session -> pending instincts
 
-Read a Pi session JSONL (OM V3 custom entries), fold observations/reflections, and map actionable reflections into **pending** instincts.
+Read a Pi session JSONL containing legacy OM V3 custom entries, fold observations/reflections, and map actionable reflections into **pending** instincts.
 
 Does **not** write personal instincts. Review with `status --pending`, then `/instinct-accept`.
 
@@ -44,7 +44,8 @@ node .\scripts\instinct\cli.mjs from-om --session C:\path\session.jsonl
 
 - Sessions live under `~/.pi/agent/sessions/` (override `HKX_PI_SESSIONS_DIR`)
 - Run CLI in the same OS environment as Pi (no silent WSL path bridging)
-- Fallback: user can paste `/om:view full` content manually later; this command is file-based
+- No `pi-observational-memory` installation is required; this command reads existing session files only
+- Fallback: export or provide the legacy session JSONL explicitly; this command is file-based
 
 ## Related
 

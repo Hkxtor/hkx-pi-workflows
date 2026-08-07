@@ -175,7 +175,7 @@ Portable global pi settings are versioned here and deep-merged on install:
 
 - source: `configs/agent-settings.json`
 - install target: deep-merge into `~/.pi/agent/settings.json`
-- managed keys: `packages` (authoritative list), plus portable defaults such as `compaction` and `observational-memory` (does **not** set operator theme)
+- managed keys: `packages` (authoritative list), plus portable defaults such as `compaction` (does **not** set operator theme)
 - not managed here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`, …)
 - after merge: `pi update --extensions` installs/updates packages declared in settings
 

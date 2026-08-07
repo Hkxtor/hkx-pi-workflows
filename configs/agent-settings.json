@@ -13,7 +13,6 @@
     "npm:@narumitw/pi-plan-mode",
     "npm:@narumitw/pi-statusline",
     "npm:pi-until-done",
-    "npm:pi-observational-memory",
     "npm:context-mode",
     "npm:pi-ultra-compact",
     "npm:pi-subagents",
@@ -25,22 +24,5 @@
     "enabled": true,
     "reserveTokens": 32768,
     "keepRecentTokens": 48000
-  },
-  "observational-memory": {
-    "observeAfterTokens": 48000,
-    "reflectAfterTokens": 144000,
-    "compactAfterTokens": 217600,
-    "compactAfterTokensMode": "ratio",
-    "compactAfterTokensRatio": 0.8,
-    "observationsPoolMaxTokens": 32000,
-    "observationsPoolTargetTokens": 16000,
-    "agentMaxTurns": 16,
-    "passive": false,
-    "debugLog": false,
-    "model": {
-      "provider": "meme",
-      "id": "deepseek-v4-flash",
-      "thinking": "high"
-    }
   }
 }

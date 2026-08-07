@@ -87,7 +87,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Source: `configs/agent-settings.json`.
 - Install deep-merges managed keys into `~/.pi/agent/settings.json` (does not wipe machine-local keys).
-- Managed scope: `packages` (authoritative list), plus portable defaults such as `compaction` and `observational-memory`. Do **not** manage operator `theme`.
+- Managed scope: `packages` (authoritative list), plus portable defaults such as `compaction`. Do **not** manage operator `theme`.
 - Do **not** version machine-local keys here: `shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`.
 - After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays (permission + rpiv-advisor seed).
 

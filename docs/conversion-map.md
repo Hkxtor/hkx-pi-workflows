@@ -119,7 +119,7 @@ Session pattern capture and instinct inventory (pending → accept → evolve):
 - `learn-eval`
 - `evolve`
 - `instinct-status`
-- `instinct-from-om`
+- `instinct-from-om` — legacy OM session JSONL import
 - `instinct-accept`
 - `instinct-promote`
 - `instinct-export`
@@ -360,7 +360,7 @@ Portable global settings and the desired pi package list are versioned here:
 
 - source: `configs/agent-settings.json`
 - install: deep-merge into `~/.pi/agent/settings.json`
-- managed keys: `packages` (authoritative), plus portable defaults such as `compaction` and `observational-memory` (does **not** set operator theme)
+- managed keys: `packages` (authoritative), plus portable defaults such as `compaction` (does **not** set operator theme)
 - not versioned here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, …)
 - after merge: `npm run install-global` runs `pi update --extensions`
 
@@ -417,7 +417,7 @@ Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning port):
 
 - session extract: `learn`, `learn-eval` (pending instincts; human accept)
-- inventory/evolve: `evolve`, `instinct-status`, accept/promote/export/import/decay/from-om
+- inventory/evolve: `evolve`, `instinct-status`, accept/promote/export/import/decay; legacy session import: `from-om`
 - skill: `instinct-evolve`
 - CLI: `scripts/instinct/cli.mjs` (Node, Linux + Windows)
 - data root: Linux XDG / Windows LocalAppData (`HKX_HOMUNCULUS_DIR` override)
@@ -425,7 +425,7 @@ Shipped as a thin Pi-native knowledge loop (not a Claude continuous-learning por
 
 Still out of scope: bash observer-loop, auto formal skill install, default-on capture.
 
-Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/handoff/promote-instinct/import-ecc/validate + secret heuristics; skill `unified-memory`, command `/unified-memory`). `from-om` default remains pending-instinct; opt-in `--to vault|both`. ECC memory import is one-shot read-only (`memory import-ecc`), distinct from instinct `import --from-ecc`.
+Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default), `projects` (registry + counts), and `memory` (vault recall/save/handoff/promote-instinct/import-ecc/validate + secret heuristics; skill `unified-memory`, command `/unified-memory`). The legacy JSONL `from-om` import defaults to pending-instinct; opt-in `--to vault|both`. ECC memory import is one-shot read-only (`memory import-ecc`), distinct from instinct `import --from-ecc`.
 
 ## Dual-review ship gate: Santa Method
 

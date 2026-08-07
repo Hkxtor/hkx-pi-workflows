@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Instinct store + evolve + OM adapter CLI (cross-platform Node ESM).
+ * Instinct store + evolve + legacy OM session adapter CLI (cross-platform Node ESM).
  *
  * Usage:
  *   node scripts/instinct/cli.mjs init|status|evolve|from-om|accept|export|import|promote|publish-draft|decay|prune|projects|memory [flags]
@@ -106,7 +106,7 @@ Commands:
   init                 Create data layout for current project
   status [--pending]   List instincts (project + global)
   evolve [--generate]  Cluster instincts; optional draft generation
-  from-om              Map OM session reflections -> pending instincts (optional --to vault|both)
+  from-om              Import legacy OM session reflections -> pending instincts (optional --to vault|both)
   accept               Move pending instincts to personal
   export               Export instincts to stdout or --output file
   import               Import instincts from file (or --from-ecc dir)

@@ -28,11 +28,11 @@ argument-hint: "[recall|save|handoff|promote-instinct|import-ecc|validate] [titl
 - **Save context** — persist a durable note that is **not** an instinct trigger.
 - **Validate vault** — check frontmatter / scope / filename integrity.
 
-Do **not** use for: secrets, task trackers, default-on capture, or replacing `/om` session memory / instinct evolve.
+Do **not** use for: secrets, task trackers, default-on capture, legacy session-record import (use `/instinct-from-om`), or instinct evolve.
 
 | Layer | Use |
 | --- | --- |
-| observational-memory (`/om`) | Per-session observations/reflections |
+| Legacy OM session JSONL | Optional import source for prior-session observations/reflections |
 | **Memory vault** (this command) | Project/user context notes (`hkx.memory.v1`) |
 | Instinct store | Cross-session **triggerable** behaviors |
 
@@ -123,7 +123,7 @@ Distinct from instinct `import --from-ecc` (homunculus instincts). Team ECC → 
 
 `save`/`handoff --apply` refuse high-confidence secret patterns (`sk-…`, PEM, AKIA…, ghp_…); `--force` overrides. `validate` fails on high; `--strict` also fails medium.
 
-### from-om bridge (related CLI, not a memory sub)
+### Legacy from-om bridge (related CLI, not a memory sub)
 
 ```bash
 node scripts/instinct/cli.mjs from-om [--to instinct|vault|both] [--dry-run]

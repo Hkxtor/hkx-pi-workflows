@@ -351,6 +351,13 @@ async function mergeAgentSettings(srcPath, destPath) {
 		next.packages = managed.packages;
 	}
 
+	// Remove settings that this package previously managed but has retired.
+	// A plain deep merge cannot delete absent source keys, which would otherwise
+	// leave pi-observational-memory options behind after its package is removed.
+	for (const retiredKey of ["observational-memory"]) {
+		delete next[retiredKey];
+	}
+
 	await fs.writeFile(destPath, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
 	const pkgCount = Array.isArray(next.packages) ? next.packages.length : 0;
 	console.log(
@@ -363,7 +370,6 @@ function runCommand(command, args, options = {}) {
 	return new Promise((resolve) => {
 		const child = spawn(command, args, {
 			stdio: "inherit",
-			shell: true,
 			...options,
 		});
 		child.on("error", (err) => {
@@ -378,7 +384,8 @@ function runCommand(command, args, options = {}) {
 
 async function updatePiExtensions() {
 	console.log("Updating pi packages (pi update --extensions)...");
-	const result = await runCommand("pi", ["update", "--extensions"]);
+	const command = process.platform === "win32" ? "pi.cmd" : "pi";
+	const result = await runCommand(command, ["update", "--extensions"]);
 	if (!result.ok) {
 		console.warn(
 			`Warning: pi update --extensions exited with code ${result.code}. Settings were still written; install packages manually if needed.`,

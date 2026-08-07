@@ -1,12 +1,12 @@
 # Instinct Evolve — Implementation Plan (Pi-native)
 
-Status: **Full loop implemented** (store → OM → transfer → promote → evolve → publish-draft → **confidence decay**)
-Scope: instincts store + cluster evolve; observational-memory adapter  
+Status: **Full loop implemented** (store → legacy OM import → transfer → promote → evolve → publish-draft → **confidence decay**)
+Scope: instincts store + cluster evolve; legacy OM session-file adapter
 Platforms: **Linux and Windows first-class** (macOS best-effort same as Linux paths)
 
 ## Goal
 
-Ship a Pi-native **instinct inventory + evolve-to-draft** loop inside `hkx-pi-workflows`, reusing **`pi-observational-memory` (OM V3)** as the observation source—not a Claude Code continuous-learning-v2 port.
+Ship a Pi-native **instinct inventory + evolve-to-draft** loop inside `hkx-pi-workflows`, with an optional importer for existing **legacy OM V3 session JSONL** records—not a Claude Code continuous-learning-v2 port.
 
 ## Non-goals
 
@@ -21,13 +21,13 @@ Ship a Pi-native **instinct inventory + evolve-to-draft** loop inside `hkx-pi-wo
 ## Architecture (locked)
 
 ```
-OM session ledger  ──(adapter + human accept)──►  Instinct store  ──(/evolve)──►  evolved/ drafts
- (per-session JSONL)                              (cross-session XDG/LocalAppData)     (review before formal skills)
+Legacy OM session JSONL  ──(adapter + human accept)──►  Instinct store  ──(/evolve)──►  evolved/ drafts
+ (existing per-session JSONL)                            (cross-session XDG/LocalAppData)     (review before formal skills)
 ```
 
 | Layer | Owner | Persist where |
 | --- | --- | --- |
-| Session memory | `pi-observational-memory` | Session JSONL under Pi sessions dir (`om.*` custom entries) |
+| Legacy session import | OM V3 JSONL custom entries | Existing session JSONL under Pi sessions dir (`om.*` custom entries) |
 | Instinct store | this feature | Independent data root (see platform paths below) |
 | Evolve | this feature | `evolved/{skills,commands,agents}/` drafts only |
 | Formal skills | package + `/skill-create` | package / user skill dirs after human review |
@@ -365,7 +365,7 @@ node .\scripts\instinct\cli.mjs evolve --generate
 
 **Phase 2**
 
-1. OM session → pending → accept → evolve on both OS (same-env as Pi)  
+1. Legacy OM session JSONL → pending → accept → evolve on both OS (same-env as Pi)
 2. Platform notes for sessions + WSL documented  
 
 ---
@@ -402,5 +402,5 @@ node .\scripts\instinct\cli.mjs evolve --generate
 ## Related
 
 - ECC reference (algorithm only): `ECC/skills/continuous-learning-v2/scripts/instinct-cli.py` (`cmd_evolve`)
-- OM V3 types: `pi-observational-memory` session ledger (`om.reflections.recorded`, etc.)
+- OM V3 types: legacy session ledger entries (`om.reflections.recorded`, etc.)
 - Package install path patterns: `scripts/install.mjs` (`os.homedir()`, `path.join`)

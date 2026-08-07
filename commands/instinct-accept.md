@@ -1,6 +1,6 @@
 ---
 name: instinct-accept
-description: "Promote pending instincts (e.g. from OM from-om) into personal inventory after human review."
+description: "Promote pending instincts (e.g. from legacy OM JSONL import) into personal inventory after human review."
 argument-hint: "[--all | --id <id>] [--force]"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "[--all | --id <id>] [--force]"
 
 Move reviewed **pending** instincts into **personal** scope so they participate in `/evolve`.
 
-OM-sourced candidates from `from-om` land in pending by default and are never auto-personal.
+Candidates sourced from legacy OM JSONL through `from-om` land in pending by default and are never auto-personal.
 
 ## Implementation
 
@@ -46,5 +46,5 @@ node .\scripts\instinct\cli.mjs accept --all
 
 ## Related
 
-- OM import: `node scripts/instinct/cli.mjs from-om --session <path> [--dry-run]`
+- legacy OM session import: `node scripts/instinct/cli.mjs from-om --session <path> [--dry-run]`
 - skill: `instinct-evolve`

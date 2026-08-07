@@ -1,12 +1,12 @@
 ---
-description: "How OM V3 session memory maps to pending instincts (Phase 2)."
+description: "How legacy OM V3 session entries map to pending instincts (Phase 2)."
 ---
 
-# OM adapter
+# Legacy OM session adapter
 
 ## Source
 
-Pi session JSONL custom entries:
+Legacy Pi session JSONL custom entries:
 
 - `om.observations.recorded`
 - `om.reflections.recorded`

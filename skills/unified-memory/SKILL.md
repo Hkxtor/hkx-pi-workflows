@@ -11,7 +11,7 @@ Pi-native **memory vault** for durable, inspectable context. Complements:
 
 | Layer | Role |
 | --- | --- |
-| observational-memory | Per-session ledger (`/om`) |
+| Legacy OM session JSONL | Optional import source for prior-session observations/reflections |
 | **Memory vault** | Cross-session **notes** (this skill) |
 | Instinct store | Cross-session **triggerable** behaviors (`instinct-evolve`) |
 
@@ -24,14 +24,14 @@ Pi-native **memory vault** for durable, inspectable context. Complements:
 
 ### Do Not Use When
 
-- Only need in-session OM → observational-memory / `/om`
+- Need to import a legacy OM session JSONL → `/instinct-from-om`
 - Capturing a reusable **behavior rule** → `/learn` → pending instinct
 - Clustering instincts → `instinct-evolve` / `/evolve`
 - Secrets, credentials, or default-on background capture (out of scope)
 
 ## Architecture
 
-```
+```text
 hkx-homunculus/                    # single data root (HKX_HOMUNCULUS_DIR / XDG / LocalAppData)
   projects/<12-hex>/memory/        # project scope (default recall)
   memory/user/                     # user scope (explicit --scope user only)
@@ -54,7 +54,7 @@ node scripts/instinct/cli.mjs memory handoff --title "Slice" --body "..." --appl
 node scripts/instinct/cli.mjs memory promote-instinct --id prefer-token-bucket --apply
 node scripts/instinct/cli.mjs memory import-ecc --from path/to/repo --apply
 node scripts/instinct/cli.mjs memory validate [--strict]
-node scripts/instinct/cli.mjs from-om --to vault --dry-run   # opt-in; default is instinct-only
+node scripts/instinct/cli.mjs from-om --to vault --dry-run   # legacy JSONL import; opt-in, default is instinct-only
 ```
 
 Slash entry: **`/unified-memory`**.
@@ -83,9 +83,9 @@ node scripts/instinct/cli.mjs memory validate --json
 
 Fails on bad frontmatter, scope/dir mismatch, or id≠filename stem.
 
-## OM and instinct boundaries
+## Legacy OM and instinct boundaries
 
-- **`from-om`**: default → **pending instincts only**. Opt-in `--to vault` / `--to both` (never default both).
+- **`from-om`**: imports a legacy OM session JSONL; default → **pending instincts only**. Opt-in `--to vault` / `--to both` (never default both).
 - **Vault → instinct**: explicit `memory promote-instinct` → **pending** only; vault file kept.
 - **Handoff**: `memory handoff` (tag `handoff`); recall with `--tag handoff`.
 - **Secrets (best-effort)**: high patterns block `--apply` writes; `validate` reports findings (not a compliance scanner).

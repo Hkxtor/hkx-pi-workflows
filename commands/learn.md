@@ -100,5 +100,5 @@ Next: /instinct-accept then /evolve
 ## Related
 
 - quality-gated variant: `/learn-eval`
-- OM file import: `/instinct-from-om`
+- legacy OM session JSONL import: `/instinct-from-om`
 - skill: `instinct-evolve`

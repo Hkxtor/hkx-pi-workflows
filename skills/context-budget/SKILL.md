@@ -30,7 +30,7 @@ Prefer the active install, then the package checkout:
 | Rules | `~/.pi/agent/rules/**/*.md`, package `rules/**/*.md` (Path B) |
 | Global context | `~/.pi/agent/AGENTS.md`, `APPEND_SYSTEM.md` |
 | MCP | `~/.pi/agent/mcp.json`, project `.pi/mcp.json`, package `.mcp.json` |
-| Settings | `~/.pi/agent/settings.json` (`packages`, compaction, observational-memory) |
+| Settings | `~/.pi/agent/settings.json` (`packages`, compaction) |
 
 Skip identical duplicates (same path hash / same content) to avoid double-count.
 
