@@ -24,5 +24,11 @@
     "enabled": true,
     "reserveTokens": 32768,
     "keepRecentTokens": 48000
+  },
+  "tuiMode": "fullscreen",
+  "fullscreenScrollbar": "auto",
+  "markdown": {
+    "mermaid": "final",
+    "codeBlockIndent": "  "
   }
 }
