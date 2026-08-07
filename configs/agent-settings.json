@@ -17,7 +17,7 @@
     "npm:pi-ultra-compact",
     "npm:pi-subagents",
     "npm:pi-mcp-adapter",
-    "npm:pi-lens",
+    "npm:@narumitw/pi-lsp",
     "npm:pi-simplify"
   ],
   "compaction": {

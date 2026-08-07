@@ -35,6 +35,7 @@ const requiredFiles = [
 	"docs/skill-routing.md",
 	"docs/language-hooks.md",
 	"configs/pi-permission-system/config.json",
+	"configs/pi-lsp/pi-lsp.json",
 	"configs/rpiv-advisor/advisor.json",
 	"configs/agent-settings.json",
 	"agents/code-reviewer.md",
@@ -47,6 +48,7 @@ const requiredFiles = [
 	"scripts/tests/resolve-env-vars.mjs",
 	"scripts/tests/merge-agent-settings.mjs",
 	"scripts/tests/install-resolver-guards.mjs",
+	"scripts/tests/pi-lsp-migration.mjs",
 	"scripts/tests/doc-skill-placeholder.mjs",
 	// M4: apply-mcp-profile.mjs::main() process-level refuse integration suite.
 	"scripts/tests/apply-mcp-profile.mjs",
@@ -94,15 +96,7 @@ const allowedPiTools = new Set([
 	"intercom",
 	"contact_supervisor",
 	"lsp_diagnostics",
-	"lsp_navigation",
-	"ast_grep_search",
-	"ast_grep_replace",
-	"ast_grep_outline",
-	"lens_diagnostics",
-	"module_report",
-	"read_symbol",
-	"read_enclosing",
-	"symbol_search",
+	"lsp_fix",
 ]);
 
 const errors = [];
@@ -455,6 +449,56 @@ async function main() {
 		}
 	}
 
+	// Managed primary-language pi-lsp configuration.
+	const piLspConfigPath = path.join(root, "configs", "pi-lsp", "pi-lsp.json");
+	try {
+		const piLspConfig = JSON.parse(await fs.readFile(piLspConfigPath, "utf8"));
+		if (
+			!piLspConfig ||
+			typeof piLspConfig !== "object" ||
+			Array.isArray(piLspConfig)
+		) {
+			errors.push("configs/pi-lsp/pi-lsp.json: must be a JSON object");
+		} else {
+			for (const routeName of [
+				"biome",
+				"ty",
+				"ruff",
+				"rust-analyzer",
+				"gopls",
+			]) {
+				const route = piLspConfig[routeName];
+				if (!route || typeof route !== "object" || Array.isArray(route)) {
+					errors.push(`configs/pi-lsp/pi-lsp.json: missing ${routeName} route`);
+					continue;
+				}
+				if (
+					!Array.isArray(route.command) ||
+					route.command.length === 0 ||
+					!route.command.every((part) => typeof part === "string" && part)
+				) {
+					errors.push(
+						`configs/pi-lsp/pi-lsp.json: ${routeName}.command must be a non-empty string array`,
+					);
+				}
+				if (
+					!Array.isArray(route.extensions) ||
+					route.extensions.length === 0 ||
+					!route.extensions.every(
+						(extension) =>
+							typeof extension === "string" && extension.startsWith("."),
+					)
+				) {
+					errors.push(
+						`configs/pi-lsp/pi-lsp.json: ${routeName}.extensions must be a non-empty file-extension array`,
+					);
+				}
+			}
+		}
+	} catch (err) {
+		errors.push(`configs/pi-lsp/pi-lsp.json: invalid JSON: ${err.message}`);
+	}
+
 	// Portable rpiv-advisor seed (XDG; no machine-local modelKey)
 	const advisorConfigPath = path.join(
 		root,
@@ -636,15 +680,14 @@ async function main() {
 				`${relativePath}: native grep/find require co-resident ffgrep/fffind`,
 			);
 		}
-		// Reject superseded pi-lens aliases for the same reason: current package
-		// surfaces must use the explicit modern tool names.
+		// Reject superseded generic aliases so agents use the managed tool stack.
 		if (
 			tools.includes("lsp") ||
 			tools.includes("ast_grep") ||
 			tools.includes("ast_edit")
 		) {
 			errors.push(
-				`${relativePath}: use lsp_diagnostics/lsp_navigation/ast_grep_search/ast_grep_replace for pi-lens`,
+				`${relativePath}: use lsp_diagnostics/lsp_fix and ffgrep/edit instead of legacy lsp/ast aliases`,
 			);
 		}
 	}

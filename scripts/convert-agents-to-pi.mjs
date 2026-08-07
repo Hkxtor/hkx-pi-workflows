@@ -33,9 +33,9 @@ const LEGACY_TOOL_MAP = {
 	find: ["fffind"],
 	grep: ["ffgrep"],
 	web_search: ["web_search"],
-	lsp: ["lsp_diagnostics", "lsp_navigation"],
-	ast_grep: ["ast_grep_search"],
-	ast_edit: ["ast_grep_replace"],
+	lsp: ["lsp_diagnostics"],
+	ast_grep: ["ffgrep"],
+	ast_edit: ["edit"],
 	browser: ["bash"],
 	task: null,
 	todo: ["todo"],
@@ -141,7 +141,6 @@ function mapTools(ompTools, name, isReviewer) {
 	if (isReviewer) {
 		mapped.delete("write");
 		mapped.delete("edit");
-		mapped.delete("ast_grep_replace");
 		mapped.add("intercom");
 	} else if (WRITERS.has(name)) {
 		mapped.add("contact_supervisor");
@@ -160,10 +159,8 @@ function mapTools(ompTools, name, isReviewer) {
 		"bash",
 		"edit",
 		"write",
-		"ast_grep_search",
-		"ast_grep_replace",
 		"lsp_diagnostics",
-		"lsp_navigation",
+		"lsp_fix",
 		"web_search",
 		"todo",
 		"intercom",
@@ -182,8 +179,8 @@ function adaptToolMentions(body) {
 		.replaceAll("`search`", "`ffgrep`")
 		.replaceAll("`grep`", "`ffgrep`")
 		.replaceAll("`find`", "`fffind`")
-		.replaceAll("`ast_grep`", "`ast_grep_search`")
-		.replaceAll("`lsp`", "`lsp_diagnostics`, `lsp_navigation`")
+		.replaceAll("`ast_grep`", "`ffgrep`")
+		.replaceAll("`lsp`", "`lsp_diagnostics`")
 		.replaceAll("search/find", "ffgrep/fffind")
 		.replaceAll("find/search", "fffind/ffgrep")
 		.replaceAll(" with search,", " with ffgrep,")
@@ -232,9 +229,9 @@ function convertOne(file) {
 		`You are the \`hkx.${name}\` subagent running inside pi-subagents.`,
 		"",
 		"Operating rules for this runtime:",
-		"- Use the provided tools directly (`read`, `ffgrep`, `fffind`, `grep`, `find`, `ls`, `bash`, and any write/lens tools listed in frontmatter).",
+		"- Use the provided tools directly (`read`, `ffgrep`, `fffind`, `grep`, `find`, `ls`, `bash`, and any configured write/LSP tools listed in frontmatter).",
 		"- Prefer `ffgrep` / `fffind` (pi-fff) for content and path search. Native `grep` / `find` are available as fallback when FFF tools are unavailable or for simple single-pattern lookups.",
-		"- Prefer `lsp_diagnostics` / `lsp_navigation` and `ast_grep_search` (pi-lens) when type or structural evidence is needed.",
+		"- Use `lsp_diagnostics` for configured language-server diagnostics; use `lsp_fix` only for supported source actions. Use `ffgrep` plus `read` for structural or call-site evidence.",
 		"- Prefer targeted search and selective reading over whole-file dumps.",
 		roleNote,
 		"- Cite exact file paths and line ranges. Prefer evidence over speculation.",

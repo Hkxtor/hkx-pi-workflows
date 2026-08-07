@@ -20,7 +20,7 @@ Note: your local checkout directory name may differ from the package/runtime nam
 | Path | How | Loads |
 | --- | --- | --- |
 | **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents/chains when pi-subagents is installed |
-| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings merge, managed packages update, permission overlay, rpiv-advisor seed |
+| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings merge, managed packages update, pi-lsp and permission overlays, rpiv-advisor seed |
 
 Manifest shape (authoritative):
 
@@ -38,6 +38,7 @@ Manifest shape (authoritative):
 | skills | 98 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 5 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
@@ -256,7 +257,7 @@ The `agents/` directory is now a **pi-subagents native** surface.
 - frontmatter `package: hkx`
 - runtime names: `hkx.<name>`
 - search surface: `ffgrep` / `fffind` (preferred) with native `grep` / `find` as co-resident fallback
-- code intelligence surface: `lsp_diagnostics`, `lsp_navigation`, `ast_grep_search`, `ast_grep_replace`
+- code intelligence surface: `lsp_diagnostics` and `lsp_fix` for configured routes; targeted `ffgrep` and `read` for navigation and structure
 - reviewers are read-only by default
 - writer agents use scoped mutation plus supervisor/intercom escalation rules
 
@@ -341,12 +342,16 @@ Five first-party extensions are shipped intentionally:
 
 Footer/header chrome is Path B only via `npm:@narumitw/pi-statusline` in `configs/agent-settings.json` (not vendored here). These first-party files are pi TypeScript extensions, not external shell hook packs.
 
-## External extension config overlays
+## External package config overlays
 
-This package can version-control operator config for third-party extensions without vendoring their source.
+This package can version-control operator config for third-party Pi packages without vendoring their source.
 
 Current overlays:
 
+- `configs/pi-lsp/pi-lsp.json`
+  - installed by `npm run install-global` to `~/.pi/agent/pi-lsp.json`
+  - install order: after `pi update --extensions`; its explicit map replaces pi-lsp's upstream route catalog
+  - routes TypeScript/JavaScript, Python, Rust, and Go when the configured server commands are on `PATH`
 - `configs/pi-permission-system/config.json`
   - installed by `npm run install-global` to `~/.pi/agent/extensions/pi-permission-system/config.json`
   - install order: after `pi update --extensions`; creates the extension config directory when missing

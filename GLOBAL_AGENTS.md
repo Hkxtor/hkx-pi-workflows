@@ -32,13 +32,13 @@ Prefer local repository evidence and tool output over assumptions. Keep changes 
 - Use `fffind` for path discovery; native `find` is available as fallback.
 - Use `ffgrep` for content search; native `grep` is available as fallback.
 - Use `fff-multi-grep` when several literal patterns matter at once.
-- Use `module_report`, `symbol_search`, `read_symbol`, and `read_enclosing` when you need structure or one symbol body instead of a whole-file dump.
+- Use `ffgrep` plus targeted `read` calls when you need structure, call sites, or a focused source region instead of a whole-file dump.
 
 ### Code intelligence
 
-- Prefer `lsp_diagnostics` and `lsp_navigation` for symbol-aware navigation, references, definitions, and type errors.
-- Prefer `ast_grep_search` and `ast_grep_replace` for structural code search and AST-safe rewrites.
-- Use `lens_diagnostics` before declaring work done when you changed code.
+- Use `lsp_diagnostics` for diagnostics from configured language servers.
+- Use `lsp_fix` only for supported LSP source actions, after reviewing the affected file and requested action.
+- Use focused project checks, tests, or builds before declaring code changes complete; LSP diagnostics are supplementary evidence.
 
 ### Editing and execution
 

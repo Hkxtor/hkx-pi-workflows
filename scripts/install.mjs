@@ -27,6 +27,8 @@
  * - configs/agent-settings.json
  *                            -> deep-merge into ~/.pi/agent/settings.json
  *                              (managed keys: packages, portable defaults)
+ * - configs/pi-lsp/pi-lsp.json
+ *                            -> ~/.pi/agent/pi-lsp.json (managed LSP routes)
  * - GLOBAL_AGENTS.md         -> ~/.pi/agent/AGENTS.md
  * - APPEND_SYSTEM.md         -> ~/.pi/agent/APPEND_SYSTEM.md
  * - .mcp.json                -> safe-merge into ~/.pi/agent/mcp.json
@@ -431,6 +433,32 @@ async function installPermissionSystemConfig() {
 }
 
 /**
+ * Install the managed primary-language routes for @narumitw/pi-lsp.
+ * Custom pi-lsp maps replace the upstream catalog, so this source stays
+ * explicit and is linked/copied on every full operator installation.
+ */
+async function installPiLspConfig() {
+	const src = path.join(repoRoot, "configs", "pi-lsp", "pi-lsp.json");
+	if (!(await pathExists(src))) {
+		console.warn("Skip pi-lsp config: source missing at", src);
+		return false;
+	}
+
+	try {
+		const config = JSON.parse(await fs.readFile(src, "utf-8"));
+		if (!isPlainObject(config) || Object.keys(config).length === 0) {
+			throw new Error("must be a non-empty JSON object");
+		}
+	} catch (err) {
+		console.error(`pi-lsp config is invalid (${src}): ${err.message}`);
+		return false;
+	}
+
+	await linkOrCopy(src, path.join(piHome, "pi-lsp.json"));
+	return true;
+}
+
+/**
  * Resolve XDG-aware config dir for rpiv-* overlays.
  * Mirrors @juicesharp/rpiv-config: absolute XDG_CONFIG_HOME or ~/.config.
  */
@@ -715,8 +743,12 @@ async function main() {
 	const piUpdateOk = await updatePiExtensions();
 	if (!piUpdateOk) failed.push("pi update --extensions");
 
-	// After packages are installed: ensure extension config dir exists and
-	// write the managed overlay (first install often has no config yet).
+	// After packages are installed: write managed configuration overlays.
+	const piLspConfigOk = await installPiLspConfig();
+	if (!piLspConfigOk) failed.push("pi-lsp config");
+
+	// Ensure extension config dir exists and write the managed overlay
+	// (first install often has no config yet).
 	const permissionConfigOk = await installPermissionSystemConfig();
 	if (!permissionConfigOk) failed.push("pi-permission-system config");
 
@@ -741,6 +773,7 @@ async function main() {
 		"Settings: configs/agent-settings.json → merge ~/.pi/agent/settings.json",
 	);
 	console.log("Packages: pi update --extensions (from settings packages)");
+	console.log("pi-lsp: configs/pi-lsp/pi-lsp.json → ~/.pi/agent/pi-lsp.json");
 	console.log(
 		"rpiv-advisor: configs/rpiv-advisor/advisor.json → seed ~/.config/rpiv-advisor/advisor.json (if missing)",
 	);

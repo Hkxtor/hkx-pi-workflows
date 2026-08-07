@@ -151,12 +151,17 @@ Out of scope for this package: custom brand themes, first-party footer/header ex
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 
-### External extension config overlays
+### External package config overlays
 
-Some third-party extensions are installed outside this package, but their operator config is versioned here.
+Some third-party Pi packages are installed outside this package, but their operator config is versioned here.
 
 Current overlays:
 
+- `pi-lsp`
+  - source: `configs/pi-lsp/pi-lsp.json`
+  - install target: `~/.pi/agent/pi-lsp.json`
+  - install order: after `pi update --extensions`
+  - install behavior: write/link the explicit primary-language route map, which replaces pi-lsp's upstream default catalog
 - `pi-permission-system`
   - source: `configs/pi-permission-system/config.json`
   - install target: `~/.pi/agent/extensions/pi-permission-system/config.json`
@@ -215,7 +220,7 @@ The repository is the source of truth for all package surfaces:
 - `skills/`
 - `rules/`
 - `extensions/`
-- `configs/` (external extension config overlays + `agent-settings.json`)
+- `configs/` (external package config overlays + `agent-settings.json`)
 - `GLOBAL_AGENTS.md`
 - `APPEND_SYSTEM.md`
 - `.mcp.json` and `mcp-configs/`
@@ -251,7 +256,7 @@ Declared in `package.json`:
 - Pi loads `extensions` / `skills` / `prompts` from the `pi` block.
 - `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
 - Agents/chains require **pi-subagents** to already be installed.
-- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings overlays, or permission config overlays.
+- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings overlays, or pi-lsp / permission config overlays.
 
 #### Path B — global operator layout
 
@@ -264,6 +269,7 @@ Important mappings:
 - `commands/*.md` → `~/.pi/agent/commands/` **and** `~/.pi/agent/prompts/`
 - `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json`
 - then: `pi update --extensions` for packages listed in settings
+- then: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing)
 - then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
@@ -292,14 +298,14 @@ This package assumes a pi tool stack centered on:
 
 - **pi-fff** for high-performance search: `fffind`, `ffgrep`, `fff-multi-grep`
 - **native read tools as fallback**: `grep`, `find` (always co-declared with ffgrep/fffind so Plan Mode / review-only agents stay usable when FFF is unavailable)
-- **pi-lens** for code intelligence: `lsp_diagnostics`, `lsp_navigation`, `ast_grep_search`, `ast_grep_replace`, `module_report`, `symbol_search`, `read_symbol`, `read_enclosing`
+- **pi-lsp** for configured language-server diagnostics and source actions: `lsp_diagnostics`, `lsp_fix`
 - core file / shell tools: `read`, `edit`, `write`, `ls`, `bash`
 
 That means the intended workflow is:
 
 1. discover with pi-fff (fallback to native `grep` / `find` when needed)
-2. inspect semantically with pi-lens
-3. mutate narrowly with edit/write
+2. inspect with targeted `read` calls and pi-lsp diagnostics where a configured route applies
+3. mutate narrowly with edit/write or a reviewed `lsp_fix` source action
 4. validate with bash and repo-local scripts
 
 ## Where New Work Should Go

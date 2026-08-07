@@ -12,7 +12,7 @@ It provides a compact core set of:
 - **skills** — workflow and language guidance
 - **rules** — lightweight repo/session reminders (full install only)
 - **extensions** — low-noise quality, gatekeeping, and TUI appearance helpers
-- **external extension configs** — managed overlays (e.g. `pi-permission-system` config; full install only)
+- **external extension configs** — managed overlays (e.g. `pi-permission-system` and `pi-lsp` routes; full install only)
 - **global agent settings** — `configs/agent-settings.json` → merge into `~/.pi/agent/settings.json` (full install only; does not force a theme)
 - **global context files** — install sources for `~/.pi/agent/AGENTS.md` and `~/.pi/agent/APPEND_SYSTEM.md` (full install only)
 
@@ -46,7 +46,7 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 
 **Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, permission-system config overlays, and rpiv-advisor config seed. Use Path B for those.
+**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor config seed. Use Path B for those.
 
 Update later with:
 
@@ -64,9 +64,11 @@ From a clone of this repo:
 npm run install-global
 ```
 
-This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed extension config overlays.
+This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp and extension config overlays.
 
 Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, and managed dependency packages — not only the package-native resources.
+
+`pi-lsp` configures routes only; it does not download language-server binaries. Install the configured `biome`, `ty`, `ruff`, `rust-analyzer`, and `gopls` commands separately and expose them on `PATH` as needed.
 
 ### Or load from the current checkout (dev / try)
 
@@ -96,6 +98,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | rules | no | yes → `~/.pi/agent/rules/` |
 | agent settings merge | no | yes (packages + portable defaults; does **not** set `theme`) |
 | managed `packages` update | no (only this package entry) | yes (`pi update --extensions`) |
+| pi-lsp route config | no | yes → `~/.pi/agent/pi-lsp.json` |
 | permission config overlay | no | yes |
 | rpiv-advisor config seed | no | yes (if missing) |
 | GLOBAL_AGENTS / APPEND_SYSTEM | no | yes |
@@ -113,6 +116,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | extensions | `~/.pi/agent/extensions/` |
 | agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, portable defaults; preserves machine-local keys; does **not** set `theme`) |
 | pi packages | after settings merge: `pi update --extensions` |
+| pi-lsp route config | after package update: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json` (managed TypeScript/JavaScript, Python, Rust, and Go routes) |
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing) |
 | rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
 | global AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
@@ -216,10 +220,10 @@ subagent({
 These agents and chains are tuned for:
 
 - **pi-fff**: `fffind`, `ffgrep`, `fff-multi-grep`
-- **pi-lens**: `lsp_diagnostics`, `lsp_navigation`, `ast_grep_search`, `ast_grep_replace`
+- **pi-lsp**: `lsp_diagnostics`, `lsp_fix` (with routes from `pi-lsp.json`)
 - core file and shell tools: `read`, `edit`, `write`, `ls`, `bash`
 
-In short: search with pi-fff, reason about code with pi-lens, mutate narrowly.
+In short: search with pi-fff, inspect with targeted reads and pi-lsp diagnostics, mutate narrowly.
 
 ## Context File Split
 

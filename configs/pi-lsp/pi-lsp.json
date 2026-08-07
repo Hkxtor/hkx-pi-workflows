@@ -1,0 +1,36 @@
+{
+  "ty": {
+    "command": ["ty", "server"],
+    "extensions": [".py", ".pyi"]
+  },
+  "ruff": {
+    "command": ["ruff", "server"],
+    "extensions": [".py", ".pyi"]
+  },
+  "biome": {
+    "command": ["biome", "lsp-proxy"],
+    "extensions": [
+      ".astro",
+      ".css",
+      ".graphql",
+      ".gql",
+      ".html",
+      ".js",
+      ".jsx",
+      ".json",
+      ".jsonc",
+      ".ts",
+      ".tsx",
+      ".vue"
+    ]
+  },
+  "rust-analyzer": {
+    "command": ["rust-analyzer"],
+    "extensions": [".rs"],
+    "pullDiagnosticsGraceMs": 5000
+  },
+  "gopls": {
+    "command": ["gopls"],
+    "extensions": [".go"]
+  }
+}

@@ -14,7 +14,7 @@
 - **skills** — 工作流与语言/领域指导
 - **rules** — 轻量仓库/会话提醒（仅完整安装路径）
 - **extensions** — 低噪声质量、门禁与 TUI 外观扩展
-- **外部扩展配置** — 受管覆盖层（如 `pi-permission-system`；仅完整安装）
+- **外部扩展配置** — 受管覆盖层（如 `pi-permission-system` 与 `pi-lsp` 路由；仅完整安装）
 - **全局 agent 设置** — `configs/agent-settings.json` → 合并进 `~/.pi/agent/settings.json`（仅完整安装；不强制主题）
 - **全局上下文文件** — 安装源：`~/.pi/agent/AGENTS.md`、`~/.pi/agent/APPEND_SYSTEM.md`（仅完整安装）
 
@@ -46,7 +46,7 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 
 **agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
 
-**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、permission-system 配置覆盖层、以及 rpiv-advisor 配置种子。需要这些请用路径 B。
+**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor 配置种子。需要这些请用路径 B。
 
 后续更新：
 
@@ -64,9 +64,11 @@ pi install git:git@github.com:Hkxtor/hkx-pi-workflows@main
 npm run install-global
 ```
 
-这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，深合并受管 settings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管扩展配置覆盖层。
+这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，深合并受管 settings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管 pi-lsp 及扩展配置覆盖层。
 
 当你需要 rules、MCP 默认值、全局 AGENTS / APPEND_SYSTEM，以及受管依赖包清单时，请用路径 B，而不是只装包原生资源。
+
+`pi-lsp` 只配置路由，不会下载语言服务器二进制。请按需另行安装并加入 `PATH`：`biome`、`ty`、`ruff`、`rust-analyzer` 与 `gopls`。
 
 ### 或从当前 checkout 试跑（开发）
 
@@ -96,6 +98,7 @@ pi -e .
 | rules | 否 | 是 → `~/.pi/agent/rules/` |
 | agent settings 合并 | 否 | 是（packages + 可移植默认值；**不**设置 `theme`） |
 | 受管 `packages` 更新 | 否（仅本包条目） | 是（`pi update --extensions`） |
+| pi-lsp 路由配置 | 否 | 是 → `~/.pi/agent/pi-lsp.json` |
 | permission 配置覆盖层 | 否 | 是 |
 | rpiv-advisor 配置种子 | 否 | 是（仅当缺失） |
 | GLOBAL_AGENTS / APPEND_SYSTEM | 否 | 是 |
@@ -113,6 +116,7 @@ pi -e .
 | extensions | `~/.pi/agent/extensions/` |
 | agent settings | `configs/agent-settings.json` → 深合并进 `~/.pi/agent/settings.json`（`packages`、可移植默认值；保留机器本地键；**不**设置 `theme`） |
 | pi packages | settings 合并后：`pi update --extensions` |
+| pi-lsp 路由配置 | 包更新后：`configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`（受管 TypeScript/JavaScript、Python、Rust、Go 路由） |
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
 | rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
 | 全局 AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
@@ -216,10 +220,10 @@ subagent({
 这些 agents 与 chains 面向以下工具栈调优：
 
 - **pi-fff**：`fffind`、`ffgrep`、`fff-multi-grep`
-- **pi-lens**：`lsp_diagnostics`、`lsp_navigation`、`ast_grep_search`、`ast_grep_replace`
+- **pi-lsp**：`lsp_diagnostics`、`lsp_fix`（路由来自 `pi-lsp.json`）
 - 核心文件/Shell 工具：`read`、`edit`、`write`、`ls`、`bash`
 
-简言之：用 pi-fff 搜索，用 pi-lens 理解代码，窄范围修改。
+简言之：用 pi-fff 搜索，以定向读取和 pi-lsp 诊断理解代码，窄范围修改。
 
 ## 上下文文件分工
 
