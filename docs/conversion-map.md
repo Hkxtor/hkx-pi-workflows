@@ -340,7 +340,7 @@ Five first-party extensions are shipped intentionally:
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 
-Footer/header chrome is Path B only via `npm:@narumitw/pi-statusline` in `configs/agent-settings.json` (not vendored here). These first-party files are pi TypeScript extensions, not external shell hook packs.
+Footer/header chrome is Path B via `npm:pi-zentui` (Starship-inspired footer + TUI styling) in `configs/agent-settings.json` (not vendored here). These first-party files are pi TypeScript extensions, not external shell hook packs.
 
 ## External package config overlays
 
@@ -358,6 +358,9 @@ Current overlays:
 - `configs/rpiv-advisor/advisor.json`
   - seeded by `npm run install-global` to `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/...`) **only when missing**
   - portable fields only (`effort`, `guidance`, `disabledForModels`); operators set `modelKey` via `/advisor`
+- `configs/pi-tool-display/config.json`
+  - seeded by `npm run install-global` to `~/.pi/agent/extensions/pi-tool-display/config.json` **only when missing**
+  - the extension's `/tool-display` settings UI rewrites the file at runtime; never overwrite operator choices
 
 ## Global agent settings
 

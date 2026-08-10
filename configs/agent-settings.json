@@ -11,7 +11,6 @@
     "npm:@juicesharp/rpiv-advisor",
     "npm:@juicesharp/rpiv-i18n",
     "npm:@narumitw/pi-plan-mode",
-    "npm:@narumitw/pi-statusline",
     "npm:pi-until-done",
     "npm:context-mode",
     "npm:pi-ultra-compact",

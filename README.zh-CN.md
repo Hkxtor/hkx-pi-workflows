@@ -46,7 +46,7 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 
 **agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
 
-**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor 配置种子。需要这些请用路径 B。
+**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor 与 pi-tool-display 配置种子。需要这些请用路径 B。
 
 后续更新：
 
@@ -64,7 +64,7 @@ pi install git:git@github.com:Hkxtor/hkx-pi-workflows@main
 npm run install-global
 ```
 
-这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，深合并受管 settings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管 pi-lsp 及扩展配置覆盖层。
+这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，深合并受管 settings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管 pi-lsp、扩展配置覆盖层，以及 rpiv-advisor / pi-tool-display 配置种子。
 
 当你需要 rules、MCP 默认值、全局 AGENTS / APPEND_SYSTEM，以及受管依赖包清单时，请用路径 B，而不是只装包原生资源。
 
@@ -101,6 +101,7 @@ pi -e .
 | pi-lsp 路由配置 | 否 | 是 → `~/.pi/agent/pi-lsp.json` |
 | permission 配置覆盖层 | 否 | 是 |
 | rpiv-advisor 配置种子 | 否 | 是（仅当缺失） |
+| pi-tool-display 配置种子 | 否 | 是（仅当缺失） |
 | GLOBAL_AGENTS / APPEND_SYSTEM | 否 | 是 |
 | MCP 默认值 / 模板 | 否 | 是 |
 
@@ -119,6 +120,7 @@ pi -e .
 | pi-lsp 路由配置 | 包更新后：`configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`（受管 TypeScript/JavaScript、Python、Rust、Go 路由） |
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
 | rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
+| pi-tool-display 配置种子 | 包更新后：`configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json`，**仅当目标不存在**（`/tool-display` 设置 UI 会在运行时改写该文件） |
 | 全局 AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP 默认值 | `.mcp.json` → 合并进 `~/.pi/agent/mcp.json` |
@@ -131,11 +133,11 @@ pi -e .
 
 | 部件 | 效果 | 默认 | 关闭 |
 | --- | --- | --- | --- |
-| Statusline | `@narumitw/pi-statusline`（替换默认 footer） | 路径 B packages 列表 | 按上游文档移除 package / 关闭扩展 |
+| Statusline | `pi-zentui` Starship footer（附带编辑器/消息 TUI 风格化） | 路径 B packages 列表 | `/zentui` footer 样式设为 `native`/`hidden` |
 | Working indicator | accent braille 旋转指示 | 开 | `HKX_WORKING_INDICATOR=off` 或 `/hkx-working-indicator` |
 
-**路径 A：** 一等外观扩展随包装载。Statusline **不**在路径 A，除非自行安装 `@narumitw/pi-statusline`。
-**路径 B：** 通过 managed packages 安装 `npm:@narumitw/pi-statusline`。**不**强制主题。
+**路径 A：** 一等外观扩展随包装载。Starship footer **不**在路径 A，除非自行安装 `pi-zentui`。
+**路径 B：** 通过 managed packages 安装 `npm:pi-zentui`。**不**强制主题。
 
 **不**自带自定义主题、一等 footer/header 扩展，也不移植 OMP powerline / welcome 双栏 intro。
 

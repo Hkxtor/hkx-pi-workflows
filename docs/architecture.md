@@ -145,9 +145,9 @@ Current extensions:
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 
-Footer/header chrome is **not** first-party: Path B installs `npm:@narumitw/pi-statusline` via `configs/agent-settings.json` packages.
+Footer/header chrome is **not** first-party: Path B installs `npm:pi-zentui` (Starship-inspired footer + TUI styling) via `configs/agent-settings.json` packages.
 
-Out of scope for this package: custom brand themes, first-party footer/header extensions (use `@narumitw/pi-statusline`), OMP powerline presets, welcome dual-column gradient intro. Operators keep the pi default theme (or any theme they choose in `/settings`).
+Out of scope for this package: custom brand themes, first-party footer/header extensions (use `npm:pi-zentui`), OMP powerline presets, welcome dual-column gradient intro. Operators keep the pi default theme (or any theme they choose in `/settings`).
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 
@@ -171,6 +171,10 @@ Current overlays:
   - source: `configs/rpiv-advisor/advisor.json`
   - install target: `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/rpiv-advisor/advisor.json`)
   - install behavior: **seed if missing only** — never overwrite operator `/advisor` selections; template omits machine-local `modelKey`
+- `pi-tool-display`
+  - source: `configs/pi-tool-display/config.json`
+  - install target: `~/.pi/agent/extensions/pi-tool-display/config.json`
+  - install behavior: **seed if missing only** — the extension's `/tool-display` settings UI rewrites the file at runtime, so a symlink or overwrite would clobber operator choices
 
 This package manages the **config**, not the third-party extension packages themselves.
 
@@ -256,7 +260,7 @@ Declared in `package.json`:
 - Pi loads `extensions` / `skills` / `prompts` from the `pi` block.
 - `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
 - Agents/chains require **pi-subagents** to already be installed.
-- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings overlays, or pi-lsp / permission config overlays.
+- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings overlays, or pi-lsp / permission / tool-display config overlays.
 
 #### Path B — global operator layout
 
@@ -272,6 +276,7 @@ Important mappings:
 - then: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing)
 - then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
+- then: `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` if missing (never overwrite; `/tool-display` UI rewrites it at runtime)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
 - `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md`
 

@@ -73,7 +73,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Notify-only extensions must not silently mutate project state.
 - Gate extensions should stay explicit, low-noise, and actionable.
-- Appearance extensions (`hkx-working-indicator`) default on with env + slash toggles; they must not write settings or files. Footer/header chrome is Path B via `npm:@narumitw/pi-statusline` (not first-party).
+- Appearance extensions (`hkx-working-indicator`) default on with env + slash toggles; they must not write settings or files. Footer/header chrome is Path B via `npm:pi-zentui` (not first-party).
 
 ### External extension configs
 
@@ -81,6 +81,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Current:
   - `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (after `pi update --extensions`; creates dir if missing).
   - `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/...`) **only if missing** — never overwrite `/advisor` model picks; do not version `modelKey`.
+  - `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** — the extension's `/tool-display` settings UI rewrites that file at runtime; never overwrite operator choices.
 - Do not vendor third-party extension source into this package unless it becomes a first-party pi extension.
 
 ### Global agent settings

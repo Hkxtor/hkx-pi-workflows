@@ -46,7 +46,7 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 
 **Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor config seed. Use Path B for those.
+**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor and pi-tool-display config seeds. Use Path B for those.
 
 Update later with:
 
@@ -64,7 +64,7 @@ From a clone of this repo:
 npm run install-global
 ```
 
-This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp and extension config overlays.
+This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp, extension config overlays, and rpiv-advisor / pi-tool-display config seeds.
 
 Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, and managed dependency packages — not only the package-native resources.
 
@@ -101,6 +101,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | pi-lsp route config | no | yes → `~/.pi/agent/pi-lsp.json` |
 | permission config overlay | no | yes |
 | rpiv-advisor config seed | no | yes (if missing) |
+| pi-tool-display config seed | no | yes (if missing) |
 | GLOBAL_AGENTS / APPEND_SYSTEM | no | yes |
 | MCP defaults / templates | no | yes |
 
@@ -119,6 +120,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | pi-lsp route config | after package update: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json` (managed TypeScript/JavaScript, Python, Rust, and Go routes) |
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing) |
 | rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
+| pi-tool-display config seed | after package update: `configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** (the `/tool-display` settings UI rewrites it at runtime) |
 | global AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP defaults | `.mcp.json` → merge into `~/.pi/agent/mcp.json` |
@@ -131,11 +133,11 @@ This package no longer ships custom brand themes. Operators keep the pi default 
 
 | Piece | What you get | Default | Disable |
 | --- | --- | --- | --- |
-| Statusline | `@narumitw/pi-statusline` (replaces default footer) | Path B packages list | remove package / extension toggle per upstream docs |
+| Statusline | `pi-zentui` Starship footer (plus editor/message TUI styling) | Path B packages list | `/zentui` footer style → `native`/`hidden` |
 | Working indicator | accent braille spinner | on | `HKX_WORKING_INDICATOR=off` or `/hkx-working-indicator` |
 
-**Path A:** first-party appearance extensions load from the package. Statusline is **not** on Path A unless you install `@narumitw/pi-statusline` yourself.
-**Path B:** installs `npm:@narumitw/pi-statusline` via managed packages. Does **not** force a theme.
+**Path A:** first-party appearance extensions load from the package. The Starship footer is **not** on Path A unless you install `pi-zentui` yourself.
+**Path B:** installs `npm:pi-zentui` via managed packages. Does **not** force a theme.
 
 Does **not** ship custom themes, first-party footer/header extensions, or OMP powerline / welcome dual-column intro.
 

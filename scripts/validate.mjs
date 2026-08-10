@@ -37,6 +37,7 @@ const requiredFiles = [
 	"configs/pi-permission-system/config.json",
 	"configs/pi-lsp/pi-lsp.json",
 	"configs/rpiv-advisor/advisor.json",
+	"configs/pi-tool-display/config.json",
 	"configs/agent-settings.json",
 	"agents/code-reviewer.md",
 	"agents/planner.md",
@@ -570,6 +571,54 @@ async function main() {
 		if (err && err.code !== "ENOENT") {
 			errors.push(
 				`configs/rpiv-advisor/advisor.json: invalid JSON: ${err.message}`,
+			);
+		}
+	}
+
+	// Portable pi-tool-display seed (extension settings UI rewrites it at runtime)
+	const toolDisplayConfigPath = path.join(
+		root,
+		"configs",
+		"pi-tool-display",
+		"config.json",
+	);
+	try {
+		const toolDisplayConfig = JSON.parse(
+			await fs.readFile(toolDisplayConfigPath, "utf8"),
+		);
+		if (!toolDisplayConfig || typeof toolDisplayConfig !== "object") {
+			errors.push(
+				"configs/pi-tool-display/config.json: must be a JSON object",
+			);
+		} else {
+			if (
+				toolDisplayConfig.debug !== undefined &&
+				typeof toolDisplayConfig.debug !== "boolean"
+			) {
+				errors.push(
+					"configs/pi-tool-display/config.json: debug must be a boolean when present",
+				);
+			}
+			for (const key of [
+				"readOutputMode",
+				"searchOutputMode",
+				"mcpOutputMode",
+				"bashOutputMode",
+				"diffViewMode",
+				"diffIndicatorMode",
+			]) {
+				const v = toolDisplayConfig[key];
+				if (v !== undefined && typeof v !== "string") {
+					errors.push(
+						`configs/pi-tool-display/config.json: ${key} must be a string when present`,
+					);
+				}
+			}
+		}
+	} catch (err) {
+		if (err && err.code !== "ENOENT") {
+			errors.push(
+				`configs/pi-tool-display/config.json: invalid JSON: ${err.message}`,
 			);
 		}
 	}

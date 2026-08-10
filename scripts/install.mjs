@@ -46,6 +46,10 @@
  *                            -> ~/.config/rpiv-advisor/advisor.json
  *                              (or $XDG_CONFIG_HOME/rpiv-advisor/advisor.json)
  *                              seed-if-missing only: never overwrite /advisor choices
+ * - configs/pi-tool-display/config.json
+ *                            -> ~/.pi/agent/extensions/pi-tool-display/config.json
+ *                              (after package update; seed-if-missing only: the
+ *                               extension's /tool-display settings UI rewrites it)
  *
  * This is the full operator install path. It does not run migration helpers.
  */
@@ -521,6 +525,47 @@ async function installRpivAdvisorConfig() {
 	return true;
 }
 
+/**
+ * Seed the portable pi-tool-display config template when the operator has no
+ * local file yet.
+ * Never overwrite ~/.pi/agent/extensions/pi-tool-display/config.json — the
+ * extension's /tool-display settings UI rewrites that file at runtime, so a
+ * symlink or overwrite would clobber operator choices.
+ */
+async function installPiToolDisplayConfig() {
+	const src = path.join(repoRoot, "configs", "pi-tool-display", "config.json");
+	if (!(await pathExists(src))) {
+		console.warn("Skip pi-tool-display config: source missing at", src);
+		return false;
+	}
+
+	const destDir = path.join(piHome, "extensions", "pi-tool-display");
+	const dest = path.join(destDir, "config.json");
+	if (await pathExists(dest)) {
+		console.log(
+			`Keep existing pi-tool-display config (not overwriting): ${dest}`,
+		);
+		return true;
+	}
+
+	await ensureDir(destDir);
+	const body = await fs.readFile(src, "utf-8");
+	// Validate JSON before writing so we never seed a broken template.
+	try {
+		JSON.parse(body);
+	} catch (err) {
+		console.error(
+			`pi-tool-display template is invalid JSON (${src}): ${err.message}`,
+		);
+		return false;
+	}
+	await fs.writeFile(dest, body.endsWith("\n") ? body : `${body}\n`, {
+		encoding: "utf-8",
+	});
+	console.log(`Seeded pi-tool-display config: ${dest}`);
+	return true;
+}
+
 async function main() {
 	console.log(`Installing Pi Workflows globally to ${piHome}...`);
 	const packageAssetRoot = path.join(piHome, "hkx-pi-workflows");
@@ -769,6 +814,10 @@ async function main() {
 	const advisorConfigOk = await installRpivAdvisorConfig();
 	if (!advisorConfigOk) failed.push("rpiv-advisor config");
 
+	// Seed pi-tool-display config (extension settings UI rewrites it at runtime).
+	const toolDisplayConfigOk = await installPiToolDisplayConfig();
+	if (!toolDisplayConfigOk) failed.push("pi-tool-display config");
+
 	if (failed.length > 0) {
 		console.error(
 			`\nInstall completed with ${failed.length} non-fatal issue(s): ${failed.join(", ")}`,
@@ -789,6 +838,9 @@ async function main() {
 	console.log("pi-lsp: configs/pi-lsp/pi-lsp.json → ~/.pi/agent/pi-lsp.json");
 	console.log(
 		"rpiv-advisor: configs/rpiv-advisor/advisor.json → seed ~/.config/rpiv-advisor/advisor.json (if missing)",
+	);
+	console.log(
+		"pi-tool-display: configs/pi-tool-display/config.json → seed ~/.pi/agent/extensions/pi-tool-display/config.json (if missing)",
 	);
 }
 
