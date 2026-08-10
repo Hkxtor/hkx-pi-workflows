@@ -13,7 +13,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { ensureLayout, layoutPaths } from "../instinct/lib/paths.mjs";
+import {
+	applyEccMemoryImport,
+	mapEccFileToDoc,
+	planEccMemoryImport,
+} from "../instinct/lib/memory-import-ecc.mjs";
 import {
 	MEMORY_SCHEMA,
 	parseMemoryFile,
@@ -22,21 +26,18 @@ import {
 	validateMemoryDoc,
 } from "../instinct/lib/memory-schema.mjs";
 import {
+	hasBlockingSecrets,
+	scanMemoryText,
+} from "../instinct/lib/memory-secrets.mjs";
+import {
+	createHandoff,
+	promoteMemoryToPending,
 	recallMemories,
 	saveMemory,
 	validateMemories,
-	createHandoff,
-	promoteMemoryToPending,
 } from "../instinct/lib/memory-store.mjs";
+import { ensureLayout, layoutPaths } from "../instinct/lib/paths.mjs";
 import { listPending } from "../instinct/lib/store.mjs";
-import {
-	scanMemoryText,
-	hasBlockingSecrets,
-} from "../instinct/lib/memory-secrets.mjs";
-import {
-	planEccMemoryImport,
-	applyEccMemoryImport,
-} from "../instinct/lib/memory-import-ecc.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(__dirname, "../..");
@@ -377,7 +378,7 @@ function check(name, cond, detail) {
 		check("scan flags sk", hasBlockingSecrets(`key ${fakeSk}`));
 		check(
 			"placeholder not secret",
-			!hasBlockingSecrets("use ${API_KEY} and YOUR_TOKEN_HERE"),
+			!hasBlockingSecrets(`use \${API_KEY} and YOUR_TOKEN_HERE`),
 		);
 		const blocked = saveMemory(
 			tmp,
@@ -414,6 +415,20 @@ function check(name, cond, detail) {
 			pkgRoot,
 			"scripts/instinct/fixtures/ecc-memory-mini",
 		);
+		const teamFixture = path.join(fixture, "team", "rate-limit-note.md");
+		const crlfTeamRaw = fs
+			.readFileSync(teamFixture, "utf8")
+			.replace(/\r\n/g, "\n")
+			.replace(/\n/g, "\r\n");
+		const crlfTeam = mapEccFileToDoc(crlfTeamRaw, teamFixture, "project", [
+			"imported-from-ecc-team",
+		]);
+		check(
+			"CRLF team fixture keeps declared id",
+			crlfTeam.ok && crlfTeam.doc.id === "rate-limit-shared",
+			JSON.stringify(crlfTeam),
+		);
+
 		const plan = planEccMemoryImport(fixture, tmp, project, {});
 		check("import plan ok", plan.ok, plan.error);
 		check(

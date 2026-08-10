@@ -11,7 +11,9 @@
     "command": ["biome", "lsp-proxy"],
     "extensions": [
       ".astro",
+      ".cjs",
       ".css",
+      ".cts",
       ".graphql",
       ".gql",
       ".html",
@@ -19,6 +21,9 @@
       ".jsx",
       ".json",
       ".jsonc",
+      ".mjs",
+      ".mts",
+      ".svelte",
       ".ts",
       ".tsx",
       ".vue"

@@ -49,13 +49,13 @@
  *
  * This is the full operator install path. It does not run migration helpers.
  */
-import fs from "node:fs/promises";
-import path from "node:path";
-import os from "node:os";
 import { spawn } from "node:child_process";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import process from "node:process";
-import { scanServerForRefusal } from "./lib/mcp-resolver.mjs";
 import { fileURLToPath } from "node:url";
+import { scanServerForRefusal } from "./lib/mcp-resolver.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -368,6 +368,19 @@ async function mergeAgentSettings(srcPath, destPath) {
 	return true;
 }
 
+function getPiUpdateInvocation(platform = process.platform, env = process.env) {
+	if (platform === "win32") {
+		// npm exposes global CLIs as .cmd shims on Windows. Node cannot execute
+		// those shims directly with spawn(), so run this fixed command via cmd.exe.
+		return {
+			command: env.ComSpec || env.COMSPEC || "cmd.exe",
+			args: ["/d", "/c", "pi.cmd update --extensions"],
+		};
+	}
+
+	return { command: "pi", args: ["update", "--extensions"] };
+}
+
 function runCommand(command, args, options = {}) {
 	return new Promise((resolve) => {
 		const child = spawn(command, args, {
@@ -386,8 +399,8 @@ function runCommand(command, args, options = {}) {
 
 async function updatePiExtensions() {
 	console.log("Updating pi packages (pi update --extensions)...");
-	const command = process.platform === "win32" ? "pi.cmd" : "pi";
-	const result = await runCommand(command, ["update", "--extensions"]);
+	const { command, args } = getPiUpdateInvocation();
+	const result = await runCommand(command, args);
 	if (!result.ok) {
 		console.warn(
 			`Warning: pi update --extensions exited with code ${result.code}. Settings were still written; install packages manually if needed.`,

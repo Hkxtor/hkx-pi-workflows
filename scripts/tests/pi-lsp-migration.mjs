@@ -48,7 +48,9 @@ const expectedRoutes = {
 		command: ["biome", "lsp-proxy"],
 		extensions: [
 			".astro",
+			".cjs",
 			".css",
+			".cts",
 			".graphql",
 			".gql",
 			".html",
@@ -56,6 +58,9 @@ const expectedRoutes = {
 			".jsx",
 			".json",
 			".jsonc",
+			".mjs",
+			".mts",
+			".svelte",
 			".ts",
 			".tsx",
 			".vue",
@@ -93,6 +98,15 @@ for (const [name, expected] of Object.entries(expectedRoutes)) {
 		);
 	}
 }
+
+const biomeModuleExtensions = [".cjs", ".cts", ".mjs", ".mts"];
+check(
+	"biome route supports CommonJS and ESM module variants",
+	biomeModuleExtensions.every((extension) =>
+		config?.biome?.extensions?.includes(extension),
+	),
+	JSON.stringify(config?.biome?.extensions),
+);
 
 try {
 	const settings = JSON.parse(

@@ -11,16 +11,16 @@
  * (absolute XDG_CONFIG_HOME vs default ~/.config).
  */
 import { spawnSync } from "node:child_process";
-import fs from "node:fs/promises";
 import {
+	chmodSync,
 	existsSync,
 	mkdirSync,
-	writeFileSync,
 	readFileSync,
-	chmodSync,
+	writeFileSync,
 } from "node:fs";
-import path from "node:path";
+import fs from "node:fs/promises";
 import os from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(
@@ -109,8 +109,10 @@ async function seedOnce(env) {
 	check("A: seeds when missing", r1.seeded === true, JSON.stringify(r1));
 	check("A: dest under XDG_CONFIG_HOME", r1.dest.startsWith(xdg), r1.dest);
 	check("A: dest file exists", existsSync(r1.dest), r1.dest);
-	const mode = (await fs.stat(r1.dest)).mode & 0o777;
-	check("A: mode 0600", mode === 0o600, `mode=${mode.toString(8)}`);
+	if (process.platform !== "win32") {
+		const mode = (await fs.stat(r1.dest)).mode & 0o777;
+		check("A: mode 0600", mode === 0o600, `mode=${mode.toString(8)}`);
+	}
 	const seeded = JSON.parse(readFileSync(r1.dest, "utf8"));
 	check(
 		"A: seeded content has no modelKey",
@@ -124,7 +126,7 @@ async function seedOnce(env) {
 		effort: "xhigh",
 		disabledForModels: ["meme/test-operator-model"],
 	};
-	writeFileSync(r1.dest, JSON.stringify(operator, null, 2) + "\n");
+	writeFileSync(r1.dest, `${JSON.stringify(operator, null, 2)}\n`);
 	const r2 = await seedOnce(env);
 	check("A: second run does not re-seed", r2.seeded === false && r2.kept, "");
 	const after = JSON.parse(readFileSync(r1.dest, "utf8"));

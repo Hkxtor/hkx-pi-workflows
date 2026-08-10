@@ -8,7 +8,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
@@ -286,11 +286,11 @@ import {
   isSubagentArtifactPath,
   isSubagentArtifactBashWrite,
   isDestructiveCommand,
-} from ${JSON.stringify(gatePath)};
+} from ${JSON.stringify(pathToFileURL(gatePath).href)};
 import {
   isArtifactWriteAuthorizationRequest,
   pollAndAutoReply,
-} from ${JSON.stringify(autoPath)};
+} from ${JSON.stringify(pathToFileURL(autoPath).href)};
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -407,6 +407,11 @@ process.exit(bad.length ? 1 : 0);
 		process.execPath,
 		["--experimental-strip-types", "--input-type=module", "-e", script],
 		{ encoding: "utf8", cwd: root },
+	);
+	check(
+		"D: strip-types accepts ESM module specifiers",
+		!/ERR_UNSUPPORTED_ESM_URL_SCHEME/.test(strip.stderr || ""),
+		(strip.stderr || "").slice(0, 300),
 	);
 	if (strip.status === 0) {
 		let payload = { ok: [], bad: [] };

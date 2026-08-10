@@ -16,14 +16,14 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { isValidInstinctId } from "./paths.mjs";
 import {
+	MEMORY_SCHEMA,
 	parseMemoryFile,
 	slugMemoryId,
-	MEMORY_SCHEMA,
 } from "./memory-schema.mjs";
-import { getMemory, saveMemory } from "./memory-store.mjs";
 import { hasBlockingSecrets, scanMemoryText } from "./memory-secrets.mjs";
+import { getMemory, saveMemory } from "./memory-store.mjs";
+import { isValidInstinctId } from "./paths.mjs";
 
 /**
  * @param {string} fromPath
@@ -99,8 +99,11 @@ function listMdFiles(dir) {
  * @param {string[]} extraTags
  */
 export function mapEccFileToDoc(raw, filePath, targetScope, extraTags = []) {
+	const normalizedRaw = String(raw ?? "")
+		.replace(/^\uFEFF/, "")
+		.replace(/\r\n?/g, "\n");
 	const stem = path.basename(filePath, ".md");
-	const parsed = parseMemoryFile(raw);
+	const parsed = parseMemoryFile(normalizedRaw);
 	if (parsed.ok) {
 		const tags = [
 			...new Set([
@@ -127,14 +130,14 @@ export function mapEccFileToDoc(raw, filePath, targetScope, extraTags = []) {
 		};
 	}
 
-	let body = raw;
+	let body = normalizedRaw;
 	/** @type {Record<string, string>} */
 	const fm = {};
-	if (raw.startsWith("---")) {
-		const end = raw.indexOf("\n---", 3);
+	if (normalizedRaw.startsWith("---")) {
+		const end = normalizedRaw.indexOf("\n---", 3);
 		if (end !== -1) {
-			const block = raw.slice(3, end).trim();
-			body = raw.slice(end + 4).replace(/^\n/, "");
+			const block = normalizedRaw.slice(3, end).trim();
+			body = normalizedRaw.slice(end + 4).replace(/^\n/, "");
 			for (const line of block.split("\n")) {
 				const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
 				if (m) fm[m[1]] = m[2].replace(/^["']|["']$/g, "").trim();
