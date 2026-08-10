@@ -18,7 +18,10 @@
     "npm:pi-subagents",
     "npm:pi-mcp-adapter",
     "npm:@narumitw/pi-lsp",
-    "npm:pi-simplify"
+    "npm:pi-simplify",
+    "npm:pi-di18n",
+    "npm:pi-tool-display",
+    "npm:pi-zentui"
   ],
   "compaction": {
     "enabled": true,
