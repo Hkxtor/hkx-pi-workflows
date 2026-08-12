@@ -45,10 +45,11 @@ function check(name, cond, detail) {
 }
 
 function baseEnv() {
-	// Strip FIRECRAWL_API_KEY so research profile is deterministic regardless
-	// of the operator/CI shell. Keep PATH and other process essentials.
+	// Strip profile-required values so stock profile checks stay deterministic
+	// regardless of the operator/CI shell. Keep PATH and other process essentials.
 	const env = { ...process.env };
 	delete env.FIRECRAWL_API_KEY;
+	delete env.MCP_DATA_DIR;
 	return env;
 }
 
@@ -192,6 +193,55 @@ function runApply(args, { env = baseEnv() } = {}) {
 			`requiresEnv leaked: ${JSON.stringify(out?.mcpServers?.firecrawl)}`,
 		);
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Case E: the task-management profile needs a concrete Shrimp data directory.
+// It must refuse an unset MCP_DATA_DIR and preserve direct/eager runtime flags
+// after a valid value is supplied.
+// ---------------------------------------------------------------------------
+{
+	const target = path.join(tmpDir, "e-task-management-mcp.json");
+	if (existsSync(target)) await fs.rm(target);
+
+	const { status, stderr } = runApply(["--target", target, "task-management"]);
+	check(
+		"E-task: task-management requires MCP_DATA_DIR",
+		status !== 0 && status !== null && /MCP_DATA_DIR/.test(stderr),
+		`status=${status} stderr=${JSON.stringify(stderr).slice(0, 240)}`,
+	);
+	check(
+		"E-task: missing MCP_DATA_DIR does not create target",
+		!existsSync(target),
+		`target was created despite refuse: ${target}`,
+	);
+}
+
+{
+	const target = path.join(tmpDir, "f-task-management-mcp.json");
+	if (existsSync(target)) await fs.rm(target);
+
+	const env = baseEnv();
+	env.MCP_DATA_DIR = "/tmp/hkx-shrimp-test";
+	const { status, stderr } = runApply(["--target", target, "task-management"], {
+		env,
+	});
+	let out = null;
+	if (existsSync(target)) out = JSON.parse(readFileSync(target, "utf8"));
+	const shrimp = out?.mcpServers?.["shrimp-task-manager"];
+	check(
+		"F-task: task-management applies with MCP_DATA_DIR",
+		status === 0,
+		`status=${status} stderr=${JSON.stringify(stderr).slice(0, 240)}`,
+	);
+	check(
+		"F-task: task-management resolves DATA_DIR and preserves direct eager options",
+		shrimp?.env?.DATA_DIR === env.MCP_DATA_DIR &&
+			shrimp?.lifecycle === "eager" &&
+			shrimp?.directTools === true &&
+			!Object.hasOwn(shrimp ?? {}, "requiresEnv"),
+		`shrimp=${JSON.stringify(shrimp)}`,
+	);
 }
 
 // ---------------------------------------------------------------------------

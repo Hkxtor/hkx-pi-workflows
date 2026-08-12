@@ -49,6 +49,7 @@ const requiredFiles = [
 	"scripts/tests/resolve-env-vars.mjs",
 	"scripts/tests/merge-agent-settings.mjs",
 	"scripts/tests/install-resolver-guards.mjs",
+	"scripts/tests/mcp-defaults.mjs",
 	"scripts/tests/pi-lsp-migration.mjs",
 	"scripts/tests/doc-skill-placeholder.mjs",
 	// M4: apply-mcp-profile.mjs::main() process-level refuse integration suite.

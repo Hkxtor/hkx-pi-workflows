@@ -378,8 +378,13 @@ The MCP layer is deliberately simple:
 
 - root `.mcp.json` = default package MCP surface
   - `npm run install-global` merges it into `~/.pi/agent/mcp.json`
+  - defaults stay proxy-first and selectively make `context7`,
+    `sequential-thinking`, `mcp-server-time`, and `mcp-deepwiki` eager/direct
+  - the installer migrates only the exact package-owned legacy stdio
+    `context7` default to HTTP; browser servers use lazy cross-platform `npx`
 - `mcp-configs/mcp-servers.json` = reference catalog
 - `mcp-configs/templates/*.json` = optional additive templates
+  - `task-management` adds Shrimp Task Manager only when `MCP_DATA_DIR` is set
 - `scripts/apply-mcp-profile.mjs` = day-to-day helper to merge named templates into:
   - project scope: `.pi/mcp.json`
   - user scope: `~/.pi/agent/mcp.json`

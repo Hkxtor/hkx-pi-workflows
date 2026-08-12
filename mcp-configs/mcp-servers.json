@@ -86,7 +86,39 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ],
-      "description": "Chain-of-thought reasoning"
+      "lifecycle": "eager",
+      "directTools": true,
+      "description": "Explicit stepwise reasoning via direct MCP tools"
+    },
+    "mcp-server-time": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp>=1.23,<2",
+        "mcp-server-time",
+        "--local-timezone=Asia/Shanghai"
+      ],
+      "lifecycle": "eager",
+      "directTools": true,
+      "description": "Current time and timezone conversion tools, defaulting to Asia/Shanghai"
+    },
+    "shrimp-task-manager": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-shrimp-task-manager"
+      ],
+      "lifecycle": "eager",
+      "directTools": true,
+      "env": {
+        "DATA_DIR": "${MCP_DATA_DIR}",
+        "ENABLE_GUI": "false",
+        "TEMPLATES_USE": "en"
+      },
+      "requiresEnv": [
+        "MCP_DATA_DIR"
+      ],
+      "description": "Persistent task planning and execution tracking; requires an operator-owned data directory"
     },
     "vercel": {
       "type": "http",
@@ -141,12 +173,18 @@
       "description": "Web search, research, and data ingestion via Exa API — prefer task-scoped use for broader research after GitHub search and primary docs"
     },
     "context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ],
-      "description": "Live documentation lookup — use with /docs command and documentation-lookup skill (resolve-library-id, query-docs)."
+      "url": "https://mcp.context7.com/mcp",
+      "protocolVersion": "auto",
+      "lifecycle": "eager",
+      "directTools": true,
+      "description": "Live documentation lookup through Context7's remote MCP endpoint"
+    },
+    "mcp-deepwiki": {
+      "url": "https://mcp.deepwiki.com/mcp",
+      "protocolVersion": "auto",
+      "lifecycle": "eager",
+      "directTools": true,
+      "description": "Ask questions and retrieve structure/content from public repository wikis"
     },
     "magic": {
       "command": "npx",
@@ -169,11 +207,19 @@
       "command": "npx",
       "args": [
         "-y",
-        "@playwright/mcp",
-        "--browser",
-        "chrome"
+        "@playwright/mcp@latest"
       ],
+      "lifecycle": "lazy",
       "description": "Browser automation and testing via Playwright"
+    },
+    "chrome-devtools-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "lifecycle": "lazy",
+      "description": "Inspect and automate a locally running Chrome instance through DevTools"
     },
     "fal-ai": {
       "command": "npx",
@@ -294,7 +340,7 @@
   "_comments": {
     "usage": "Apply a named template from mcp-configs/templates/ or copy the servers you need into a pi mcp.json file",
     "env_vars": "Templates use ${VAR} references resolved from the process environment at runtime; do not put real tokens in this file",
-    "templates": "Optional additive templates currently cover memory, reasoning, and research under mcp-configs/templates/",
+    "templates": "Optional additive templates currently cover memory, reasoning, research, and task-management under mcp-configs/templates/",
     "disabling": "Disable bundled MCPs with disabledServers in ~/.pi/agent/mcp.json, or override them by defining the same server name in .pi/mcp.json or ~/.pi/agent/mcp.json",
     "context_warning": "Keep under 10 MCPs enabled to preserve context window"
   }

@@ -15,6 +15,12 @@
       "description": "Add firecrawl for fetch, crawl, and research workflows.",
       "servers": ["firecrawl"],
       "requiresEnv": ["FIRECRAWL_API_KEY"]
+    },
+    "task-management": {
+      "file": "task-management.json",
+      "description": "Add Shrimp Task Manager with a caller-provided data directory.",
+      "servers": ["shrimp-task-manager"],
+      "requiresEnv": ["MCP_DATA_DIR"]
     }
   }
 }

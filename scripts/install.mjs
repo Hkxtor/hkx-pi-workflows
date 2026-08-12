@@ -147,6 +147,52 @@ function mergeServerConfig(destServer, srcServer) {
 	return merged;
 }
 
+const LEGACY_CONTEXT7_DEFAULT_ARGS = [
+	"-y",
+	"@upstash/context7-mcp@2.1.4",
+];
+const MCP_TRANSPORT_KEYS = new Set([
+	"command",
+	"args",
+	"socket",
+	"type",
+	"url",
+	"cwd",
+]);
+
+function hasStdioTransport(server) {
+	return isPlainObject(server) &&
+		(typeof server.command === "string" || typeof server.socket === "string");
+}
+
+function hasHttpTransport(server) {
+	return isPlainObject(server) && typeof server.url === "string";
+}
+
+function isLegacyContext7Default(server) {
+	return hasStdioTransport(server) &&
+		server.command === "npx" &&
+		server.url === undefined &&
+		server.socket === undefined &&
+		Array.isArray(server.args) &&
+		server.args.length === LEGACY_CONTEXT7_DEFAULT_ARGS.length &&
+		server.args.every((arg, index) => arg === LEGACY_CONTEXT7_DEFAULT_ARGS[index]);
+}
+
+function migrateContext7ToHttp(destServer, srcServer) {
+	const migrated = structuredClone(srcServer);
+	for (const [key, value] of Object.entries(destServer)) {
+		if (MCP_TRANSPORT_KEYS.has(key)) continue;
+		if (key === "env" || key === "headers") {
+			migrated[key] = mergeSecretMaps(migrated[key], value);
+			continue;
+		}
+		// Preserve explicit operator choices such as disabled/directTools.
+		migrated[key] = structuredClone(value);
+	}
+	return migrated;
+}
+
 function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
 	// MF-6: every server that lands in ~/.pi/agent/mcp.json — whether newly
 	// added or preserved — must pass the same resolver/placeholder/unresolved
@@ -161,6 +207,8 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
 	const out = { ...dest };
 	const added = [];
 	const preserved = [];
+	const migrated = [];
+	const transportConflicts = [];
 
 	for (const [name, srcServer] of Object.entries(src)) {
 		if (out[name] === undefined) {
@@ -184,12 +232,25 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
 				sourceLabel,
 				env,
 			});
-			out[name] = mergeServerConfig(out[name], scanned);
-			preserved.push(name);
+
+			if (name === "context7" && hasHttpTransport(scanned) && hasStdioTransport(out[name])) {
+				if (isLegacyContext7Default(out[name])) {
+					out[name] = migrateContext7ToHttp(out[name], scanned);
+					migrated.push(name);
+				} else {
+					// A user-managed stdio Context7 must never gain a conflicting URL.
+					out[name] = structuredClone(out[name]);
+					preserved.push(name);
+					transportConflicts.push(name);
+				}
+			} else {
+				out[name] = mergeServerConfig(out[name], scanned);
+				preserved.push(name);
+			}
 		}
 	}
 
-	return { servers: out, added, preserved };
+	return { servers: out, added, preserved, migrated, transportConflicts };
 }
 
 async function mergeMcpConfig(srcPath, destPath, { env } = {}) {
@@ -242,7 +303,7 @@ async function mergeMcpConfig(srcPath, destPath, { env } = {}) {
 		}
 	}
 
-	const { servers, added, preserved } = mergeMcpServers(
+	const { servers, added, preserved, migrated, transportConflicts } = mergeMcpServers(
 		destContent.mcpServers,
 		srcContent.mcpServers,
 		{ sourceLabel: srcPath, env },
@@ -272,6 +333,14 @@ async function mergeMcpConfig(srcPath, destPath, { env } = {}) {
 	console.log(
 		`  preserved existing (env/headers kept): ${preserved.length ? preserved.join(", ") : "(none)"}`,
 	);
+	console.log(
+		`  migrated package defaults: ${migrated.length ? migrated.join(", ") : "(none)"}`,
+	);
+	if (transportConflicts.length > 0) {
+		console.warn(
+			`  kept custom stdio transport (not mixed with HTTP): ${transportConflicts.join(", ")}`,
+		);
+	}
 }
 
 /** Deep-merge objects; arrays are replaced by source (not concatenated). */

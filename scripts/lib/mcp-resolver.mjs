@@ -54,9 +54,14 @@ export function hasUnresolvedRef(value) {
 }
 
 /**
- * Fields a runtime MCP server entry may carry per the MCP schema + package
- * convention. Catalog-only metadata (requiresEnv, future catalog keys) is
- * NOT in this allowlist and will not be carried into the persisted config (MF-5).
+ * Runtime MCP server fields supported by this package's adapter integration.
+ * Catalog-only metadata (requiresEnv, future catalog keys) is NOT in this
+ * allowlist and will not be carried into persisted config (MF-5).
+ *
+ * Secret-bearing or interpolation-capable fields stay limited to the channels
+ * scanned below (env, headers, args, command, and url). Runtime behavior flags
+ * are safe to preserve verbatim so Path B does not silently drop direct-tool,
+ * lifecycle, or protocol-negotiation intent from package defaults/profiles.
  */
 export const MCP_SCHEMA_KEYS = [
 	"command",
@@ -66,6 +71,18 @@ export const MCP_SCHEMA_KEYS = [
 	"type",
 	"url",
 	"description",
+	"lifecycle",
+	"idleTimeout",
+	"requestTimeoutMs",
+	"exposeResources",
+	"directTools",
+	"toolPrefix",
+	"includeTools",
+	"excludeTools",
+	"approveTools",
+	"debug",
+	"trace",
+	"protocolVersion",
 	"disabled",
 ];
 

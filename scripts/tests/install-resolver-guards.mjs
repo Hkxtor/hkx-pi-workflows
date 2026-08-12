@@ -434,6 +434,114 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 	);
 }
 
+// ---------------------------------------------------------------------------
+// Case J: install merges runtime server options rather than stripping them as
+// catalog metadata. The default MCP surface relies on these options to start
+// selected servers eagerly and expose only their intended direct tools.
+// ---------------------------------------------------------------------------
+{
+	const { threw, out } = await run({
+		mcpServers: {
+			runtimeOptions: {
+				url: "https://example.com/mcp",
+				protocolVersion: "auto",
+				lifecycle: "eager",
+				directTools: true,
+			},
+		},
+	});
+	const server = out?.mcpServers?.runtimeOptions;
+	const ok =
+		threw === false &&
+		server?.protocolVersion === "auto" &&
+		server?.lifecycle === "eager" &&
+		server?.directTools === true;
+	check(
+		"J: install preserves protocolVersion, lifecycle, and directTools",
+		ok,
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case K: the package-owned legacy stdio Context7 default must migrate to the
+// canonical HTTP transport rather than retaining command/args beside url.
+// ---------------------------------------------------------------------------
+{
+	const { threw, out } = await run(
+		{
+			mcpServers: {
+				context7: {
+					url: "https://mcp.context7.com/mcp",
+					protocolVersion: "auto",
+					lifecycle: "eager",
+					directTools: true,
+				},
+			},
+		},
+		{
+			mcpServers: {
+				context7: {
+					command: "npx",
+					args: ["-y", "@upstash/context7-mcp@2.1.4"],
+					headers: { "x-operator-header": "keep" },
+				},
+			},
+		},
+	);
+	const server = out?.mcpServers?.context7;
+	const ok =
+		threw === false &&
+		server?.url === "https://mcp.context7.com/mcp" &&
+		server?.command === undefined &&
+		server?.args === undefined &&
+		server?.headers?.["x-operator-header"] === "keep" &&
+		server?.protocolVersion === "auto" &&
+		server?.lifecycle === "eager" &&
+		server?.directTools === true;
+	check(
+		"K: package-owned legacy Context7 migrates to HTTP without mixed transport",
+		ok,
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case L: a user-customized stdio Context7 must remain intact. Mixing its
+// command with a new HTTP url would leave an invalid server entry.
+// ---------------------------------------------------------------------------
+{
+	const { threw, out } = await run(
+		{
+			mcpServers: {
+				context7: {
+					url: "https://mcp.context7.com/mcp",
+					protocolVersion: "auto",
+				},
+			},
+		},
+		{
+			mcpServers: {
+				context7: {
+					command: "npx",
+					args: ["-y", "@company/custom-context7"],
+				},
+			},
+		},
+	);
+	const server = out?.mcpServers?.context7;
+	const ok =
+		threw === false &&
+		server?.command === "npx" &&
+		server?.args?.[1] === "@company/custom-context7" &&
+		server?.url === undefined;
+	check(
+		"L: custom stdio Context7 is retained without mixed transport",
+		ok,
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
 for (const p of pass) console.log("ok:", p);
 if (fail.length === 0) {
 	console.log(`ALL ${pass.length} MF-6 CHECKS PASS`);

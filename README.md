@@ -127,6 +127,36 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | MCP templates/catalog | `mcp-configs/` → `~/.pi/agent/hkx-pi-workflows/mcp-configs/` |
 | MCP profile helper | `scripts/apply-mcp-profile.mjs` → `~/.pi/agent/hkx-pi-workflows/scripts/` |
 
+## MCP defaults and optional profiles
+
+Path B merges the checked-in `.mcp.json` additively. Its default is proxy-first
+(`settings.directTools: false`), while only selected servers expose direct tools:
+
+- `context7`, `sequential-thinking`, `mcp-server-time`, and `mcp-deepwiki`
+  connect eagerly and expose direct tools.
+- `playwright` and `chrome-devtools-mcp` stay lazy and use shell-neutral `npx`
+  commands; they do not require a Windows `cmd /c` wrapper.
+- `github` and `exa` remain available as proxy-discovered defaults.
+
+`context7` is the sole default Context7 entry and uses the public remote HTTP
+MCP endpoint. On the next `install-global`, the installer migrates only the
+exact stdio default shipped by an earlier package version; it retains a
+user-customized stdio entry rather than creating an invalid mixed transport.
+Context7 and DeepWiki credentials belong in a higher-precedence local MCP
+override only when needed.
+
+`mcp-server-time` requires `uvx` on `PATH`. Shrimp Task Manager is deliberately
+not a default server because its persistent data directory is machine-owned.
+Apply it explicitly after selecting a directory:
+
+```bash
+export MCP_DATA_DIR="$HOME/.local/share/mcp-shrimp"
+npm run mcp:apply-profile -- task-management
+```
+
+The profile resolves `MCP_DATA_DIR` before writing and refuses to write when it
+is unset. Reload Pi after applying MCP configuration changes.
+
 ## Appearance suite (TUI)
 
 This package no longer ships custom brand themes. Operators keep the pi default theme (or any theme chosen in `/settings`).

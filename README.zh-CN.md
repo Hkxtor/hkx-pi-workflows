@@ -127,6 +127,33 @@ pi -e .
 | MCP 模板/目录 | `mcp-configs/` → `~/.pi/agent/hkx-pi-workflows/mcp-configs/` |
 | MCP profile 助手 | `scripts/apply-mcp-profile.mjs` → `~/.pi/agent/hkx-pi-workflows/scripts/` |
 
+## MCP 默认值与可选 profile
+
+路径 B 会以加法方式合并受版本控制的 `.mcp.json`。默认采用 proxy-first
+（`settings.directTools: false`），仅指定 server 直接暴露 tools：
+
+- `context7`、`sequential-thinking`、`mcp-server-time` 与 `mcp-deepwiki`
+  使用 eager 连接并直接暴露 tools。
+- `playwright` 与 `chrome-devtools-mcp` 保持 lazy，使用跨平台的 `npx`
+  命令；不依赖 Windows 的 `cmd /c` 包装。
+- `github` 与 `exa` 保持通过 proxy 发现的默认能力。
+
+`context7` 是唯一的默认 Context7 条目，使用公开的远程 HTTP MCP endpoint。
+下次执行 `install-global` 时，安装器只会迁移旧版本包曾写入的精确 stdio 默认值；
+用户自定义的 stdio 条目会被保留，而不会生成无效的混合 transport。Context7 与
+DeepWiki 的凭据仅在需要时才放进更高优先级的本地 MCP 覆盖配置。
+
+`mcp-server-time` 需要 `uvx` 位于 `PATH`。Shrimp Task Manager 因其持久化数据
+目录由机器所有，故不作为默认 server；选择目录后再显式应用：
+
+```bash
+export MCP_DATA_DIR="$HOME/.local/share/mcp-shrimp"
+npm run mcp:apply-profile -- task-management
+```
+
+profile 会在写入前解析 `MCP_DATA_DIR`；未设置时会拒绝写入。应用 MCP 配置变更后请
+执行 `/reload` 或重启 Pi。
+
 ## 外观套件（TUI）
 
 本包不再自带自定义品牌主题。操作者保留 pi 默认主题（或在 `/settings` 自行选择）。

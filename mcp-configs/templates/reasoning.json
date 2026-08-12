@@ -4,7 +4,9 @@
     "sequential-thinking": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "description": "Chain-of-thought reasoning"
+      "lifecycle": "eager",
+      "directTools": true,
+      "description": "Explicit stepwise reasoning via direct MCP tools"
     }
   }
 }
