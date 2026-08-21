@@ -188,6 +188,17 @@ Portable global pi settings are versioned here and deep-merged on install:
 - not managed here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`, …)
 - after merge: `pi update --extensions` installs/updates packages declared in settings
 
+### Global keybindings
+
+Portable editor bindings are a Path B managed overlay:
+
+- source: `configs/keybindings.json`
+- install target: merge into `~/.pi/agent/keybindings.json`
+- managed actions: package values replace prior values for those actions
+- operator actions absent from the source are preserved
+- invalid source or destination JSON is refused rather than overwritten
+- `tui.altScreen.searchPrevious` keeps `Shift+Enter` and releases `Ctrl+Shift+G` for `pi-until-done`
+
 ## Context Layering
 
 There are three different context layers on purpose.
@@ -224,7 +235,7 @@ The repository is the source of truth for all package surfaces:
 - `skills/`
 - `rules/`
 - `extensions/`
-- `configs/` (external package config overlays + `agent-settings.json`)
+- `configs/` (external package config overlays + global `agent-settings.json` / `keybindings.json`)
 - `GLOBAL_AGENTS.md`
 - `APPEND_SYSTEM.md`
 - `.mcp.json` and `mcp-configs/`
@@ -260,7 +271,7 @@ Declared in `package.json`:
 - Pi loads `extensions` / `skills` / `prompts` from the `pi` block.
 - `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
 - Agents/chains require **pi-subagents** to already be installed.
-- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings overlays, or pi-lsp / permission / tool-display config overlays.
+- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings/keybindings overlays, or pi-lsp / permission / tool-display config overlays.
 
 #### Path B — global operator layout
 
@@ -272,6 +283,7 @@ Important mappings:
 - `chains/*.chain.json` → `~/.pi/agent/chains/`
 - `commands/*.md` → `~/.pi/agent/commands/` **and** `~/.pi/agent/prompts/`
 - `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json`
+- `configs/keybindings.json` → merge managed actions into `~/.pi/agent/keybindings.json` while preserving unrelated actions
 - then: `pi update --extensions` for packages listed in settings
 - then: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing)
@@ -285,7 +297,7 @@ Important mappings:
 Package scripts fall into two buckets:
 
 1. **Day-to-day npm scripts**
-   - `npm run install-global` — Path B: sync package surfaces + merge agent settings + update pi packages
+   - `npm run install-global` — Path B: sync package surfaces + merge agent settings/keybindings + update pi packages
    - `npm run validate` — enforce package surface contracts **and** dual-path manifest shape
    - `npm test` — versioned smoke under `scripts/tests/` (MCP merge + env-resolver guards)
    - `npm run mcp:apply-profile` — merge MCP templates into a pi MCP config

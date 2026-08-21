@@ -39,6 +39,7 @@ const requiredFiles = [
 	"configs/rpiv-advisor/advisor.json",
 	"configs/pi-tool-display/config.json",
 	"configs/agent-settings.json",
+	"configs/keybindings.json",
 	"agents/code-reviewer.md",
 	"agents/planner.md",
 	"chains/hkx-pr-review.chain.json",
@@ -48,6 +49,7 @@ const requiredFiles = [
 	"scripts/tests/merge-contract.mjs",
 	"scripts/tests/resolve-env-vars.mjs",
 	"scripts/tests/merge-agent-settings.mjs",
+	"scripts/tests/keybindings-install.mjs",
 	"scripts/tests/install-resolver-guards.mjs",
 	"scripts/tests/mcp-defaults.mjs",
 	"scripts/tests/pi-lsp-migration.mjs",
@@ -401,6 +403,40 @@ async function main() {
 	} catch (err) {
 		if (err && err.code !== "ENOENT") {
 			errors.push(`configs/agent-settings.json: ${err.message}`);
+		}
+	}
+
+	// Path B managed keybindings. Values follow Pi's string-or-string[] schema.
+	try {
+		const keybindings = JSON.parse(
+			await fs.readFile(path.join(root, "configs", "keybindings.json"), "utf8"),
+		);
+		if (!keybindings || typeof keybindings !== "object" || Array.isArray(keybindings)) {
+			errors.push("configs/keybindings.json: must be a JSON object");
+		} else {
+			for (const [action, value] of Object.entries(keybindings)) {
+				const bindings = Array.isArray(value) ? value : [value];
+				if (
+					(typeof value !== "string" && !Array.isArray(value)) ||
+					bindings.some(
+						(binding) =>
+							typeof binding !== "string" || binding.trim().length === 0,
+					)
+				) {
+					errors.push(
+						`configs/keybindings.json: ${action} must be a key string or string array`,
+					);
+				}
+				if (bindings.includes("ctrl+shift+g")) {
+					errors.push(
+						`configs/keybindings.json: ${action} must not claim ctrl+shift+g (reserved for pi-until-done)`,
+					);
+				}
+			}
+		}
+	} catch (err) {
+		if (err && err.code !== "ENOENT") {
+			errors.push(`configs/keybindings.json: invalid JSON: ${err.message}`);
 		}
 	}
 

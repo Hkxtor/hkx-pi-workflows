@@ -13,7 +13,7 @@
  * Dual install model:
  * - `pi install git:...` / `pi install npm:...` loads official package resources
  *   declared in package.json (`pi` + `pi-subagents`). That path does NOT run
- *   this script and does not write rules, MCP, GLOBAL_AGENTS, or settings overlays.
+ *   this script and does not write rules, MCP, GLOBAL_AGENTS, or settings/keybindings overlays.
  * - `npm run install-global` (this file) is the complete operator path: it syncs
  *   every surface into ~/.pi/agent, including overlays that pi package install
  *   cannot express.
@@ -27,6 +27,9 @@
  * - configs/agent-settings.json
  *                            -> deep-merge into ~/.pi/agent/settings.json
  *                              (managed keys: packages, portable defaults)
+ * - configs/keybindings.json -> merge managed actions into
+ *                              ~/.pi/agent/keybindings.json
+ *                              (preserve non-managed operator bindings)
  * - configs/pi-lsp/pi-lsp.json
  *                            -> ~/.pi/agent/pi-lsp.json (managed LSP routes)
  * - GLOBAL_AGENTS.md         -> ~/.pi/agent/AGENTS.md
@@ -441,6 +444,62 @@ async function mergeAgentSettings(srcPath, destPath) {
 	return true;
 }
 
+function isValidKeybindingValue(value) {
+	if (typeof value === "string") return value.trim().length > 0;
+	if (!Array.isArray(value)) return false;
+	return value.every(
+		(binding) => typeof binding === "string" && binding.trim().length > 0,
+	);
+}
+
+function validateKeybindingsConfig(config, label) {
+	if (!isPlainObject(config)) return `${label} must be a JSON object`;
+	for (const [action, value] of Object.entries(config)) {
+		if (!isValidKeybindingValue(value)) {
+			return `${label}.${action} must be a key string or string array`;
+		}
+	}
+	return null;
+}
+
+/** Merge package-managed actions while preserving unrelated operator bindings. */
+async function mergeKeybindingsConfig(srcPath, destPath) {
+	let managed;
+	try {
+		managed = JSON.parse(await fs.readFile(srcPath, "utf-8"));
+	} catch (err) {
+		console.error(`Failed to read keybindings config: ${err.message}`);
+		return false;
+	}
+	const sourceError = validateKeybindingsConfig(managed, "Managed keybindings");
+	if (sourceError) {
+		console.error(`${sourceError} (${srcPath})`);
+		return false;
+	}
+
+	let current = {};
+	try {
+		current = JSON.parse(await fs.readFile(destPath, "utf-8"));
+	} catch (err) {
+		if (err.code !== "ENOENT") {
+			console.error(`Failed to read existing keybindings (${destPath}): ${err.message}`);
+			return false;
+		}
+	}
+	const destError = validateKeybindingsConfig(current, "Destination keybindings");
+	if (destError) {
+		console.error(`${destError} (${destPath})`);
+		return false;
+	}
+
+	const next = { ...current, ...managed };
+	await fs.writeFile(destPath, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
+	console.log(
+		`Merged keybindings (${Object.keys(managed).length} managed actions): ${destPath}`,
+	);
+	return true;
+}
+
 function getPiUpdateInvocation(platform = process.platform, env = process.env) {
 	if (platform === "win32") {
 		// npm exposes global CLIs as .cmd shims on Windows. Node cannot execute
@@ -774,6 +833,20 @@ async function main() {
 		console.warn("Skip agent settings: configs/agent-settings.json not found");
 	}
 
+	// Managed global keybindings. Package actions overwrite their previous values;
+	// unrelated operator actions remain untouched.
+	const keybindingsSrc = path.join(repoRoot, "configs", "keybindings.json");
+	if (await pathExists(keybindingsSrc)) {
+		const keybindingsOk = await mergeKeybindingsConfig(
+			keybindingsSrc,
+			path.join(piHome, "keybindings.json"),
+		);
+		if (!keybindingsOk) failed.push("merge keybindings");
+	} else {
+		console.error("Missing managed keybindings: configs/keybindings.json");
+		failed.push("merge keybindings");
+	}
+
 	// System / agent guidance files
 	const appendSrc = path.join(repoRoot, "APPEND_SYSTEM.md");
 	if (await pathExists(appendSrc)) {
@@ -902,6 +975,9 @@ async function main() {
 	console.log("Chains: ~/.pi/agent/chains/hkx-*.chain.json");
 	console.log(
 		"Settings: configs/agent-settings.json → merge ~/.pi/agent/settings.json",
+	);
+	console.log(
+		"Keybindings: configs/keybindings.json → merge ~/.pi/agent/keybindings.json",
 	);
 	console.log("Packages: pi update --extensions (from settings packages)");
 	console.log("pi-lsp: configs/pi-lsp/pi-lsp.json → ~/.pi/agent/pi-lsp.json");

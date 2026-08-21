@@ -1,0 +1,51 @@
+{
+  "tui.altScreen.searchPrevious": [
+    "shift+enter"
+  ],
+  "tui.editor.cursorUp": [
+    "up",
+    "ctrl+p",
+    "alt+k"
+  ],
+  "tui.editor.cursorDown": [
+    "down",
+    "ctrl+n",
+    "alt+j"
+  ],
+  "tui.editor.cursorLeft": [
+    "left",
+    "ctrl+b",
+    "alt+h"
+  ],
+  "tui.editor.cursorRight": [
+    "right",
+    "ctrl+f",
+    "alt+l"
+  ],
+  "tui.editor.cursorWordLeft": [
+    "alt+left",
+    "alt+b"
+  ],
+  "tui.editor.cursorWordRight": [
+    "alt+right",
+    "alt+f",
+    "alt+w"
+  ],
+  "tui.editor.deleteCharForward": [
+    "delete",
+    "ctrl+d"
+  ],
+  "tui.editor.deleteCharBackward": [
+    "backspace",
+    "ctrl+h"
+  ],
+  "tui.editor.deleteWordBackward": [
+    "ctrl+w",
+    "alt+backspace"
+  ],
+  "tui.input.newLine": [
+    "shift+enter",
+    "ctrl+j",
+    "alt+enter"
+  ]
+}

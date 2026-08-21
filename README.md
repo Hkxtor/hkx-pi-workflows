@@ -14,6 +14,7 @@ It provides a compact core set of:
 - **extensions** — low-noise quality, gatekeeping, and TUI appearance helpers
 - **external extension configs** — managed overlays (e.g. `pi-permission-system` and `pi-lsp` routes; full install only)
 - **global agent settings** — `configs/agent-settings.json` → merge into `~/.pi/agent/settings.json` (full install only; does not force a theme)
+- **managed keybindings** — `configs/keybindings.json` → merge managed actions into `~/.pi/agent/keybindings.json` (full install only; preserves unrelated bindings)
 - **global context files** — install sources for `~/.pi/agent/AGENTS.md` and `~/.pi/agent/APPEND_SYSTEM.md` (full install only)
 
 This package is intentionally small. It focuses on a useful core workflow layer for pi, not a giant catalog of framework- or domain-specific packs.
@@ -46,7 +47,7 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 
 **Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor and pi-tool-display config seeds. Use Path B for those.
+**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, `configs/keybindings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor and pi-tool-display config seeds. Use Path B for those.
 
 Update later with:
 
@@ -64,9 +65,9 @@ From a clone of this repo:
 npm run install-global
 ```
 
-This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp, extension config overlays, and rpiv-advisor / pi-tool-display config seeds.
+This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, merges managed keybindings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp, extension config overlays, and rpiv-advisor / pi-tool-display config seeds.
 
-Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, and managed dependency packages — not only the package-native resources.
+Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, managed keybindings, and managed dependency packages — not only the package-native resources. In an already-open Pi session, run `/reload` after installation so the new keybindings take effect.
 
 `pi-lsp` configures routes only; it does not download language-server binaries. Install the configured `biome`, `ty`, `ruff`, `rust-analyzer`, and `gopls` commands separately and expose them on `PATH` as needed.
 
@@ -97,6 +98,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | chains | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/chains/` |
 | rules | no | yes → `~/.pi/agent/rules/` |
 | agent settings merge | no | yes (packages + portable defaults; does **not** set `theme`) |
+| managed keybindings merge | no | yes → `~/.pi/agent/keybindings.json` (managed actions replace their prior values; unrelated actions are preserved) |
 | managed `packages` update | no (only this package entry) | yes (`pi update --extensions`) |
 | pi-lsp route config | no | yes → `~/.pi/agent/pi-lsp.json` |
 | permission config overlay | no | yes |
@@ -116,6 +118,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | rules | `~/.pi/agent/rules/` |
 | extensions | `~/.pi/agent/extensions/` |
 | agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, portable defaults; preserves machine-local keys; does **not** set `theme`) |
+| keybindings | `configs/keybindings.json` → merge into `~/.pi/agent/keybindings.json` (11 managed actions; preserves unrelated operator actions; frees `Ctrl+Shift+G` for `pi-until-done`) |
 | pi packages | after settings merge: `pi update --extensions` |
 | pi-lsp route config | after package update: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json` (managed TypeScript/JavaScript, Python, Rust, and Go routes) |
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing) |

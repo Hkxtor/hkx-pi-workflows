@@ -112,7 +112,7 @@ These files live at the package root, but they complete the documentation set:
 
 Day-to-day package scripts live in `package.json`:
 
-- `npm run install-global` — Path B full operator install (sync surfaces, merge settings, `pi update --extensions`)
+- `npm run install-global` — Path B full operator install (sync surfaces, merge settings/keybindings, `pi update --extensions`)
 - `npm run validate` — surface contracts + dual-path manifest (`pi` + `pi-subagents`)
 - `npm run mcp:apply-profile`
 - `npm run instinct -- <init|status|evolve>` — instinct store / evolve CLI

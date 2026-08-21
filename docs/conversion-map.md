@@ -20,7 +20,7 @@ Note: your local checkout directory name may differ from the package/runtime nam
 | Path | How | Loads |
 | --- | --- | --- |
 | **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents/chains when pi-subagents is installed |
-| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings merge, managed packages update, pi-lsp and permission overlays, rpiv-advisor seed |
+| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings/keybindings merge, managed packages update, pi-lsp and permission overlays, rpiv-advisor seed |
 
 Manifest shape (authoritative):
 
@@ -42,6 +42,7 @@ Manifest shape (authoritative):
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
+| managed keybindings | 1 | `configs/keybindings.json` | no | merge 11 managed actions into `~/.pi/agent/keybindings.json`; preserve unrelated actions |
 | global AGENTS source | 1 | `GLOBAL_AGENTS.md` | no | `~/.pi/agent/AGENTS.md` |
 | global system append source | 1 | `APPEND_SYSTEM.md` | no | `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP defaults/templates | several | `.mcp.json`, `mcp-configs/` | no | defaults merge into `~/.pi/agent/mcp.json`; templates/catalog copy to `~/.pi/agent/hkx-pi-workflows/mcp-configs/` |
@@ -371,6 +372,16 @@ Portable global settings and the desired pi package list are versioned here:
 - managed keys: `packages` (authoritative), plus portable defaults such as `compaction` (does **not** set operator theme)
 - not versioned here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, …)
 - after merge: `npm run install-global` runs `pi update --extensions`
+
+## Global keybindings
+
+Path B versions a compact editor-keybinding overlay:
+
+- source: `configs/keybindings.json`
+- install: managed actions replace their prior values in `~/.pi/agent/keybindings.json`; unrelated operator actions remain
+- conflict policy: `Ctrl+Shift+G` stays available to `pi-until-done`; transcript reverse search remains on `Shift+Enter`
+- safety: invalid source or destination JSON fails the keybindings install without rewriting the destination
+- active sessions apply changes after `/reload`
 
 ## MCP Surfaces
 

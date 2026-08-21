@@ -16,7 +16,7 @@ Included surfaces:
 - `skills/` — skill folders; declared in `pi.skills`
 - `rules/` — repo/session rules (Path B / `install-global` only; not a native pi package resource)
 - `extensions/` — pi TypeScript extensions; declared in `pi.extensions`
-- `configs/` — managed overlays: external extension configs + global agent settings (`agent-settings.json`) (Path B only)
+- `configs/` — managed overlays: external extension configs + global agent settings/keybindings (`agent-settings.json`, `keybindings.json`) (Path B only)
 - `GLOBAL_AGENTS.md` — source for global `~/.pi/agent/AGENTS.md` (Path B only)
 - `APPEND_SYSTEM.md` — source for global `~/.pi/agent/APPEND_SYSTEM.md` (Path B only)
 - `.mcp.json` and `mcp-configs/` — MCP defaults and templates (Path B only)
@@ -33,7 +33,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 4. Prefer compact workflow guidance over long tutorial text.
 5. Verify with `npm run validate` and `npm test` after changing package surfaces, install scripts, or MCP resolver logic.
 6. Before creating a new surface, check `docs/architecture.md` for layer boundaries, `docs/conversion-map.md` for the current stable package map, and `docs/skill-routing.md` when skill families may overlap.
-7. When changing what gets installed, also check `package.json` (`pi` / `pi-subagents`), `scripts/install.mjs`, `scripts/validate.mjs`, `README.md` dual-path section, `configs/agent-settings.json` (if packages/settings change), and the installed target paths under `~/.pi/agent/`.
+7. When changing what gets installed, also check `package.json` (`pi` / `pi-subagents`), `scripts/install.mjs`, `scripts/validate.mjs`, `README.md` dual-path section, `configs/agent-settings.json` (if packages/settings change), `configs/keybindings.json` (if shortcuts change), and the installed target paths under `~/.pi/agent/`.
 8. Keep dual install paths honest: Path A is `pi install` (official package resources only); Path B is `npm run install-global` (full operator overlays). Do not claim Path A installs rules/MCP/GLOBAL_AGENTS.
 
 ## Surface Conventions
@@ -91,6 +91,14 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Managed scope: `packages` (authoritative list), plus portable defaults such as `compaction`. Do **not** manage operator `theme`.
 - Do **not** version machine-local keys here: `shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`.
 - After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays (permission + rpiv-advisor seed).
+
+### Global keybindings
+
+- Source: `configs/keybindings.json`.
+- Path B merges managed actions into `~/.pi/agent/keybindings.json`; managed actions use the package value while unrelated operator actions are preserved.
+- Keep `ctrl+shift+g` free for `pi-until-done`; transcript reverse search remains available through `shift+enter`.
+- Reject invalid source or destination JSON rather than replacing an operator file.
+- Path A cannot install this overlay; do not add it to the official `pi` manifest.
 
 ### Scripts
 
