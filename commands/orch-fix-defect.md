@@ -16,7 +16,7 @@ Invoke the `orch-fix-defect` skill. The workflow will:
 1. scope the defect and use `code-explorer` if root cause is unclear;
 2. write a **new failing regression test** that proves the defect exists;
 3. fix the implementation until the regression goes green;
-4. route build/type failures to `build-error-resolver` or `/build-fix` if needed;
+4. route build/type failures to the matching language build resolver (`build-error-resolver` for TypeScript/JavaScript, `python-build-resolver`, `go-build-resolver`, or `rust-build-resolver`) or `/build-fix` if needed;
 5. run review agents and stop at **Gate 2** before commit.
 
 Use this only for broken behavior. If the feature works but should change, use

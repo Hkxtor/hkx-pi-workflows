@@ -134,7 +134,7 @@ Same orchestration surfaces as **full**, with emphasis:
 | **fix** | `/orch-fix-defect` or chain `hkx-fix-defect` |
 | **refactor** | `/orch-refine-code` or chain `hkx-refactor-flow` |
 | **docs** | `/update-docs` or chain `hkx-docs-update` |
-| **build-fix** | `/build-fix` or chains `hkx-build-fix` / `hkx-typescript-build-fix` / `hkx-go-build-fix` / `hkx-rust-build-fix` / `hkx-python-build-fix` |
+| **build-fix** | `/build-fix` or chains `hkx-typescript-build-fix` / `hkx-go-build-fix` / `hkx-rust-build-fix` / `hkx-python-build-fix` |
 | **security** | `/security-scan` or chain `hkx-security-scan` |
 
 ---
@@ -155,7 +155,7 @@ Review:
 
 Build recovery:
 
-- `hkx-build-fix`, `hkx-typescript-build-fix`, `hkx-go-build-fix`, `hkx-rust-build-fix`, `hkx-python-build-fix`
+- `hkx-typescript-build-fix`, `hkx-go-build-fix`, `hkx-rust-build-fix`, `hkx-python-build-fix`
 
 How to run a chain when pi-subagents is available: use the host’s chain runner / subagent tool with the chain name above and `task` = the user task. If chains are unavailable, fall back to the mapped **command/skill** in the same row and say so.
 

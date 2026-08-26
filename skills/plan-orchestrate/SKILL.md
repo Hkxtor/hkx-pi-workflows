@@ -73,14 +73,12 @@ General:
 
 Build error resolvers:
 
-- `build-error-resolver` (generic)
-- `cpp-build-resolver` / `go-build-resolver` / `java-build-resolver` /
-  `kotlin-build-resolver` / `rust-build-resolver` / `pytorch-build-resolver`
+- `build-error-resolver` — TypeScript/JavaScript
+- `python-build-resolver` / `go-build-resolver` / `rust-build-resolver`
 
 Code reviewers:
 
-- `python-reviewer` / `typescript-reviewer` / `go-reviewer` / `rust-reviewer` /
-  `cpp-reviewer` / `java-reviewer` / `kotlin-reviewer` / `flutter-reviewer`
+- `python-reviewer` / `typescript-reviewer` / `go-reviewer` / `rust-reviewer`
 
 A misspelled agent name fails invocation. Cross-check against this list before
 emitting.
@@ -90,26 +88,19 @@ emitting.
 ### Phase 0 — Detect Language
 
 1. Read `<plan-doc-path>`. If missing or empty, report and stop.
-2. Resolve `--lang`. When `auto`, run a polyglot-aware detection:
+2. Resolve `--lang`. When `auto`, run detection for the languages with shipped specialists:
    - Probe markers: `pyproject.toml` / `uv.lock` / `requirements.txt` → python;
-     `package.json` → typescript; `go.mod` → go; `Cargo.toml` → rust;
-     `CMakeLists.txt` or top-level `*.cpp` → cpp; `pom.xml` / `build.gradle`
-     (Java) → java; `build.gradle.kts` or top-level Kotlin → kotlin;
-     `pubspec.yaml` → flutter.
+     `package.json` → typescript; `go.mod` → go; `Cargo.toml` → rust.
    - **Polyglot tie-break**: if more than one marker matches, pick the language
      whose source files outnumber the others (count via `git ls-files`,
      excluding `vendor/`, `node_modules/`, `dist/`, `build/`, `.venv/`,
      generated files, and obvious test fixtures). On a tie or when no language
      exceeds 60% of source files, set `lang=unknown`.
-   - No marker matched → set `lang=unknown`.
-   - `lang=unknown` is a sentinel — it is **not** an agent name. Phase 2 rules
-     turn it into `code-reviewer` / `build-error-resolver` at chain composition
-     time.
-3. Detect a **PyTorch sub-profile**: when `lang=python` and any of
-   `pyproject.toml` / `requirements.txt` / `uv.lock` declares a dependency on
-   `torch`, set `pytorch=true`. This only affects `build` chain selection; the
-   reviewer remains `python-reviewer`.
-4. **Normalize any agent names declared in the plan**: strip any prefix before
+   - No supported marker matched → set `lang=unknown`.
+   - `lang=unknown` is a sentinel — it is **not** an agent name. Phase 2 maps it
+     to `code-reviewer` for review and `tdd-guide` for a generic writable build
+     recovery attempt; the chain rationale must disclose that no specialist exists.
+3. **Normalize any agent names declared in the plan**: strip any prefix before
    validating against the catalogue.
 
 ### Phase 1 — Decompose Steps
@@ -142,7 +133,7 @@ Trigger words below are matched case-insensitively.
 | `migration` | migrate, upgrade, rewrite, port | `architect,tdd-guide,<lang>-reviewer` |
 | `db` | schema, migration, index, SQL, Postgres, alembic, sqlmodel | `database-reviewer,<lang>-reviewer` |
 | `security` | encrypt, auth, secret, OWASP, PII | `security-reviewer,<lang>-reviewer` |
-| `build` | build, compile, lint failure, CI | `<lang>-build-resolver` (falls back to `build-error-resolver`) |
+| `build` | build, compile, lint failure, CI | language build resolver (falls back to `tdd-guide` when unsupported/unknown) |
 | `docs` | docs, readme, codemap, changelog | `doc-updater` |
 | `lookup` | lookup, reference, API usage | `docs-lookup` |
 | `review` | review, audit, verify | `<lang>-reviewer,code-reviewer` |
@@ -157,9 +148,7 @@ Chain composition rules:
 3. `impl` + `db` → `tdd-guide,database-reviewer,<lang>-reviewer`.
 4. **Deduplicate** the resulting chain (preserve first occurrence).
 5. `<lang>-reviewer` resolves to `code-reviewer` when `lang=unknown`.
-6. `<lang>-build-resolver` resolves to `build-error-resolver` when
-   `lang=unknown`. **Special case**: if Phase 0 set `pytorch=true`, use
-   `pytorch-build-resolver` for `build` chains regardless of `<lang>`.
+6. Build resolver mapping is explicit: TypeScript/JavaScript → `build-error-resolver`; Python → `python-build-resolver`; Go → `go-build-resolver`; Rust → `rust-build-resolver`; `lang=unknown` → `tdd-guide` with `no specialized build resolver` recorded under "Chain rationale".
 7. **Zero-tag steps**: if no trigger word matches, set chain to `code-reviewer`
    and write `no tag matched; default review-only chain` under "Chain
    rationale".
@@ -274,8 +263,9 @@ parallel([
 - **Plan declares agents**: validate against the catalogue. Replace invalid
   agents and explain under "Chain rationale".
 - **Polyglot project where `--lang=auto` cannot pick a winner**: set
-  `lang=unknown`; reviewer resolves to `code-reviewer` and build resolver to
-  `build-error-resolver`. Mention the fallback under "Chain rationale".
+  `lang=unknown`; reviewer resolves to `code-reviewer` and build recovery to
+  `tdd-guide`. Mention that no specialized build resolver was selected under
+  "Chain rationale".
 
 ## Examples
 

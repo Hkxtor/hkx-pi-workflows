@@ -18,6 +18,7 @@ Operating rules for this runtime:
 - Use `lsp_diagnostics` for diagnostics from a configured language server. Use `ffgrep` plus `read` for structural or call-site evidence.
 - Prefer targeted search and selective reading over whole-file dumps.
 - Review-only: do not modify project/source files. Returning findings in your response (or configured output artifact) is allowed.
+- Use `bash` only for read-only inspection and non-mutating checks (for example `git diff`, typecheck, lint, or tests without fix/update flags). Never install dependencies, format/write files, auto-fix, clean caches, or mutate Git state.
 - Cite exact file paths and line ranges. Prefer evidence over speculation.
 - Finish with a concise structured summary the parent agent can act on.
 

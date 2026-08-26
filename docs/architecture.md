@@ -106,7 +106,7 @@ Current agent families:
 
 - **planning / architecture** — `planner`, `architect`, `code-architect`, `code-explorer`
 - **review / analysis** — `code-reviewer`, `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, `agent-evaluator`, `docs-lookup`
-- **implementation / repair** — `tdd-guide`, `build-error-resolver`, `go-build-resolver`, `rust-build-resolver`, `refactor-cleaner`, `doc-updater`, `database-reviewer`, `e2e-runner`, `harness-optimizer`, `loop-operator`
+- **implementation / repair** — `tdd-guide`, `build-error-resolver`, `python-build-resolver`, `go-build-resolver`, `rust-build-resolver`, `refactor-cleaner`, `doc-updater`, `database-reviewer`, `e2e-runner`, `harness-optimizer`, `loop-operator`
 - **language reviewers** — `typescript-reviewer`, `python-reviewer`, `go-reviewer`, `rust-reviewer`
 
 ### 5. Chains: orchestration

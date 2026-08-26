@@ -209,6 +209,34 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 
 Commands should stay thin. If guidance grows, keep it in the skill and point the command at that skill.
 
+## Agent routing (hkx.*)
+
+Agents are invoked through pi-subagents (`subagent` tool / chains), not loaded like skills. The pairs below overlap by design; pick by scope, not by name similarity.
+
+### Planning and architecture agents
+
+| User says (examples) | Primary agent | Not primary |
+| --- | --- | --- |
+| system boundaries / service split / API contract / migration & rollback shape | `hkx.architect` | `hkx.code-architect` (too feature-scoped) |
+| design this feature to fit the existing codebase / blueprint with files, interfaces, build order | `hkx.code-architect` | `hkx.architect` (too system-level) |
+
+Division of labor:
+
+- `hkx.architect` works at the **system layer**: module/service boundaries, data ownership, API contracts, scalability, and migration/rollback strategy. Its output is a tradeoff-driven design proposal.
+- `hkx.code-architect` works at the **feature layer**: it studies existing code organization and naming conventions first, then produces an implementation blueprint (concrete files, interfaces, data flow, build order) that fits the current patterns.
+- Rule of thumb: if the output is a decision among structural options, use `architect`; if the output is "where the new code goes and in what order", use `code-architect`. Both are read-only; neither replaces `hkx.planner` (task ordering/validation) or `hkx.code-explorer` (codebase recon).
+
+### Build recovery vs behavior changes
+
+| User says (examples) | Primary agent | Not primary |
+| --- | --- | --- |
+| Python cannot install/import/typecheck/lint/collect tests | `hkx.python-build-resolver` | `hkx.tdd-guide` |
+| TypeScript/JavaScript cannot build or typecheck | `hkx.build-error-resolver` | `hkx.tdd-guide` |
+| Go or Rust cannot compile/check | matching `hkx.go-build-resolver` / `hkx.rust-build-resolver` | `hkx.tdd-guide` |
+| observable behavior is wrong or must change | `hkx.tdd-guide` | build resolver |
+
+Build resolvers restore the existing check contract with minimal changes. `hkx.tdd-guide` changes or locks behavior through red-green-refactor. If a failing Python test exposes a behavior/spec defect rather than an import, collection, configuration, or dependency failure, the Python resolver must hand it to `hkx.tdd-guide` instead of changing behavior silently.
+
 ## Description authoring rules
 
 When adding or editing a skill `description`:

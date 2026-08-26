@@ -266,10 +266,10 @@ The `agents/` directory is now a **pi-subagents native** surface.
 
 #### Planning and architecture
 
-- `planner`
-- `architect`
-- `code-architect`
-- `code-explorer`
+- `planner` — ordered implementation plans with validation steps
+- `architect` — system-layer design: boundaries, contracts, migration/rollback (see `skill-routing.md` for the split vs `code-architect`)
+- `code-architect` — feature-layer blueprint fitted to existing codebase patterns (see `skill-routing.md`)
+- `code-explorer` — codebase recon: execution paths, dependency maps
 
 #### Review and analysis
 
@@ -283,11 +283,11 @@ The `agents/` directory is now a **pi-subagents native** surface.
 #### Implementation and cleanup
 
 - `tdd-guide`
-- `build-error-resolver`
+- `build-error-resolver` — TypeScript/JavaScript build and type failures
+- `python-build-resolver` — Python packaging, import, type, lint, and test-collection failures
 - `go-build-resolver`
 - `rust-build-resolver`
-- `code-simplifier`
-- `refactor-cleaner`
+- `refactor-cleaner` (also covers the former `code-simplifier` readability-polish lane)
 - `doc-updater`
 - `database-reviewer`
 - `e2e-runner`
@@ -316,7 +316,6 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 
 ### Build-fix chains
 
-- `build-fix`
 - `hkx-typescript-build-fix`
 - `hkx-python-build-fix`
 - `hkx-go-build-fix`
