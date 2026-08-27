@@ -144,10 +144,11 @@ Current extensions:
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
+- `hkx-custom-header.ts` — custom startup header (logo + keybinding hints); `/hkx-custom-header`, `HKX_CUSTOM_HEADER=off`; adapted from amosblomqvist/pi-config
 
-Footer/header chrome is **not** first-party: Path B installs `npm:pi-zentui` (Starship-inspired footer + TUI styling) via `configs/agent-settings.json` packages.
+Header chrome is first-party via `extensions/hkx-custom-header.ts`; the footer uses pi's native statusline.
 
-Out of scope for this package: custom brand themes, first-party footer/header extensions (use `npm:pi-zentui`), OMP powerline presets, welcome dual-column gradient intro. Operators keep the pi default theme (or any theme they choose in `/settings`).
+Out of scope for this package: custom brand themes, third-party footer extensions, OMP powerline presets, welcome dual-column gradient intro. Operators keep the pi default theme (or any theme they choose in `/settings`).
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
 

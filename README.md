@@ -166,13 +166,12 @@ This package no longer ships custom brand themes. Operators keep the pi default 
 
 | Piece | What you get | Default | Disable |
 | --- | --- | --- | --- |
-| Statusline | `pi-zentui` Starship footer (plus editor/message TUI styling) | Path B packages list | `/zentui` footer style → `native`/`hidden` |
+| Startup header | HKX custom header (logo + keybinding hints) | on | `HKX_CUSTOM_HEADER=off` or `/hkx-custom-header` |
 | Working indicator | accent braille spinner | on | `HKX_WORKING_INDICATOR=off` or `/hkx-working-indicator` |
 
-**Path A:** first-party appearance extensions load from the package. The Starship footer is **not** on Path A unless you install `pi-zentui` yourself.
-**Path B:** installs `npm:pi-zentui` via managed packages. Does **not** force a theme.
+**Path A and Path B:** both appearance extensions load with the package (no extra packages are managed for TUI chrome). Footer uses pi's native statusline. Does **not** force a theme.
 
-Does **not** ship custom themes, first-party footer/header extensions, or OMP powerline / welcome dual-column intro.
+Does **not** ship custom themes, third-party footer extensions, or OMP powerline / welcome dual-column intro.
 
 ## Common Workflows
 

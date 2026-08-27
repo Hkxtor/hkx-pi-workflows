@@ -73,7 +73,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Notify-only extensions must not silently mutate project state.
 - Gate extensions should stay explicit, low-noise, and actionable.
-- Appearance extensions (`hkx-working-indicator`) default on with env + slash toggles; they must not write settings or files. Footer/header chrome is Path B via `npm:pi-zentui` (not first-party).
+- Appearance extensions (`hkx-working-indicator`, `hkx-custom-header`) default on with env + slash toggles; they must not write settings or files. Footer uses pi's native statusline; header chrome is first-party via `extensions/hkx-custom-header.ts`.
 
 ### External extension configs
 

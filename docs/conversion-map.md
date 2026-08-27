@@ -332,15 +332,16 @@ Operator entry that **routes** to these chains (and orch commands) without dupli
 
 ## Extensions
 
-Five first-party extensions are shipped intentionally:
+Six first-party extensions are shipped intentionally:
 
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — pre-edit / destructive-action gatekeeping; pre-authorizes `.pi-subagents/` artifact writes
 - `hkx-hookify.ts` — operator Hookify rules (`warn` notify / `block` tool_call); loads `.pi/hookify.*.local.md` + `~/.pi/agent/hookify/`; `HKX_HOOKIFY=off`
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write supervisor asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
+- `hkx-custom-header.ts` — custom startup header (logo + keybinding hints); `/hkx-custom-header`, `HKX_CUSTOM_HEADER=off`; adapted from amosblomqvist/pi-config
 
-Footer/header chrome is Path B via `npm:pi-zentui` (Starship-inspired footer + TUI styling) in `configs/agent-settings.json` (not vendored here). These first-party files are pi TypeScript extensions, not external shell hook packs.
+The footer uses pi's native statusline (no third-party chrome package is managed). These first-party files are pi TypeScript extensions, not external shell hook packs.
 
 ## External package config overlays
 

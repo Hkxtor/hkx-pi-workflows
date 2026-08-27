@@ -38,7 +38,8 @@
       "./extensions/hkx-gateguard.ts",
       "./extensions/hkx-hookify.ts",
       "./extensions/hkx-subagent-supervisor-auto-reply.ts",
-      "./extensions/hkx-working-indicator.ts"
+      "./extensions/hkx-working-indicator.ts",
+      "./extensions/hkx-custom-header.ts"
     ],
     "skills": [
       "./skills"

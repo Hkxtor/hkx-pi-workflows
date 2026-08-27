@@ -163,13 +163,12 @@ profile 会在写入前解析 `MCP_DATA_DIR`；未设置时会拒绝写入。应
 
 | 部件 | 效果 | 默认 | 关闭 |
 | --- | --- | --- | --- |
-| Statusline | `pi-zentui` Starship footer（附带编辑器/消息 TUI 风格化） | 路径 B packages 列表 | `/zentui` footer 样式设为 `native`/`hidden` |
+| Startup header | HKX 自定义启动头（logo + 键位提示） | 开 | `HKX_CUSTOM_HEADER=off` 或 `/hkx-custom-header` |
 | Working indicator | accent braille 旋转指示 | 开 | `HKX_WORKING_INDICATOR=off` 或 `/hkx-working-indicator` |
 
-**路径 A：** 一等外观扩展随包装载。Starship footer **不**在路径 A，除非自行安装 `pi-zentui`。
-**路径 B：** 通过 managed packages 安装 `npm:pi-zentui`。**不**强制主题。
+**路径 A 与路径 B：** 两个外观扩展均随包装载（TUI chrome 不再管理额外包）。footer 使用 pi 原生 statusline。**不**强制主题。
 
-**不**自带自定义主题、一等 footer/header 扩展，也不移植 OMP powerline / welcome 双栏 intro。
+**不**自带自定义主题、第三方 footer 扩展，也不移植 OMP powerline / welcome 双栏 intro。
 
 ## 常用工作流
 
