@@ -20,6 +20,7 @@
     "npm:pi-simplify",
     "npm:pi-tool-display"
   ],
+  "quietStartup": true,
   "compaction": {
     "enabled": true,
     "reserveTokens": 32768,
