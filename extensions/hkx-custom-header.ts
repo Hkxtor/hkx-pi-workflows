@@ -21,23 +21,57 @@
 import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
 import { VERSION, keyHint, rawKeyHint } from "@earendil-works/pi-coding-agent";
 
+// Blue → purple horizontal gradient endpoints.
+const GRADIENT_FROM = { r: 0x3b, g: 0x82, b: 0xf6 }; // #3b82f6 blue
+const GRADIENT_TO = { r: 0xa8, g: 0x55, b: 0xf7 }; // #a855f7 purple
+
+function rgbTo256(r: number, g: number, b: number): number {
+	const q = (v: number) => Math.round((v / 255) * 5);
+	return 16 + 36 * q(r) + 6 * q(g) + q(b);
+}
+
+/** Colorize one art line left-to-right with a blue→purple gradient. */
+function gradientLine(line: string, truecolor: boolean): string {
+	const last = Math.max(line.length - 1, 1);
+	let out = "\x1b[1m";
+	for (let i = 0; i < line.length; i++) {
+		const ch = line[i];
+		if (ch === " ") {
+			out += ch;
+			continue;
+		}
+		const t = i / last;
+		const r = Math.round(GRADIENT_FROM.r + (GRADIENT_TO.r - GRADIENT_FROM.r) * t);
+		const g = Math.round(GRADIENT_FROM.g + (GRADIENT_TO.g - GRADIENT_FROM.g) * t);
+		const b = Math.round(GRADIENT_FROM.b + (GRADIENT_TO.b - GRADIENT_FROM.b) * t);
+		out += truecolor
+			? `\x1b[38;2;${r};${g};${b}m${ch}`
+			: `\x1b[38;5;${rgbTo256(r, g, b)}m${ch}`;
+	}
+	return out + "\x1b[0m";
+}
+
 /**
  * Build the header lines. Edit the ascii art and hints below to customize.
  */
 function buildHeader(theme: Theme): string[] {
 	// ── Logo ──────────────────────────────────────────────
-	const asciiArt = [
-		"   ███████████████████████████╗  ",
-		"   ╚══██████╔════════██████╔══╝  ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"      ██████║        ██████║     ",
-		"   ████████████╗  ████████████╗  ",
-		"   ╚═══════════╝  ╚═══════════╝  ",
-	].map((line) => theme.bold(theme.fg("success", line)));
+	const rawArt = [
+		"      ___           ___           ___           ___           ___           ___",
+		"     /\\__\\         /\\__\\         |\\__\\         /\\  \\         /\\  \\         /\\  \\",
+		"    /:/  /        /:/  /         |:|  |        \\:\\  \\       /::\\  \\       /::\\  \\",
+		"   /:/__/        /:/__/          |:|  |         \\:\\  \\     /:/\\:\\  \\     /:/\\:\\  \\",
+		"  /::\\  \\ ___   /::\\__\\____      |:|__|__       /::\\  \\   /:/  \\:\\  \\   /::\\~\\:\\  \\",
+		" /:/\\:\\  /\\__\\ /:/\\:::::\\__\\ ____/::::\\__\\     /:/\\:\\__\\ /:/__/ \\:\\__\\ /:/\\:\\ \\:\\__\\",
+		" \\/__\\:\\/:/  / \\/_|:|~~|~    \\::::/~~/~       /:/  \\/__/ \\:\\  \\ /:/  / \\/_|::\\/:/  /",
+		"      \\::/  /     |:|  |      ~~|:|~~|       /:/  /       \\:\\  /:/  /     |:|::/  /",
+		"      /:/  /      |:|  |        |:|  |       \\/__/         \\:\\/:/  /      |:|\\/__/",
+		"     /:/  /       |:|  |        |:|  |                      \\::/  /       |:|  |",
+		"     \\/__/         \\|__|         \\|__|                       \\/__/         \\|__|",
+	];
+	const asciiArt = rawArt.map((line) =>
+		gradientLine(line, theme.getColorMode() === "truecolor"),
+	);
 
 	const logo = [
 		"",
