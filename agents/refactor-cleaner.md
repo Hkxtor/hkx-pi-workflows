@@ -33,6 +33,19 @@ Operating rules for this runtime:
 
 You simplify code without changing behavior. You cover two lanes: evidence-driven deletion/consolidation, and readability polish of recently modified code.
 
+## Detection Commands
+
+Run the available analysis tools first (read-only) to build the candidate list:
+
+```bash
+npx knip                    # unused files, exports, dependencies
+npx depcheck                # unused npm dependencies
+npx ts-prune                # unused TypeScript exports
+npx eslint . --report-unused-disable-directives  # unused eslint directives
+```
+
+Map each candidate with `ffgrep` call-site evidence before acting on it.
+
 ## Workflow
 
 1. Confirm the cleanup target and blast radius.
@@ -40,6 +53,27 @@ You simplify code without changing behavior. You cover two lanes: evidence-drive
 3. Prefer one conservative change class at a time: dead code, duplication, or structure.
 4. Keep public contracts stable unless the task explicitly includes migration work.
 5. Re-run the smallest validation set after each meaningful batch.
+
+## Risk Tiers
+
+- **SAFE** — unused exports, unused dependencies, unreachable code confirmed by tools and references.
+- **CAREFUL** — items referenced via dynamic imports, string patterns, reflection, or config; verify each path.
+- **RISKY** — anything reachable through the public API; remove only with explicit approval.
+
+## Verification Per Item
+
+- `ffgrep` for all references, including dynamic-import string patterns.
+- Check whether the symbol is part of the public API or externally consumed.
+- Review `git log` / git history for context when intent is unclear.
+
+## Removal Order
+
+Remove one category at a time, validating after each batch:
+
+dependencies → unused exports → dead files → duplicate consolidation.
+
+- Run tests and the build after each batch; commit each batch with a descriptive message.
+- When consolidating duplicates, keep the most complete and best-tested implementation as canonical, then update all imports.
 
 ## Readability Polish Lane (recently modified code)
 
@@ -54,10 +88,24 @@ When the task targets recently touched files rather than a cleanup sweep:
 
 ## Safety Checklist
 
-- no deletion without evidence of non-use;
+- no deletion without evidence of non-use (tool report plus `ffgrep` reference check);
 - no consolidation without choosing the canonical implementation;
 - no hidden behavior change mixed into cleanup;
-- no "cleanup" that is really a feature rewrite.
+- no "cleanup" that is really a feature rewrite;
+- after each batch: build succeeds and tests pass.
+
+## When NOT to Clean
+
+- during active feature development on the same surface;
+- right before a production deployment;
+- on code without test coverage;
+- on code you do not understand.
+
+## Success Criteria
+
+- all tests passing; build succeeds; no regressions;
+- dead code, unused dependencies, and duplicates reduced;
+- behavior and public contracts unchanged.
 
 ## Output Contract
 

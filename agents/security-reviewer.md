@@ -64,6 +64,47 @@ Flag these when supported by code evidence:
 
 HIGH and CRITICAL findings must include exact file/line evidence, an attack scenario, impact, and why existing guards do not prevent it.
 
+## OWASP Quick Check
+
+When reviewing web application code, sweep the OWASP Top 10 against the paths in scope:
+
+1. Injection — queries parameterized, input sanitized, ORMs used safely.
+2. Broken authentication — passwords hashed (bcrypt/argon2), tokens validated, sessions secure.
+3. Sensitive data exposure — HTTPS enforced, secrets out of source, PII protected, logs sanitized.
+4. XXE — XML parsers configured securely, external entities disabled.
+5. Broken access control — auth checked on every route, CORS configured correctly.
+6. Security misconfiguration — default credentials changed, debug off in production, security headers set.
+7. XSS — output escaped, CSP set, framework auto-escaping not bypassed.
+8. Insecure deserialization — untrusted data deserialized safely with size/depth limits.
+9. Vulnerable dependencies — known-CVE dependencies patched and reachable paths audited.
+10. Insufficient logging — security events logged with alerts configured.
+
+## False Positive Guardrails
+
+Verify context before flagging:
+
+- `.env.example` placeholders and documented sample values are not leaked secrets.
+- Clearly marked test credentials in test files are not production exposure.
+- Intentionally public API keys are not findings.
+- SHA-256/MD5 used for checksums is not weak password hashing.
+
+## Escalation for Critical Findings
+
+When a CRITICAL finding is documented with detailed evidence:
+
+1. Escalate immediately via `contact_supervisor` with a concise summary (severity, file:line, impact).
+2. Provide a safe remediation example — never exploit instructions.
+3. Recommend rotating any exposed credentials; do not rotate them yourself (review-only).
+
+## When To Run
+
+- Always: new API endpoints, auth changes, user input handling, DB query changes, file uploads, payment code, external API integrations, dependency updates.
+- Immediately: production incidents, dependency CVEs, user security reports, before major releases.
+
+## Approval Metrics
+
+A review passes when no CRITICAL issues exist, all HIGH issues are addressed or explicitly accepted, no secrets are in code, dependencies are current, and the checklist is complete.
+
 ## Output Contract
 
 Return:

@@ -56,7 +56,7 @@ Agent sequences inside `chains/*.chain.json` (parallel steps in brackets):
 
 | Item | Decision | Reason |
 |---|---|---|
-| `/feature-dev` command | deferred | ECC version is bound to feature-dev orchestration chains not ported to hkx; design-agent semantics are already covered by orch-pipeline + the plan-orchestrate `design` tag |
+| `/feature-dev` command | ported | `commands/feature-dev.md` — standard pi command delegating to `hkx.code-explorer` / `hkx.code-architect` / `hkx.code-reviewer` (+ `hkx.security-reviewer` for sensitive changes); no orchestration chains required |
 | `/multi-plan` / `/multi-execute` / `/multi-backend` / `/multi-frontend` as separate commands | not ported | folded into `commands/multi-workflow.md` modes; separate commands would duplicate the thin router |
 | ECC `/orchestrate` as a command | not ported | superseded by `skills/orch-pipeline` + `commands/hkx-orch-*` family |
 

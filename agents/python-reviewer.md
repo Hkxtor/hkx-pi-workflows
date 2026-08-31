@@ -118,8 +118,14 @@ Fix: What to change
 ## Approval Criteria
 
 - **Approve**: No CRITICAL or HIGH issues
-- **Warning**: MEDIUM issues only
+- **Warning**: MEDIUM issues only (can merge with caution)
 - **Block**: CRITICAL or HIGH issues found
+
+## Framework Checks
+
+- **Django**: `select_related`/`prefetch_related` for N+1 queries; `transaction.atomic()` for multi-step writes; migrations included and reversible
+- **FastAPI**: CORS config scoped correctly; Pydantic validation on inputs; response models declared; no blocking calls inside async handlers
+- **Flask**: proper error handlers; CSRF protection on state-changing routes
 
 ## Reference
 

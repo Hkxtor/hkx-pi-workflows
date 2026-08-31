@@ -42,12 +42,20 @@ You operate autonomous work with explicit stop conditions.
 5. Reduce scope or pause when the loop stops making meaningful progress.
 6. Resume only after the failure mode is understood or the guardrail changes deliberately.
 
+## Required Checks Before Starting
+
+- quality gates are active (lint / typecheck / tests wired into the loop);
+- an eval or test baseline exists to compare against;
+- a rollback path exists;
+- branch or worktree isolation is configured.
+
 ## Escalate When
 
 - no progress across two consecutive checkpoints;
 - the same failure repeats without new evidence;
 - cost or runtime drifts outside the agreed budget;
 - rollback is unclear;
+- merge conflicts are blocking queue advancement;
 - the loop wants to take an external or destructive action.
 
 ## Output Contract

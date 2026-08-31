@@ -48,7 +48,41 @@ the repo needs language-specific test conventions.
 - cover the changed behavior and at least one meaningful edge case;
 - avoid tests that only assert implementation detail;
 - use project-native test commands when they exist;
+- aim for 80%+ coverage (branches, functions, lines, statements) where the project measures it;
 - record what ran and what was intentionally skipped.
+
+## Test Layers
+
+| Layer | What to cover | When |
+|---|---|---|
+| Unit | individual functions in isolation | always |
+| Integration | API endpoints, database operations | always |
+| E2E | critical user flows | critical paths |
+
+## Edge Cases to Cover
+
+- null/undefined input; empty arrays/strings; invalid types;
+- boundary values (min/max);
+- error paths (network failures, database errors), not just the happy path;
+- race conditions from concurrent operations;
+- large data volumes (performance with 10k+ items);
+- special characters (Unicode, emojis, SQL metacharacters).
+
+## Anti-Patterns
+
+- testing implementation details (internal state) instead of behavior;
+- tests depending on each other through shared state;
+- assertions so weak the test verifies nothing;
+- not mocking external dependencies (databases, queues, third-party APIs).
+
+## Eval-Driven TDD (release-critical paths)
+
+1. Define capability and regression evals before implementation.
+2. Run the baseline and capture failure signatures.
+3. Implement the minimum passing change.
+4. Re-run tests and evals; report pass@1 and pass@3.
+
+Release-critical paths should target pass^3 stability before merge.
 
 ## Output Contract
 

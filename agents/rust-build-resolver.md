@@ -51,7 +51,7 @@ cargo check
 cargo clippy -- -D warnings
 cargo fmt --check
 cargo tree --duplicates
-cargo audit
+if command -v cargo-audit >/dev/null; then cargo audit; else echo "cargo-audit not installed"; fi
 ```
 
 ## Resolution Workflow
@@ -132,7 +132,8 @@ cargo update                          # Full refresh (last resort — broad chan
 Check the Cargo.toml file using the `read` or `ffgrep` tool:
 
 - Read `Cargo.toml` directly to check `edition` and `rust-version`.
-- Update edition in Cargo.toml: `edition = "2024"` (requires rustc 1.85+).
+- Run `rustc --version` to confirm the toolchain meets the crate's `rust-version` (MSRV).
+- Update edition in Cargo.toml: `edition = "2024"` (requires rustc 1.85+); check `rust-version` first before bumping.
 
 ## Key Principles
 

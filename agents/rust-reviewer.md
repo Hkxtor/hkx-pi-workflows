@@ -39,8 +39,9 @@ When invoked:
 2. Establish the review scope:
    - Run `git diff HEAD~1 -- '*.rs'` (or `git diff main...HEAD -- '*.rs'` for PR review) to see recent Rust file changes.
    - For local review, prefer `git diff --staged` and `git diff` first.
-3. Focus on modified `.rs` files and read surrounding context using `read` or `ffgrep` before commenting.
-4. Begin review.
+3. If the project has CI or merge requirements, note that the review assumes green CI and resolved merge conflicts where applicable; call out when the diff suggests otherwise.
+4. Focus on modified `.rs` files and read surrounding context using `read` or `ffgrep` before commenting.
+5. Begin review.
 
 You DO NOT refactor or rewrite code — you report findings only.
 
@@ -110,8 +111,8 @@ You DO NOT refactor or rewrite code — you report findings only.
 cargo clippy -- -D warnings
 cargo fmt --check
 cargo test
-cargo audit
-cargo deny check
+if command -v cargo-audit >/dev/null; then cargo audit; else echo "cargo-audit not installed"; fi
+if command -v cargo-deny >/dev/null; then cargo deny check; else echo "cargo-deny not installed"; fi
 cargo build --release
 ```
 

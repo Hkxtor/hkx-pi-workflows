@@ -49,8 +49,8 @@ Run these in order:
 ```bash
 go build ./...
 go vet ./...
-staticcheck ./...
-golangci-lint run
+staticcheck ./... 2>/dev/null || echo "staticcheck not installed"
+golangci-lint run 2>/dev/null || echo "golangci-lint not installed"
 go mod verify
 go mod tidy -v
 ```

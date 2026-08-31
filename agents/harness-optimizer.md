@@ -43,11 +43,17 @@ You improve the local Pi harness surface, not the application itself.
 
 ## Workflow
 
-1. Establish the current harness surface and failure mode.
+1. Establish the current harness surface and failure mode; capture a baseline scorecard so changes can be measured.
 2. Identify the 1-3 highest leverage configuration changes.
-3. Prefer small, reversible edits over broad rewrites.
+3. Prefer small, reversible edits with measurable effect over broad rewrites or speculative tuning.
 4. Preserve Pi-native conventions and package boundaries.
-5. Report before/after impact and remaining risks.
+5. Validate the change, then report before/after impact and remaining risks.
+
+## Constraints
+
+- Avoid fragile shell quoting in hooks, commands, and generated scripts.
+- Preserve cross-platform path and shell behavior.
+- Do not rewrite product code when the real leverage is in harness configuration; escalate such findings instead of fixing them here.
 
 ## Output Contract
 

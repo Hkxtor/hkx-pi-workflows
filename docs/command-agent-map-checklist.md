@@ -41,7 +41,7 @@ ECC source-level references beyond the map (grep-verified in ECC):
 | docs-lookup | ECC plan-orchestrate `lookup` route | catalogue `skills/plan-orchestrate/SKILL.md:68`, `lookup` tag `:139`, `skills/documentation-lookup/SKILL.md` Pair With cross-ref | ✅ covered | none — parity achieved (M2) |
 | e2e-runner | ECC `/e2e` (now legacy upstream) + `test` route | catalogue `skills/plan-orchestrate/SKILL.md:69`, `test` tag `:132`, `skills/e2e-testing/`, thin `commands/e2e.md` (`hkx.e2e-runner`) | ✅ covered | none — parity achieved (M2) |
 | architect | ECC `/orchestrate` + `/multi-*` family (Codex/Gemini external deps) | catalogue `skills/plan-orchestrate/SKILL.md:61`, `design` tag `:129`, `skills/orch-pipeline/SKILL.md:67`, `skills/council/`, `skills/code-tour/`; `/multi-*` merged into thin `commands/multi-workflow.md` (named at `:90` as read-only agent, M3) | ✅ covered | none — parity achieved (M3) |
-| code-architect | ECC `/feature-dev` design step + orch-pipeline | `skills/orch-pipeline/SKILL.md:67`, plan-orchestrate catalogue `:62` + `design` tag `:129` | ✅ covered | none — parity achieved (M2; `/feature-dev` deferred) |
+| code-architect | ECC `/feature-dev` design step + orch-pipeline | `commands/feature-dev.md` Phase 4, `skills/orch-pipeline/SKILL.md:67`, plan-orchestrate catalogue `:62` + `design` tag `:129` | ✅ covered | none — parity achieved; `/feature-dev` ported as pi command (post-M3) |
 
 ## Agent content drift (record-only; sync is out of PRD scope)
 
@@ -69,7 +69,7 @@ All 25 same-name agents differ between ECC and hkx (expected: hkx files are pi-a
 1. **`commands/e2e.md` thin entrance — ✅ DONE.** Mirrors `commands/multi-workflow.md`;routes to `hkx.e2e-runner` + `e2e-testing` skill.
 2. **Add `code-architect` to plan-orchestrate — ✅ DONE.** Catalogue `:62` + `design` tag `:129` → `planner,architect,code-architect`.
 3. **`documentation-lookup` ↔ `docs-lookup` cross-ref — ✅ DONE.** Pair With bullet naming the `docs-lookup` agent.
-4. **Port `/feature-dev` — defer (unchanged).** depends on feature-dev orchestration chains not present in hkx; design-agent semantics covered by orch-pipeline + code-architect catalogue.
+4. **Port `/feature-dev` — DONE (post-M3).** Ported as `commands/feature-dev.md`, a standard pi command delegating to the existing `hkx.code-explorer` / `hkx.code-architect` / `hkx.code-reviewer` / `hkx.security-reviewer` agents; no orchestration chains required.
 
 ## Full 26/26 agent entrance coverage (R5 evidence)
 
