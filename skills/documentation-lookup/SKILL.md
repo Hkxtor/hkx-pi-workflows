@@ -45,6 +45,7 @@ Caveats:
 
 ## Pair With
 
+- `docs-lookup` agent for subagent-backed third-party API lookups (Context7) when you need an isolated docs search
 - `search-first` before adding dependencies or abstractions.
 - `api-connector-builder` when implementing a new integration after docs lookup.
 - `security-review` when docs involve auth, permissions, secrets, payments, or user data.

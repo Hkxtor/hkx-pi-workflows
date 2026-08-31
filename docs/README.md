@@ -15,6 +15,7 @@ Use this page when you need to decide **which doc to open**, not when you need t
 | Which skill should win when several could match? | `skill-routing.md` |
 | Should this be a language rule or a runtime extension? | `language-hooks.md` |
 | How does instinct inventory + evolve work (Linux/Windows)? | `instinct-evolve-plan.md` + skill `instinct-evolve` |
+| Which agents have a command/skill/chain entrance (ECC port status)? | `command-agent-map.md` (formal map); `command-agent-map-checklist.md` (M1/M2 audit trail) |
 | Where is the closed Unified Memory PRD (vault vs instinct vs OM)? | `prds/unified-memory-instinct-om.prd.md` + skill `unified-memory` |
 | How should maintainers change this repository? | `../AGENTS.md` |
 | What global development handbook gets installed? | `../GLOBAL_AGENTS.md` |
@@ -64,6 +65,28 @@ Read this when you need:
 - data roots on Linux vs Windows
 - evolve thresholds and CLI surface
 - legacy OM session-import boundary
+
+### `command-agent-map.md`
+
+Operator-facing command→agent entrance map (hkx port of ECC `COMMAND-AGENT-MAP.md`).
+
+Read this when you need to decide:
+
+- which command, chain, or skill enters a specific agent (with file:line evidence)
+- how the 14 packaged chains compose agent sequences
+- what differs from the upstream ECC map and what was deliberately not ported
+- the formal 26/26 agent-entrance coverage table (R5)
+
+### `command-agent-map-checklist.md`
+
+M1/M2 audit-trail deliverable for the ECC `COMMAND-AGENT-MAP.md` port.
+
+Read this when you need:
+
+- the closed per-agent grade history (covered / partial / gap) with file:line evidence
+- which M2 actions were taken (thin `/e2e`, `code-architect` catalogue entry, documentation-lookup cross-ref)
+
+Frozen audit trail — the operator-facing map now lives in `command-agent-map.md`.
 
 ### `prds/unified-memory-instinct-om.prd.md`
 

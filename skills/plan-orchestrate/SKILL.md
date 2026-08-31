@@ -59,6 +59,7 @@ General:
 
 - `planner` — requirement restatement, risk decomposition, step planning
 - `architect` — architecture, system design, refactor proposals
+- `code-architect` — feature-layer blueprint fitted to existing codebase patterns
 - `tdd-guide` — write tests → implement → 80%+ coverage
 - `code-reviewer` — generic code review
 - `security-reviewer` — security audit, OWASP, secret leakage
@@ -125,7 +126,7 @@ Trigger words below are matched case-insensitively.
 
 | Tag | Trigger words | Default chain |
 |---|---|---|
-| `design` | architecture, design, choose, evaluate, RFC | `planner,architect` |
+| `design` | architecture, design, choose, evaluate, RFC | `planner,architect,code-architect` |
 | `plan` | plan, breakdown, milestone | `planner` |
 | `impl` | implement, build, add, create, port | `tdd-guide,<lang>-reviewer` |
 | `test` | test, coverage, e2e, integration | `tdd-guide,e2e-runner` |

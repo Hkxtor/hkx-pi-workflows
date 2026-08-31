@@ -87,7 +87,7 @@ Do **not** re-implement the six phases inline if you can invoke `/workflow` or t
 
 - **No production code edits.**
 - Use **`/hkx-plan`** (or **`/blueprint`** for multi-session construction, **`/hkx-plan-prd`** for PRD-shaped work).
-- Optional read-only agents: `hkx.code-explorer`, `hkx.planner` (or run only the research/plan prefix of a delivery flow and stop).
+- Optional read-only agents: `hkx.code-explorer`, `hkx.planner`, `hkx.architect` (or run only the research/plan prefix of a delivery flow and stop).
 - Write plan artifacts under `.pi/plans/` or the path the user names.
 - Present the plan and **wait for explicit approval** before any execute mode.
 

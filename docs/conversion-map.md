@@ -33,9 +33,9 @@ Manifest shape (authoritative):
 | Surface | Count | In repo | Path A | Path B target |
 | --- | ---: | --- | --- | --- |
 | agents | 26 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
-| chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
+| chains | 14 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 98 | `skills/` | yes | `~/.pi/agent/skills/` |
+| skills | 99 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 5 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
@@ -489,4 +489,4 @@ Use this document to answer:
 - which items are stable core surfaces versus intentionally deferred
 - what should be installed globally under `~/.pi/agent/`
 
-Use `docs/README.md` as the documentation index, `README.md` for operator-facing install/use instructions, `docs/architecture.md` for layer boundaries and placement decisions, `docs/skill-routing.md` for primary-skill choice when families overlap, `docs/language-hooks.md` for rule-vs-extension guidance, root `AGENTS.md` for repository maintenance rules, `GLOBAL_AGENTS.md` for the installed global development handbook source, and `APPEND_SYSTEM.md` for the installed global system-level tool discipline source.
+Use `docs/README.md` as the documentation index, `README.md` for operator-facing install/use instructions, `docs/architecture.md` for layer boundaries and placement decisions, `docs/skill-routing.md` for primary-skill choice when families overlap, `docs/command-agent-map.md` for agent entrance routing, `docs/language-hooks.md` for rule-vs-extension guidance, root `AGENTS.md` for repository maintenance rules, `GLOBAL_AGENTS.md` for the installed global development handbook source, and `APPEND_SYSTEM.md` for the installed global system-level tool discipline source.
