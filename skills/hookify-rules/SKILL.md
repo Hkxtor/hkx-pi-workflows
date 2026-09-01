@@ -19,7 +19,7 @@ Operator-authored **behavior guardrails**. Rules are Markdown files with YAML fr
 
 | Need | Prefer |
 | --- | --- |
-| First-edit investigation questions | `gateguard` / GateGuard extension |
+| Destructive bash command gating | `gateguard` / GateGuard extension |
 | Cross-session learned behaviors | `instinct-evolve` |
 | Auth / threat model review | `security-review` |
 | Config surface inventory | `security-scan` |
@@ -128,7 +128,7 @@ Creation must **propose first** and only write after user confirmation. Default 
 
 ## Relationship to other surfaces
 
-- **GateGuard** — forces investigation facts before first edit / destructive bash. Not pattern-based.
+- **GateGuard** — hard blocks destructive bash commands; does not gate edits or files. Not pattern-based.
 - **Instinct** — cross-session learned behaviors with accept/promote. Hookify is immediate and explicit.
 - **safety-guard / security-*** — broader policy and review; Hookify is a narrow runtime matcher.
 

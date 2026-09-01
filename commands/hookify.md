@@ -18,7 +18,7 @@ Load skill `hookify-rules` for format details when needed.
 2. Default **`action: warn`** unless the user explicitly wants a hard block or the behavior is destructive.
 3. Patterns must be **specific** (see skill pitfalls). Reject overly broad patterns like bare `log` or `.*` on `file`/`bash` without justification.
 4. Project rules go to **`.pi/hookify.{name}.local.md`** (create `.pi/` if missing).
-5. Do not invent GateGuard investigation text; this is pattern matching only.
+5. Do not invent GateGuard denial text; this is pattern matching only.
 
 ## Process
 
@@ -100,4 +100,4 @@ Report:
 ## Notes
 
 - Origin: ECC `/hookify`, rewritten for Pi (extension runtime, `.pi/` paths).
-- Complements GateGuard (investigation) and instinct (cross-session learning).
+- Complements GateGuard (destructive-bash hard gate) and instinct (cross-session learning).

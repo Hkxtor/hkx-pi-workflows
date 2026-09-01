@@ -434,7 +434,7 @@ Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 - extension: `hkx-hookify.ts`
 - tests: `scripts/tests/hookify-rules.mjs`
 - rules on disk: project `.pi/hookify.{name}.local.md`; optional global `~/.pi/agent/hookify/`
-- complements GateGuard (investigation) and instinct (cross-session learning); does not replace either
+- complements GateGuard (destructive-bash gate) and instinct (cross-session learning); does not replace either
 
 ## Optional knowledge surface: Instinct Evolve
 

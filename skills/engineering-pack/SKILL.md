@@ -19,7 +19,7 @@ work surface.
 | Acceptance criteria and risk framing | `intent-driven-development` |
 | Parallel work lane planning | `parallel-execution-optimizer` |
 | Goal-oriented agent loop design and runaway review | `loop-design-check` |
-| Fact-forcing before risky actions | `gateguard` |
+| Destructive bash command gating | `gateguard` |
 | Phase-boundary context hygiene | `strategic-compact` |
 | Failure contracts and error paths | `error-handling` |
 | REST, JSON-RPC, tool, webhook, or public API contracts | `api-design` |
@@ -45,7 +45,7 @@ work surface.
 - Use `intent-driven-development` when the requested outcome is ambiguous, high-risk, or needs acceptance criteria.
 - Use `parallel-execution-optimizer` when several independent lanes can run concurrently.
 - Use `loop-design-check` when designing or reviewing a repeating agent loop — it covers goal decidability and runaway prevention only; pair with `parallel-execution-optimizer` / `agent-introspection-debugging` for mechanism.
-- Use `gateguard` before risky edits, new surfaces, or commands where concrete repository evidence is required.
+- Use `gateguard` before destructive shell commands; it blocks irreversible actions until the operator confirms scope, target, rollback, and authorization.
 - Use `strategic-compact` at safe phase boundaries in long sessions after durable state is summarized.
 - Use `documentation-lookup` when library, framework, SDK, CLI, or API
   behavior must be current.

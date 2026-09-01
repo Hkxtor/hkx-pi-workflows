@@ -25,13 +25,21 @@ type ExtensionRuntime = {
 type ExtensionFactory = (pi: ExtensionRuntime) => void;
 
 /**
- * HKX GateGuard — fact-forcing pre-action gate for Pi.
+ * HKX GateGuard — destructive-command hard gate for Pi.
  *
- * A `tool_call` hook that blocks first edit/write/ast_grep_replace per file and
- * destructive commands, demanding concrete investigation facts before
- * allowing the action to proceed.
+ * A `tool_call` hook that blocks destructive shell commands. The former
+ * first-edit-per-file interception was retired (see skills/gateguard/SKILL.md):
+ * a 2026-08 A/B retest on current models measured zero score gap (8.5 vs 8.5),
+ * while every first edit paid a wasted round-trip.
  *
  * Disable per-session: set `HKX_GATEGUARD=off` in the environment.
+ *
+ * Destructive detection runs on a masked view of the command: quoted strings
+ * and heredoc bodies are removed so commands merely *mentioning* destructive
+ * text (regex sources, echoed docs) are not blocked. When the remaining
+ * skeleton contains an eval-invoker (`bash -c`, `node -e`, `psql -c`, …) the
+ * masked fragments are scanned as well, so `bash -c 'rm -rf build/'` stays
+ * blocked while `echo "git reset --hard"` passes.
  *
  * Artifact exception (chain review outputs):
  * Paths under a real `.pi-subagents/` directory segment (chain-runs + artifacts)
@@ -48,20 +56,11 @@ type ExtensionFactory = (pi: ExtensionRuntime) => void;
 // State
 // ---------------------------------------------------------------------------
 
-/** Files that have been investigated (tool_call seen or explicitly allowed). */
-const investigatedFiles = new Set<string>();
-
 /** Count of full denials emitted this session; later denials are condensed. */
 let denialCount = 0;
 
 /** Max full denials before switching to condensed single-line messages. */
 const MAX_FULL_DENIALS = 3;
-
-const MUTATING_TOOL_NAMES = new Set<ToolName>([
-	"edit",
-	"write",
-	"ast_grep_replace",
-]);
 
 /** Path-segment boundary for the runtime artifact directory. */
 const ARTIFACT_DIR_SEGMENT = ".pi-subagents";
@@ -152,89 +151,99 @@ export function isSubagentArtifactBashWrite(command: string): boolean {
 	return writesArtifact;
 }
 
-export function extractFilePath(
-	input: Record<string, unknown>,
-): string | undefined {
-	const candidates = [input.path, input.file_path, input.filePath, input.file];
-	for (const c of candidates) {
-		if (typeof c === "string" && c.trim()) return c;
-	}
-	if (Array.isArray(input.edits)) {
-		for (const edit of input.edits) {
-			if (edit && typeof edit === "object") {
-				const p =
-					(edit as Record<string, unknown>).path ??
-					(edit as Record<string, unknown>).file_path;
-				if (typeof p === "string" && p.trim()) return p;
-			}
-		}
-	}
-	return undefined;
+const DESTRUCTIVE_PATTERNS = [
+	/\brm\s+(-[rfirvRF]*\s+)*(?!\/tmp\/)/,
+	/\bgit\s+checkout\s+(-f|--force|--)\s/,
+	/\bgit\s+reset\s+--hard/,
+	/\bgit\s+clean\s+-[fF]/,
+	/\bgit\s+push\s+.*--force/,
+	/\bgit\s+branch\s+-[dD]/,
+	/\bgit\s+tag\s+-d/,
+	/\bgit\s+rebase\s+.*--abort/,
+	/\bgit\s+stash\s+drop/,
+	/\bdrop\s+(table|database|index)\b/i,
+	/\bdelete\s+from\b/i,
+	/\btruncate\b/i,
+	/\bmkfs\b/,
+	/\bdd\s+.*of=/,
+	/\bformat\b/,
+	/\bkill\s+-9\b/,
+	/\bpkill\b/,
+	/\bsudo\s+rm\b/,
+];
+
+const EVAL_INVOKERS = [
+	/\b(?:ba|z)?sh\s+(?:-\w+\s+)*-c\b/,
+	/\beval\b/,
+	/\bnode\s+(?:-\w+\s+)*-e\b/,
+	/\bpython[0-9.]*\s+(?:-\w+\s+)*-c\b/,
+	/\bperl\s+(?:-\w+\s+)*-e\b/,
+	/\bpsql\s+(?:-\w+\s+)*-c\b/,
+];
+
+function matchesDestructive(text: string): boolean {
+	return DESTRUCTIVE_PATTERNS.some((re) => re.test(text));
+}
+
+/**
+ * Mask quoted spans and heredoc bodies, returning the remaining skeleton plus
+ * the removed fragments. Quoted/backtick regex-source literals (e.g.
+ * `const re = /\brm\s+/` inside `node -e '...'`) must not trip destructive
+ * detection; see scripts/tests/gateguard-selfmatch.mjs.
+ */
+export function maskCommandLiterals(command: string): {
+	skeleton: string;
+	fragments: string[];
+} {
+	const fragments: string[] = [];
+	let text = String(command);
+
+	// Heredocs: <<TAG ... \nTAG (quoted or plain tag, optional `-`).
+	text = text.replace(
+		/<<-?\s*['"]?(\w+)['"]?[^\n]*\n([\s\S]*?)\n\s*\1(?=\n|$)/g,
+		(_m, _tag, body: string) => {
+			fragments.push(body);
+			return "<<MASKED";
+		},
+	);
+
+	// Quoted spans (single, double, backtick), backslash escapes honored.
+	text = text.replace(/(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g, (_m, _q, body: string) => {
+		fragments.push(body);
+		return " ";
+	});
+
+	return { skeleton: text, fragments };
 }
 
 export function isDestructiveCommand(command: string): boolean {
-	const destructive = [
-		/\brm\s+(-[rfirvRF]*\s+)*(?!\/tmp\/)/,
-		/\bgit\s+checkout\s+(-f|--force|--)\s/,
-		/\bgit\s+reset\s+--hard/,
-		/\bgit\s+clean\s+-[fF]/,
-		/\bgit\s+push\s+.*--force/,
-		/\bgit\s+branch\s+-[dD]/,
-		/\bgit\s+tag\s+-d/,
-		/\bgit\s+rebase\s+.*--abort/,
-		/\bgit\s+stash\s+drop/,
-		/\bdrop\s+(table|database|index)\b/i,
-		/\bdelete\s+from\b/i,
-		/\btruncate\b/i,
-		/\bmkfs\b/,
-		/\bdd\s+.*of=/,
-		/\bformat\b/,
-		/\bkill\s+-9\b/,
-		/\bpkill\b/,
-		/\bsudo\s+rm\b/,
-	];
-	return destructive.some((re) => re.test(command));
+	if (typeof command !== "string" || !command) return false;
+	const { skeleton, fragments } = maskCommandLiterals(command);
+	if (matchesDestructive(skeleton)) return true;
+	// Quoted destructive text is inert unless an eval-invoker re-executes it
+	// (`bash -c 'rm -rf x'`, `psql -c "drop table t"` stay blocked).
+	if (
+		EVAL_INVOKERS.some((re) => re.test(skeleton)) &&
+		fragments.some(matchesDestructive)
+	) {
+		return true;
+	}
+	return false;
 }
 
-function gateMessage(
-	_toolName: string,
-	filePath: string | undefined,
-	isDestructive: boolean,
-): string {
+function gateMessage(): string {
 	denialCount++;
-	const condensed = denialCount > MAX_FULL_DENIALS;
-
-	if (isDestructive) {
-		if (condensed) {
-			return `[GateGuard #${denialCount}] Destructive command blocked. Investigate target scope before retrying.`;
-		}
-		return [
-			`[GateGuard] Destructive command blocked.`,
-			`Before running:`,
-			`1. What files, data, branches, services, or accounts can be modified?`,
-			`2. Is the target local, test, staging, or production?`,
-			`3. What rollback or recovery path exists?`,
-			`4. What exact user instruction authorizes this action?`,
-		].join("\n");
-	}
-
-	const target = filePath ?? "target file";
-	if (condensed) {
-		return `[GateGuard #${denialCount}] First access to ${target} blocked. Investigate before editing.`;
+	if (denialCount > MAX_FULL_DENIALS) {
+		return `[GateGuard #${denialCount}] Destructive command blocked. Investigate target scope before retrying.`;
 	}
 	return [
-		`[GateGuard] First access to ${target} blocked.`,
-		`Before editing:`,
-		`1. Which files import, call, configure, or document this file?`,
-		`2. Which public functions, classes, exports, or schemas can be affected?`,
-		`3. What are the observed fields, structure, and date/ID formats?`,
-		`4. What exact user instruction authorizes this change?`,
-		`5. What focused verification will prove the change?`,
+		`[GateGuard] Destructive command blocked.`,
+		`Before running:`,
+		`1. What files, data, branches, services, or accounts can be modified?`,
+		`2. Is the target local, test, staging, or production?`,
+		`3. What rollback or recovery path exists?`,
+		`4. What exact user instruction authorizes this action?`,
 	].join("\n");
-}
-
-function markInvestigated(filePath: string): void {
-	investigatedFiles.add(filePath);
 }
 
 // ---------------------------------------------------------------------------
@@ -248,32 +257,6 @@ const extension: ExtensionFactory = (pi) => {
 		const { toolName, input } = event;
 		const rawInput = (input ?? {}) as Record<string, unknown>;
 
-		// --- edit / write / ast_grep_replace: block first access per file ---
-		if (MUTATING_TOOL_NAMES.has(toolName)) {
-			const filePath = extractFilePath(rawInput);
-			if (!filePath) return undefined;
-
-			if (investigatedFiles.has(filePath)) return undefined;
-
-			if (
-				isSubagentArtifactPath(filePath) ||
-				filePath.includes("node_modules/") ||
-				filePath.includes(".git/") ||
-				filePath.includes("__pycache__/") ||
-				filePath.endsWith(".lock") ||
-				filePath.endsWith(".lockb")
-			) {
-				markInvestigated(filePath);
-				return undefined;
-			}
-
-			markInvestigated(filePath);
-			return {
-				block: true,
-				reason: gateMessage(toolName, filePath, false),
-			};
-		}
-
 		// --- Bash: destructive first (MF1), then artifact-only allow ---
 		if (toolName === "bash") {
 			const command =
@@ -284,7 +267,7 @@ const extension: ExtensionFactory = (pi) => {
 			if (isDestructiveCommand(command)) {
 				return {
 					block: true,
-					reason: gateMessage(toolName, undefined, true),
+					reason: gateMessage(),
 				};
 			}
 

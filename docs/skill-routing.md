@@ -30,8 +30,8 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | Exa tool calls only | `exa-search` | (via `research-ops`) | standalone cited report |
 | security of Pi config / MCP / hooks | `security-scan` | `workspace-surface-audit` | `security-review` |
 | security of auth / permissions / threat model | `security-review` | `safety-guard` | `security-scan` |
-| prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hookify`, GateGuard only if first-edit facts needed | `instinct-evolve` (cross-session), `gateguard` (investigation) |
-| fact-force before risky first edit | `gateguard` | `safety-guard` | `hookify-rules` |
+| prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hookify`, GateGuard only for destructive bash | `instinct-evolve` (cross-session) |
+| gate destructive shell commands | `gateguard` | `safety-guard` | `hookify-rules` |
 | run checks after code change | `verification-loop` | language `*-workflow` | `delivery-gate` first |
 | session done / delivery hygiene | `delivery-gate` | `verification-loop` (if not green), `session-summary` | `agent-self-evaluation` first |
 | score my output quality | `agent-self-evaluation` | after `delivery-gate` | as a test runner |

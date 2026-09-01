@@ -1,60 +1,69 @@
 ---
 name: gateguard
-description: Pi fact-forcing pre-action gate that requires concrete repository evidence before risky edits, new files, commands, or destructive actions.
+description: Pi destructive-command hard gate. Blocks destructive shell commands until the operator states scope, target environment, rollback path, and authorization. Formerly also gated first-per-file edits; that gate was retired after A/B re-testing showed zero benefit on current models.
 origin: HKX-converted-for-Pi
 ---
 
 # HKX GateGuard For Pi
 
-Use this as an operator discipline before actions where guessing would damage code, data, config, or external systems.
-
+GateGuard is now a **destructive-command hard gate**, not an investigation
+forcer. It intercepts shell commands that can destroy data or history and
+refuses them until the operator confirms the action deliberately.
 
 ## Evidence
 
-Two independent A/B tests, identical agents, same task:
+**2026-08 A/B retest (current models) — first-edit gate: no effect.**
+
+Rebuilt the two lost original tasks on a fixture repo with mandatory-convention
+helpers (`src/lib/` reuse, `AppError` errors, redacted logging). Same executor
+model (`gpt-5.6-sol`) ran each task twice: once with the real
+`extensions/hkx-gateguard.ts` loaded, once without. A different model
+(`grok-4.6`) scored anonymized diffs blind against a reuse/convention rubric:
 
 | Task | Gated | Ungated | Gap |
 |---|---|---|---|
-| Analytics module | 8.0/10 | 6.5/10 | +1.5 |
-| Webhook validator | 10.0/10 | 7.0/10 | +3.0 |
-| **Average** | **9.0** | **6.75** | **+2.25** |
+| Analytics module | 7.0 | 7.0 | 0.0 |
+| Webhook validator | 10.0 | 10.0 | 0.0 |
+| **Average** | **8.5** | **8.5** | **0.0** |
 
-Both agents produce code that runs and passes tests. The difference is design depth.
-GateGuard is not self-evaluation. Do not ask “am I sure?” Require facts that force the model to inspect the repository and current user instruction.
+Both arms reused the same helpers and converged on near-identical
+implementations. The historical +2.25 gap was measured on older models whose
+dominant failure mode was editing without reading; current models investigate
+before editing on their own. The first-edit gate was removed in the same
+change.
+
+What remains valuable is orthogonal to model strength: destructive commands
+are a **policy** concern (irreversibility), not an intelligence deficit.
+
+## What The Gate Does
+
+`extensions/hkx-gateguard.ts` hooks `tool_call`:
+
+- **bash + destructive pattern → block.** Patterns cover `rm` (except `/tmp/`),
+  history-rewriting/force git ops, `drop/delete from/truncate` SQL, `mkfs`,
+  `dd of=`, `format`, `kill -9`, `pkill`, `sudo rm`. The denial message asks
+  the four gate questions below; after the third denial messages condense to
+  one line.
+- **False-positive masking.** Before matching, single/double-quoted strings,
+  backticks, and heredoc bodies are masked, so commands that merely *mention*
+  destructive text (regex sources, `echo "git reset --hard"`, grepping the
+  word `pkill`) are not blocked. When the remaining skeleton contains an
+  eval-invoker (`bash -c`, `sh -c`, `eval`, `node -e`, `python -c`, `psql -c`,
+  `perl -e`), the masked fragments are scanned too, so
+  `bash -c 'rm -rf build/'` stays blocked while `echo 'rm -rf build/'` passes.
+- **`.pi-subagents/` artifact writes are pre-authorized** once the command is
+  provably non-destructive (MF1: destructive check always runs first).
+
+Disable per session: `HKX_GATEGUARD=off`.
 
 ## Triggers
 
-- Editing a file that is imported, configured, generated, or used by multiple modules.
-- Creating a new helper, adapter, command, skill, rule, agent, MCP entry, extension, or dependency wrapper.
-- Changing data formats, schemas, migrations, fixtures, timestamps, serialization, or persisted files.
-- Running a command that writes files, deletes data, rewrites history, publishes, deploys, bills, or mutates external systems.
-- Any moment where the plan depends on “probably” instead of observed evidence.
+- The command deletes files/data, rewrites history, force-pushes, drops or
+  truncates tables, kills processes, or formats devices.
 
 ## Gate Questions
 
-### Before editing an existing file
-
-```text
-Before editing <path>:
-1. Which files import, call, configure, or document this file?
-2. Which public functions, classes, commands, routes, schemas, or exports can be affected?
-3. If data is read or written, what are the observed fields, structure, and date/ID formats? Use redacted or synthetic examples.
-4. What exact user instruction authorizes this change?
-5. What focused verification will prove the change?
-```
-
-### Before creating a new file
-
-```text
-Before creating <path>:
-1. What existing file or pattern is closest, and why is reuse insufficient?
-2. Which file, command, skill, rule, agent, config, or user flow will call or load this new file?
-3. What naming/frontmatter/schema convention must it follow?
-4. What exact user instruction authorizes the new surface?
-5. What validator or focused check will cover it?
-```
-
-### Before risky commands or external mutation
+Answer before retrying a blocked command:
 
 ```text
 Before running <action>:
@@ -62,27 +71,17 @@ Before running <action>:
 2. Is the target local, test, staging, or production?
 3. What rollback or recovery path exists?
 4. What exact user instruction authorizes this action?
-5. What evidence will confirm success?
 ```
 
-## Pi Tooling
+## Known Limits
 
-Use Pi tools to gather facts:
-
-- `find` for file presence and naming patterns.
-- `search` for imports, references, configs, and docs.
-- `read` for exact local context and schemas.
-- `lsp` for symbol references when available.
-- `ask` only when the missing fact is a product decision or authorization that tools cannot provide.
-
-## Anti-Patterns
-
-- Replacing evidence with confidence language.
-- Creating a compatibility shim because callsites were not searched.
-- Adding a helper before checking local utilities.
-- Running broad commands without knowing what they verify.
-- Treating logging, retries, or defaults as fixes for unknown failure modes.
-- Letting identical gate denials accumulate in long sessions. After the first few full denials, condense later denials to a single line carrying the denial ordinal to prevent context window bloat and model repetition loops.
+- The pattern list is a guardrail, not a security boundary: equivalents such
+  as `find -delete`, `truncate -s0`, or interpreter one-liners are not
+  statically recognizable, and quoted fragments are trusted unless re-executed
+  by an eval-invoker.
+- Blocked destructive commands have no in-session exemption path; an operator
+  must either approve-and-rephrase or restart with `HKX_GATEGUARD=off`.
+  (Candidate follow-up PRD: session-scoped "explain once, then allow".)
 
 ## Output
 
@@ -91,6 +90,5 @@ Gate:
 Facts gathered:
 Risk:
 Authorization:
-Verification:
 Proceed / stop:
 ```

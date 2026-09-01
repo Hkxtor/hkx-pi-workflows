@@ -66,7 +66,7 @@ HKX_HOOKIFY=off
 | System | Job |
 | --- | --- |
 | **Hookify** | User-defined pattern guardrails (immediate) |
-| **GateGuard** | Fact-forcing before first edit / destructive bash |
+| **GateGuard** | Hard gate for destructive bash commands |
 | **Instinct** | Cross-session learned behaviors with accept/promote |
 
 ## Pattern tips

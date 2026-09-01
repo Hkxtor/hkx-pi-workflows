@@ -44,28 +44,73 @@ function normalizePathSegments(filePath) {
 	return isAbs ? `/${joined}` : joined;
 }
 
+const DESTRUCTIVE_PATTERNS = [
+	/\brm\s+(-[rfirvRF]*\s+)*(?!\/tmp\/)/,
+	/\bgit\s+checkout\s+(-f|--force|--)\s/,
+	/\bgit\s+reset\s+--hard/,
+	/\bgit\s+clean\s+-[fF]/,
+	/\bgit\s+push\s+.*--force/,
+	/\bgit\s+branch\s+-[dD]/,
+	/\bgit\s+tag\s+-d/,
+	/\bgit\s+rebase\s+.*--abort/,
+	/\bgit\s+stash\s+drop/,
+	/\bdrop\s+(table|database|index)\b/i,
+	/\bdelete\s+from\b/i,
+	/\btruncate\b/i,
+	/\bmkfs\b/,
+	/\bdd\s+.*of=/,
+	/\bformat\b/,
+	/\bkill\s+-9\b/,
+	/\bpkill\b/,
+	/\bsudo\s+rm\b/,
+];
+
+const EVAL_INVOKERS = [
+	/\b(?:ba|z)?sh\s+(?:-\w+\s+)*-c\b/,
+	/\beval\b/,
+	/\bnode\s+(?:-\w+\s+)*-e\b/,
+	/\bpython[0-9.]*\s+(?:-\w+\s+)*-c\b/,
+	/\bperl\s+(?:-\w+\s+)*-e\b/,
+	/\bpsql\s+(?:-\w+\s+)*-c\b/,
+];
+
+function matchesDestructive(text) {
+	return DESTRUCTIVE_PATTERNS.some((re) => re.test(text));
+}
+
+/** Lockstep with hkx-gateguard.ts maskCommandLiterals(). */
+function maskCommandLiterals(command) {
+	const fragments = [];
+	let text = String(command);
+
+	text = text.replace(
+		/<<-?\s*['"]?(\w+)['"]?[^\n]*\n([\s\S]*?)\n\s*\1(?=\n|$)/g,
+		(_m, _tag, body) => {
+			fragments.push(body);
+			return "<<MASKED";
+		},
+	);
+
+	text = text.replace(/(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g, (_m, _q, body) => {
+		fragments.push(body);
+		return " ";
+	});
+
+	return { skeleton: text, fragments };
+}
+
+/** Lockstep with hkx-gateguard.ts isDestructiveCommand(). */
 function isDestructiveCommand(command) {
-	const destructive = [
-		/\brm\s+(-[rfirvRF]*\s+)*(?!\/tmp\/)/,
-		/\bgit\s+checkout\s+(-f|--force|--)\s/,
-		/\bgit\s+reset\s+--hard/,
-		/\bgit\s+clean\s+-[fF]/,
-		/\bgit\s+push\s+.*--force/,
-		/\bgit\s+branch\s+-[dD]/,
-		/\bgit\s+tag\s+-d/,
-		/\bgit\s+rebase\s+.*--abort/,
-		/\bgit\s+stash\s+drop/,
-		/\bdrop\s+(table|database|index)\b/i,
-		/\bdelete\s+from\b/i,
-		/\btruncate\b/i,
-		/\bmkfs\b/,
-		/\bdd\s+.*of=/,
-		/\bformat\b/,
-		/\bkill\s+-9\b/,
-		/\bpkill\b/,
-		/\bsudo\s+rm\b/,
-	];
-	return destructive.some((re) => re.test(command));
+	if (typeof command !== "string" || !command) return false;
+	const { skeleton, fragments } = maskCommandLiterals(command);
+	if (matchesDestructive(skeleton)) return true;
+	if (
+		EVAL_INVOKERS.some((re) => re.test(skeleton)) &&
+		fragments.some(matchesDestructive)
+	) {
+		return true;
+	}
+	return false;
 }
 
 function isSubagentArtifactPath(filePath) {

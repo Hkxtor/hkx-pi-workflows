@@ -39,7 +39,7 @@ Extensions are the runtime hook layer.
 Choose an extension when the behavior must react to live tool events, for example:
 
 - reminding the operator to run validation after a mutation
-- blocking risky edits until investigation facts are gathered
+- blocking destructive shell commands until the operator confirms scope
 - surfacing low-noise runtime guidance that should not live in every prompt
 
 ### hkx-language-quality.ts
@@ -63,16 +63,17 @@ That default keeps the pack safe for projects that have not opted into automatic
 
 ### hkx-gateguard.ts
 
-Pre-execution fact-forcing gate extension.
+Destructive-command hard gate extension.
 
 Current behavior:
 
-- Intercepts `tool_call` events for `edit`, `write`, `ast_grep_replace`, and `bash` before execution.
-- Blocks first access to each file with investigation questions (which importers, schemas, user instruction).
-- Blocks destructive Bash commands (`rm -rf`, `git push --force`, `DROP TABLE`, etc.).
-- Tracks per-session state so a file passes the gate after the first denial.
+- Intercepts `tool_call` events for `bash` before execution.
+- Masks quoted strings, backticks, and heredoc bodies before matching so commands that merely *mention* destructive text (regex sources, `echo "git reset --hard"`) are not blocked.
+- Blocks destructive Bash commands (`rm -rf`, `git push --force`, `DROP TABLE`, etc.) on the masked skeleton; when an eval-invoker (`bash -c`, `node -e`, `psql -c`, …) is present, the masked fragments are scanned too.
 - Condenses denial messages after the first three full denials to prevent context bloat.
-- **Pre-authorizes** writes under `.pi-subagents/` (chain-runs + artifacts), including bash redirects into those paths, so review-only chain `outputMode: file-only` does not detach on GateGuard friction.
+- **Pre-authorizes** non-destructive writes under `.pi-subagents/` (chain-runs + artifacts), including bash redirects into those paths, so review-only chain `outputMode: file-only` does not detach on GateGuard friction.
+
+The former first-edit-per-file gate was retired: a 2026-08 A/B retest on current models measured zero score gap (8.5 vs 8.5) while every first edit paid a wasted round-trip.
 
 Disable per-session:
 
@@ -85,6 +86,7 @@ It does not:
 - auto-investigate files
 - run commands on the agent's behalf
 - persist state across sessions
+- provide an in-session exemption path for blocked commands
 
 Complementary surfaces:
 
