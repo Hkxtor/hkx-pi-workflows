@@ -60,7 +60,8 @@ const requiredFiles = [
 	"scripts/tests/install-apply-packaging.mjs",
 	// rpiv-advisor XDG seed (Path B; never overwrite operator modelKey).
 	"scripts/tests/rpiv-advisor-seed.mjs",
-	// Supervisor artifact auto-reply + permission policies.
+	// GateGuard destructive-command + independent artifact auto-reply suites.
+	"scripts/tests/gateguard-selfmatch.mjs",
 	"scripts/tests/subagent-artifact-auto-reply.mjs",
 	// Hookify rule parse/match/evaluate suite.
 	"scripts/tests/hookify-rules.mjs",

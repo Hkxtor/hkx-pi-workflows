@@ -272,6 +272,27 @@ for (const [name, cmd] of TRUE_POSITIVE_CASES) {
 		);
 	}
 
+	const validateSource = fs.readFileSync(
+		path.join(root, "scripts/validate.mjs"),
+		"utf8",
+	);
+	for (const relativePath of [
+		"scripts/tests/gateguard-selfmatch.mjs",
+		"scripts/tests/subagent-artifact-auto-reply.mjs",
+	]) {
+		const count = validateSource.split(`"${relativePath}"`).length - 1;
+		check(
+			`source: validate requires ${relativePath}`,
+			count === 1,
+			`count=${count}`,
+		);
+	}
+	const removedArtifactSuite = "scripts/tests/gateguard-" + "artifacts.mjs";
+	check(
+		"source: validate omits removed artifact suite",
+		!validateSource.includes(removedArtifactSuite),
+	);
+
 	for (const relativePath of CURRENT_CONTRACT_FILES) {
 		const text = fs.readFileSync(path.join(root, relativePath), "utf8");
 		for (const [label, pattern] of STALE_CURRENT_PATTERNS) {
