@@ -1,8 +1,8 @@
 /**
  * HKX subagent supervisor auto-reply.
  *
- * When review-only subagents hit GateGuard / permission friction while writing
- * chain artifacts under `.pi-subagents/`, they often escalate via
+ * When review-only subagents hit permission or tool friction while writing
+ * configured chain artifacts under `.pi-subagents/`, they may escalate via
  * `contact_supervisor` / intercom and detach the foreground chain.
  *
  * This parent-session extension polls the native pi-subagents supervisor
@@ -10,7 +10,7 @@
  * and auto-replies to artifact-write authorization asks so chains do not stall.
  *
  * Scope (deliberately narrow — MF4):
- * - Only need_decision requests that look like GateGuard / configured-output
+ * - Only need_decision requests that look like permission / configured-output
  *   artifact-write authorization with a real `.pi-subagents` path surface.
  * - Product/architecture/trade-off language always rejects, even if the
  *   message also mentions chain-runs or file-only context.
@@ -104,17 +104,16 @@ export function supervisorChannelsRoot(
 }
 
 /**
- * True when a supervisor need_decision message is about writing chain
- * artifacts (GateGuard / permission / configured output path), not a real
- * product decision.
+ * True when a supervisor need_decision message is about permission or tool
+ * friction while writing a configured chain artifact, not a product decision.
  *
  * MF4 rules:
  * 1. Product/architecture/trade-off language always rejects (even with
  *    artifact surface tokens).
  * 2. Surface requires a real `.pi-subagents` path form (not bare `adv/` or
  *    lone `file-only`).
- * 3. Friction requires GateGuard / blocked-write / configured-output
- *    authorization semantics (not bare `write` / `approve` / `permission`).
+ * 3. Friction requires blocked-write / configured-output authorization
+ *    semantics (not bare `write` / `approve` / `permission`).
  */
 export function isArtifactWriteAuthorizationRequest(message: string): boolean {
 	if (typeof message !== "string" || !message.trim()) return false;
@@ -142,9 +141,6 @@ export function isArtifactWriteAuthorizationRequest(message: string): boolean {
 
 	// Explicit write-authorization friction (not bare approve/write).
 	const mentionsWriteFriction =
-		m.includes("gateguard") ||
-		m.includes("gate guard") ||
-		m.includes("first access") ||
 		m.includes("blocked write") ||
 		m.includes("write blocked") ||
 		m.includes("blocked writing") ||

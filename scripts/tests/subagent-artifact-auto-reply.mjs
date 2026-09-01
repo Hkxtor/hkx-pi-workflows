@@ -5,7 +5,7 @@
  *
  * Prefers a real `--experimental-strip-types` import of the extension. The
  * classifier twin provides an offline fallback and must stay lockstep with
- * extensions/hkx-subagent-supervisor-auto-reply.ts until M3 refactors it.
+ * extensions/hkx-subagent-supervisor-auto-reply.ts.
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -29,7 +29,7 @@ function check(name, cond, detail) {
 }
 
 // ---------------------------------------------------------------------------
-// Classifier twin (offline fallback; M3 owns its wording changes)
+// Classifier twin (offline fallback; keep lockstep with the extension)
 // ---------------------------------------------------------------------------
 
 function isArtifactWriteAuthorizationRequest(message) {
@@ -50,9 +50,6 @@ function isArtifactWriteAuthorizationRequest(message) {
 		m.includes("configured output path") ||
 		m.includes("configured output artifact");
 	const mentionsWriteFriction =
-		m.includes("gateguard") ||
-		m.includes("gate guard") ||
-		m.includes("first access") ||
 		m.includes("blocked write") ||
 		m.includes("write blocked") ||
 		m.includes("blocked writing") ||
@@ -75,13 +72,19 @@ function isArtifactWriteAuthorizationRequest(message) {
 }
 
 const ELIGIBLE_MESSAGES = [
-	"GateGuard blocked write to .pi-subagents/chain-runs/eb36/adv/general.md. Please approve writing the configured output artifact.",
-	"需要将 findings 写入权威路径：.pi-subagents/chain-runs/.../adv/general.md。GateGuard 拦截了写该文件。请批准写入该 chain-run 产物路径。",
+	"Permission blocked writing the configured output artifact at .pi-subagents/chain-runs/eb36/adv/general.md. Please approve this artifact write.",
+	"权限层阻止写入配置的输出产物：.pi-subagents/chain-runs/.../adv/general.md。请批准写入该 artifact。",
 	"Authorization required for the configured output artifact under .pi-subagents/chain-runs/x/adv/general.md.",
 ];
 
+const PRODUCT_DECISION_MESSAGE =
+	"Which architecture approach should we take for the schema migration trade-off?";
+
 const INELIGIBLE_MESSAGES = [
-	"Which architecture approach should we take for the schema migration trade-off?",
+	"GateGuard: .pi-subagents/chain-runs/x/adv/general.md",
+	"Gate Guard: .pi-subagents/chain-runs/x/adv/general.md",
+	"First access: .pi-subagents/chain-runs/x/adv/general.md",
+	PRODUCT_DECISION_MESSAGE,
 	"What is the current status of the run?",
 	"Please approve which approach for the schema migration trade-off; keep file-only output.",
 	"Which architecture approach for chain-runs packaging? Please approve.",
@@ -119,6 +122,7 @@ import path from "node:path";
 
 const eligibleMessages = ${JSON.stringify(ELIGIBLE_MESSAGES)};
 const ineligibleMessages = ${JSON.stringify(INELIGIBLE_MESSAGES)};
+const productDecisionMessage = ${JSON.stringify(PRODUCT_DECISION_MESSAGE)};
 const ok = [];
 const bad = [];
 const c = (name, value, detail = "") =>
@@ -165,7 +169,7 @@ const productId = "req-product-2";
 fs.writeFileSync(path.join(channel, "requests", productId + ".json"), JSON.stringify({
   ...req,
   id: productId,
-  message: ineligibleMessages[0],
+  message: productDecisionMessage,
 }, null, 2));
 const productResult = pollAndAutoReply(tmp, Date.now(), seen);
 c(
@@ -252,6 +256,48 @@ process.exit(bad.length ? 1 : 0);
 			`status=${strip.status} ${(strip.stderr || "").slice(0, 120)}`,
 		);
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Chain artifact wording contract
+// ---------------------------------------------------------------------------
+
+{
+	const chainDir = path.join(root, "chains");
+	const chainFiles = fs
+		.readdirSync(chainDir)
+		.filter((file) => file.endsWith(".json"));
+	const parseFailures = [];
+	let oldHintCount = 0;
+	let newHintCount = 0;
+	let filesWithNewHint = 0;
+	for (const file of chainFiles) {
+		const text = fs.readFileSync(path.join(chainDir, file), "utf8");
+		try {
+			JSON.parse(text);
+		} catch (error) {
+			parseFailures.push(
+				`${file}: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+		oldHintCount += text.split("pre-authorized by GateGuard").length - 1;
+		const count =
+			text.split("only permitted write target for this review").length - 1;
+		newHintCount += count;
+		if (count > 0) filesWithNewHint++;
+	}
+	check(
+		"chains: all JSON parse",
+		parseFailures.length === 0,
+		parseFailures.join("; "),
+	);
+	check("chains: old GateGuard hint removed", oldHintCount === 0, `count=${oldHintCount}`);
+	check("chains: neutral artifact hint count", newHintCount === 45, `count=${newHintCount}`);
+	check(
+		"chains: neutral hint file count",
+		filesWithNewHint === 14,
+		`count=${filesWithNewHint}`,
+	);
 }
 
 // ---------------------------------------------------------------------------
