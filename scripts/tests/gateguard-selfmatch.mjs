@@ -8,11 +8,12 @@
  * contains an eval-invoker (`bash -c`, `node -e`, `psql -c`, `eval`…), in
  * which case the masked fragments are scanned too.
  *
- * Mirrors gateguard-artifacts.mjs: prefers real `--experimental-strip-types`
- * import of the extension; twin predicates are the offline fallback and must
- * stay lockstep with extensions/hkx-gateguard.ts.
+ * The suite prefers a real `--experimental-strip-types` import of the
+ * extension; twin predicates are the offline fallback and must stay lockstep
+ * with extensions/hkx-gateguard.ts.
  */
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -20,6 +21,12 @@ const root = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../..",
 );
+const gatePath = path.join(root, "extensions/hkx-gateguard.ts");
+const REMOVED_ARTIFACT_SYMBOLS = [
+	"ARTIFACT_" + "DIR_SEGMENT",
+	"isSubagent" + "ArtifactPath",
+	"isSubagent" + "ArtifactBashWrite",
+];
 const pass = [];
 const fail = [];
 
@@ -33,11 +40,8 @@ function check(name, cond, detail) {
 // ---------------------------------------------------------------------------
 
 const DESTRUCTIVE_PATTERNS = [
-	/\brm\s+(-[rfirvRF]*\s+)*(?!\/tmp\/)/,
 	/\bgit\s+checkout\s+(-f|--force|--)\s/,
 	/\bgit\s+reset\s+--hard/,
-	/\bgit\s+clean\s+-[fF]/,
-	/\bgit\s+push\s+.*--force/,
 	/\bgit\s+branch\s+-[dD]/,
 	/\bgit\s+tag\s+-d/,
 	/\bgit\s+rebase\s+.*--abort/,
@@ -47,11 +51,18 @@ const DESTRUCTIVE_PATTERNS = [
 	/\btruncate\b/i,
 	/\bmkfs\b/,
 	/\bdd\s+.*of=/,
-	/\bformat\b/,
 	/\bkill\s+-9\b/,
 	/\bpkill\b/,
-	/\bsudo\s+rm\b/,
 ];
+
+const GIT_CLEAN_FORCE_PATTERN =
+	/\bgit\s+clean\b(?=[^;&|\n]*\s(?:--force|-[a-z]*f[a-z]*)(?=$|[\s;&|]))/i;
+const GIT_PUSH_FORCE_PATTERN =
+	/\bgit\s+push\b(?=[^;&|\n]*\s(?:--force(?:-[a-z-]+)?(?:=[^\s;&|]+)?|-[a-z]*f[a-z]*)(?=$|[\s;&|]))/i;
+const FORMAT_COMMAND_PATTERN =
+	/(?:^|[;&|]|\n)\s*(?:sudo\s+)?format(?:\.com)?(?=\s|$)/i;
+const RM_INVOCATION_PATTERN = /\brm\s+([^;&|\n]*)/g;
+const RM_SHORT_FLAGS = /^-[rfirvRF]+$/;
 
 const EVAL_INVOKERS = [
 	/\b(?:ba|z)?sh\s+(?:-\w+\s+)*-c\b/,
@@ -62,8 +73,46 @@ const EVAL_INVOKERS = [
 	/\bpsql\s+(?:-\w+\s+)*-c\b/,
 ];
 
+function isSafeTmpRmTarget(target) {
+	return (
+		target.startsWith("/tmp/") &&
+		!/(?:^|\/)\.\.(?:\/|$)/.test(target)
+	);
+}
+
+function matchesDestructiveRm(text) {
+	const rmPattern = new RegExp(RM_INVOCATION_PATTERN.source, "g");
+	let match;
+	while ((match = rmPattern.exec(text)) !== null) {
+		const args = match[1]?.trim().split(/\s+/).filter(Boolean) ?? [];
+		const targets = [];
+		let parsingOptions = true;
+		for (const arg of args) {
+			if (parsingOptions && arg === "--") {
+				parsingOptions = false;
+				continue;
+			}
+			if (parsingOptions && RM_SHORT_FLAGS.test(arg)) continue;
+			targets.push(arg);
+		}
+		if (
+			targets.length === 0 ||
+			targets.some((target) => !isSafeTmpRmTarget(target))
+		) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function matchesDestructive(text) {
-	return DESTRUCTIVE_PATTERNS.some((re) => re.test(text));
+	return (
+		matchesDestructiveRm(text) ||
+		GIT_CLEAN_FORCE_PATTERN.test(text) ||
+		GIT_PUSH_FORCE_PATTERN.test(text) ||
+		FORMAT_COMMAND_PATTERN.test(text) ||
+		DESTRUCTIVE_PATTERNS.some((re) => re.test(text))
+	);
 }
 
 /** Mask quoted spans and heredoc bodies; return { skeleton, fragments }. */
@@ -129,15 +178,39 @@ const FALSE_POSITIVE_CASES = [
 	["quoted mention: grep pkill in source", 'grep -n "pkill" extensions/hkx-gateguard.ts'],
 	["eval invoker, harmless fragment", "node -e 'console.log(\"hi\")'"],
 	["eval invoker, harmless heredoc", "node <<'EOF'\nconsole.log('hi');\nEOF"],
+	["format option: git log", "git log --format='%H %s' -1"],
+	["format option: generic tool", "tool --format json"],
+	["format mention outside command position", "echo format C:"],
+	["git push without force", "git push origin main"],
+	["git clean dry run", "git clean -nd"],
+	["tmp rm: no flags", "rm /tmp/example"],
+	["tmp rm: recursive", "rm -r /tmp/example"],
+	["tmp rm: recursive force", "rm -rf /tmp/example"],
+	["tmp rm: option delimiter", "rm -rf -- /tmp/example"],
+	["tmp rm: multiple tmp targets", "rm -rf /tmp/example /tmp/other"],
 ];
 
 // True positives that must remain blocked (anti-over-strip guardrails).
 const TRUE_POSITIVE_CASES = [
 	["bare rm -rf dir", "rm -rf build/"],
 	["bare rm -r dir", "rm -r ./dist"],
+	["mixed tmp and project rm targets", "rm -rf /tmp/example build/"],
+	["tmp traversal rm target", "rm -rf /tmp/example/../../etc"],
 	["bare git reset --hard", "git reset --hard HEAD~1"],
 	["bare git push --force", "git push origin main --force"],
+	["bare git push --force-with-lease", "git push origin main --force-with-lease"],
+	["bare git push -f", "git push -f origin main"],
+	["combined git push -fu", "git push -fu origin main"],
+	["combined git push -uf", "git push -uf origin main"],
+	["compound git push -f", "npm test && git push -f origin main"],
 	["bare git clean -fd", "git clean -fd"],
+	["bare git clean -xdf", "git clean -xdf"],
+	["bare git clean -dfx", "git clean -dfx"],
+	["bare git clean --force", "git clean --force -d"],
+	["windows format command", "format C:"],
+	["leading whitespace format command", "  format C:"],
+	["sudo format command", "sudo format C:"],
+	["windows format.com command", "format.com C:"],
 	["bare drop table", "psql -d app -w -c 'select 1'; drop table users;"],
 	["compound tail destructive", "npm run build && rm -rf dist"],
 	["masked but eval'd: bash -c rm", "bash -c 'rm -rf build/'"],
@@ -165,19 +238,38 @@ for (const [name, cmd] of TRUE_POSITIVE_CASES) {
 }
 
 // ---------------------------------------------------------------------------
+// Source and real-export decoupling contracts
+// ---------------------------------------------------------------------------
+
+{
+	const source = fs.readFileSync(gatePath, "utf8");
+	for (const symbol of REMOVED_ARTIFACT_SYMBOLS) {
+		check(
+			`source: removed ${symbol}`,
+			!source.includes(symbol),
+			`${symbol} is still present`,
+		);
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Real extension import via --experimental-strip-types
 // ---------------------------------------------------------------------------
 
 {
-	const gatePath = path.join(root, "extensions/hkx-gateguard.ts");
 	const script = `
-import { isDestructiveCommand } from ${JSON.stringify(pathToFileURL(gatePath).href)};
+import * as gate from ${JSON.stringify(pathToFileURL(gatePath).href)};
 
+const { isDestructiveCommand } = gate;
 const falsePositives = ${JSON.stringify(FALSE_POSITIVE_CASES)};
 const truePositives = ${JSON.stringify(TRUE_POSITIVE_CASES)};
 
 const ok = [];
 const bad = [];
+const removedArtifactSymbols = ${JSON.stringify(REMOVED_ARTIFACT_SYMBOLS.slice(1))};
+for (const symbol of removedArtifactSymbols) {
+  (symbol in gate ? bad : ok).push("removed export: " + symbol);
+}
 for (const [name, cmd] of falsePositives) {
   (isDestructiveCommand(cmd) ? bad : ok).push("FP: " + name);
 }

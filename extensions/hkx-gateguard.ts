@@ -1,7 +1,5 @@
-type ToolName = "edit" | "write" | "ast_grep_replace" | "bash" | string;
-
 type ToolCallEvent = {
-	toolName: ToolName;
+	toolName: string;
 	input?: Record<string, unknown>;
 };
 
@@ -40,16 +38,6 @@ type ExtensionFactory = (pi: ExtensionRuntime) => void;
  * skeleton contains an eval-invoker (`bash -c`, `node -e`, `psql -c`, …) the
  * masked fragments are scanned as well, so `bash -c 'rm -rf build/'` stays
  * blocked while `echo "git reset --hard"` passes.
- *
- * Artifact exception (chain review outputs):
- * Paths under a real `.pi-subagents/` directory segment (chain-runs + artifacts)
- * are pre-authorized after path normalization (rejects `..` escapes and
- * substring false positives like `evil.pi-subagents/`).
- *
- * Bash: destructive detection always runs first. Artifact bash short-circuit
- * only applies to non-destructive commands that clearly write into
- * `.pi-subagents/` path segments — compound `write-artifact && rm -rf src`
- * stays blocked.
  */
 
 // ---------------------------------------------------------------------------
@@ -61,9 +49,6 @@ let denialCount = 0;
 
 /** Max full denials before switching to condensed single-line messages. */
 const MAX_FULL_DENIALS = 3;
-
-/** Path-segment boundary for the runtime artifact directory. */
-const ARTIFACT_DIR_SEGMENT = ".pi-subagents";
 
 // ---------------------------------------------------------------------------
 // Helpers (exported for unit tests)
@@ -77,86 +62,9 @@ export function isEnabled(): boolean {
 	return v !== "0" && v !== "false" && v !== "off" && v !== "disabled";
 }
 
-/**
- * Collapse `.` / `..` path segments without requiring the path to exist.
- * Returns null when the path would escape above its relative root via `..`.
- */
-export function normalizePathSegments(filePath: string): string | null {
-	const n = filePath.replace(/\\/g, "/");
-	const isAbs = n.startsWith("/");
-	const parts = n.split("/");
-	const stack: string[] = [];
-	for (const part of parts) {
-		if (part === "" || part === ".") continue;
-		if (part === "..") {
-			if (stack.length === 0) return null;
-			stack.pop();
-			continue;
-		}
-		stack.push(part);
-	}
-	const joined = stack.join("/");
-	if (isAbs) return `/${joined}`;
-	return joined;
-}
-
-/**
- * True when the normalized path contains a full directory segment
- * `.pi-subagents` (not a substring of another name).
- *
- * Rejects:
- * - `evil.pi-subagents/foo` (name collision)
- * - `.pi-subagents/../scripts/x` (traversal out of artifact tree)
- * - empty / non-string
- */
-export function isSubagentArtifactPath(filePath: string): boolean {
-	if (typeof filePath !== "string" || !filePath.trim()) return false;
-	const normalized = normalizePathSegments(filePath);
-	if (normalized === null) return false;
-	const segments = normalized.split("/").filter((s) => s.length > 0);
-	return segments.includes(ARTIFACT_DIR_SEGMENT);
-}
-
-/**
- * True when a bash command performs a clear write into a `.pi-subagents/`
- * path segment and is not destructive.
- *
- * Order contract (MF1): callers must still run `isDestructiveCommand` first;
- * this helper also returns false for destructive commands as defense in depth.
- *
- * Requires path-segment boundary (not `evil.pi-subagents/`).
- */
-export function isSubagentArtifactBashWrite(command: string): boolean {
-	if (typeof command !== "string" || !command.includes(ARTIFACT_DIR_SEGMENT)) {
-		return false;
-	}
-	// MF1 defense-in-depth: never classify destructive compounds as artifact-only.
-	if (isDestructiveCommand(command)) return false;
-
-	// Path-segment boundary: `/ .pi-subagents/` or start-of-string `.pi-subagents/`
-	// or quote-delimited. Rejects `evil.pi-subagents/`.
-	const artifactPath =
-		/(?:^|[\s"'`=])\.pi-subagents\//.test(command) ||
-		/\/\.pi-subagents\//.test(command);
-	if (!artifactPath) return false;
-
-	const writesArtifact =
-		/>\s*['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command) ||
-		/>>\s*['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command) ||
-		/tee\s+['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command) ||
-		/\bcp\s+[^\n]*\/\.pi-subagents\//.test(command) ||
-		/\bcp\s+[^\n]*(?:^|[\s"'`])\.pi-subagents\//.test(command) ||
-		/\binstall\s+[^\n]*\.pi-subagents\//.test(command) ||
-		/\bmkdir\s+(-p\s+)?['"]?(?:[^'"\s]*\/)?\.pi-subagents\//.test(command);
-	return writesArtifact;
-}
-
 const DESTRUCTIVE_PATTERNS = [
-	/\brm\s+(-[rfirvRF]*\s+)*(?!\/tmp\/)/,
 	/\bgit\s+checkout\s+(-f|--force|--)\s/,
 	/\bgit\s+reset\s+--hard/,
-	/\bgit\s+clean\s+-[fF]/,
-	/\bgit\s+push\s+.*--force/,
 	/\bgit\s+branch\s+-[dD]/,
 	/\bgit\s+tag\s+-d/,
 	/\bgit\s+rebase\s+.*--abort/,
@@ -166,11 +74,18 @@ const DESTRUCTIVE_PATTERNS = [
 	/\btruncate\b/i,
 	/\bmkfs\b/,
 	/\bdd\s+.*of=/,
-	/\bformat\b/,
 	/\bkill\s+-9\b/,
 	/\bpkill\b/,
-	/\bsudo\s+rm\b/,
 ];
+
+const GIT_CLEAN_FORCE_PATTERN =
+	/\bgit\s+clean\b(?=[^;&|\n]*\s(?:--force|-[a-z]*f[a-z]*)(?=$|[\s;&|]))/i;
+const GIT_PUSH_FORCE_PATTERN =
+	/\bgit\s+push\b(?=[^;&|\n]*\s(?:--force(?:-[a-z-]+)?(?:=[^\s;&|]+)?|-[a-z]*f[a-z]*)(?=$|[\s;&|]))/i;
+const FORMAT_COMMAND_PATTERN =
+	/(?:^|[;&|]|\n)\s*(?:sudo\s+)?format(?:\.com)?(?=\s|$)/i;
+const RM_INVOCATION_PATTERN = /\brm\s+([^;&|\n]*)/g;
+const RM_SHORT_FLAGS = /^-[rfirvRF]+$/;
 
 const EVAL_INVOKERS = [
 	/\b(?:ba|z)?sh\s+(?:-\w+\s+)*-c\b/,
@@ -181,8 +96,48 @@ const EVAL_INVOKERS = [
 	/\bpsql\s+(?:-\w+\s+)*-c\b/,
 ];
 
+function isSafeTmpRmTarget(target: string): boolean {
+	return (
+		target.startsWith("/tmp/") &&
+		!/(?:^|\/)\.\.(?:\/|$)/.test(target)
+	);
+}
+
+function matchesDestructiveRm(text: string): boolean {
+	const rmPattern = new RegExp(RM_INVOCATION_PATTERN.source, "g");
+	let match: RegExpExecArray | null;
+	while ((match = rmPattern.exec(text)) !== null) {
+		const args = match[1]?.trim().split(/\s+/).filter(Boolean) ?? [];
+		const targets: string[] = [];
+		let parsingOptions = true;
+		for (const arg of args) {
+			if (parsingOptions && arg === "--") {
+				parsingOptions = false;
+				continue;
+			}
+			if (parsingOptions && RM_SHORT_FLAGS.test(arg)) continue;
+			targets.push(arg);
+		}
+
+		// Missing, mixed, relative, or traversal-containing targets stay blocked.
+		if (
+			targets.length === 0 ||
+			targets.some((target) => !isSafeTmpRmTarget(target))
+		) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function matchesDestructive(text: string): boolean {
-	return DESTRUCTIVE_PATTERNS.some((re) => re.test(text));
+	return (
+		matchesDestructiveRm(text) ||
+		GIT_CLEAN_FORCE_PATTERN.test(text) ||
+		GIT_PUSH_FORCE_PATTERN.test(text) ||
+		FORMAT_COMMAND_PATTERN.test(text) ||
+		DESTRUCTIVE_PATTERNS.some((re) => re.test(text))
+	);
 }
 
 /**
@@ -257,23 +212,17 @@ const extension: ExtensionFactory = (pi) => {
 		const { toolName, input } = event;
 		const rawInput = (input ?? {}) as Record<string, unknown>;
 
-		// --- Bash: destructive first (MF1), then artifact-only allow ---
+		// --- Bash: block destructive commands, allow everything else. ---
 		if (toolName === "bash") {
 			const command =
 				typeof rawInput.command === "string" ? rawInput.command : "";
 			if (!command) return undefined;
 
-			// MF1: never short-circuit past destructive detection.
 			if (isDestructiveCommand(command)) {
 				return {
 					block: true,
 					reason: gateMessage(),
 				};
-			}
-
-			// Non-destructive artifact-only shell writes are pre-authorized.
-			if (isSubagentArtifactBashWrite(command)) {
-				return undefined;
 			}
 
 			return undefined;
