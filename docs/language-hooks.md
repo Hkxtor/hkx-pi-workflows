@@ -71,11 +71,10 @@ Current behavior:
 - Masks quoted strings, backticks, and heredoc bodies before matching so commands that merely *mention* destructive text (regex sources, `echo "git reset --hard"`) are not blocked.
 - Blocks destructive Bash commands (`rm -rf`, `git push --force`, `DROP TABLE`, etc.) on the masked skeleton; when an eval-invoker (`bash -c`, `node -e`, `psql -c`, …) is present, the masked fragments are scanned too.
 - Condenses denial messages after the first three full denials to prevent context bloat.
-- **Pre-authorizes** non-destructive writes under `.pi-subagents/` (chain-runs + artifacts), including bash redirects into those paths, so review-only chain `outputMode: file-only` does not detach on GateGuard friction.
+- Blocks every matched command while enabled; answering the risk checklist does not create an in-session exemption.
+- Directs the operator to use a non-destructive alternative, stop, or restart with `HKX_GATEGUARD=off` after explicit authorization.
 
-The former first-edit-per-file gate was retired: a 2026-08 A/B retest on current models measured zero score gap (8.5 vs 8.5) while every first edit paid a wasted round-trip.
-
-Disable per-session:
+Disable before starting or restarting a session:
 
 ```text
 HKX_GATEGUARD=off
@@ -90,9 +89,9 @@ It does not:
 
 Complementary surfaces:
 
-- `skills/gateguard/SKILL.md` — prompt-level gate guidance and output format
+- `skills/gateguard/SKILL.md` — prompt-level decision checklist and hard-gate guidance
 - `skills/safety-guard/SKILL.md` — runtime safety checks that do not overlap with the gate
-- `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves artifact-write intercom asks
+- `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves scoped permission/configured-output artifact asks
 - `hkx-hookify.ts` — user-defined pattern rules (orthogonal to GateGuard)
 
 ### hkx-hookify.ts
@@ -116,7 +115,7 @@ HKX_HOOKIFY=off
 
 It does not:
 
-- replace GateGuard investigation gates
+- replace GateGuard's destructive-command policy
 - promote rules into instincts/skills automatically
 - hard-block user prompt submit or session end
 
@@ -133,7 +132,7 @@ Parent-session extension that keeps review chains from stalling on artifact writ
 Current behavior:
 
 - On `session_start`, polls the native pi-subagents supervisor channel under the process tmpdir.
-- Auto-replies only to `need_decision` requests that look like **artifact-write / GateGuard / chain-run path** authorization (mentions `.pi-subagents`, `chain-runs`, configured output, etc.).
+- Auto-replies only to `need_decision` requests that look like scoped **permission / configured-output artifact** authorization (mentions `.pi-subagents`, configured output, blocked writing, etc.).
 - Does **not** auto-reply to product, architecture, or trade-off decisions.
 - Rate-limits UI notifications.
 
@@ -143,7 +142,7 @@ Disable per-session:
 HKX_SUPERVISOR_AUTO_REPLY=off
 ```
 
-Together with GateGuard's `.pi-subagents/` allowlist, this closes the detach loop where review children escalated solely to land `adv/*.md` outputs.
+Together with configured chain output instructions and the permission policy, this closes the detach loop where review children escalated solely to land `adv/*.md` outputs.
 
 ## Placement Guide
 

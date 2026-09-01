@@ -10,7 +10,7 @@ argument-hint: "[recall|save|handoff|promote-instinct|import-ecc|validate] [titl
 > 数据挂在现有 **`hkx-homunculus`**（与 instinct 同根），文档为 **`hkx.memory.v1`**。
 > **不**使用 `~/.ecc/memory`、`ecc-universal`、或第二权威数据根。
 
-## GateGuard (create)
+## Implementation
 
 1. Loaded via `package.json` `pi.prompts` → `./commands`; Path B install links commands/prompts.
 2. Surfaces: slash router → `node scripts/instinct/cli.mjs memory …` (M1 CLI).

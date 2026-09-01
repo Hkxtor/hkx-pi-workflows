@@ -9,7 +9,7 @@ argument-hint: "<user flow or feature to test>"
 > ECC `/e2e`(已迁入 `legacy-command-shims`)的 **pi-native 薄入口**。
 > 不复制 `e2e-testing` skill 全文;只做一次性路由到 `hkx.e2e-runner`,agent 内部应用 skill。
 
-## GateGuard (create)
+## Implementation
 
 1. Loaded via `package.json` `pi.prompts` → `./commands`;Path B install links `commands/` + `prompts/`.
 2. Surfaces: slash router only;delegates to `hkx.e2e-runner` (pi-subagents `package: hkx`) — no new runtime code.

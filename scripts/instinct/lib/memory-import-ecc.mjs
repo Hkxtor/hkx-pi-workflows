@@ -7,7 +7,7 @@
  * Auth: user "proceed" on M4
  * Verify: scripts/tests/instinct-memory.mjs
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. scripts/instinct/lib; install copies instinct tree.
  * 2. Export planEccMemoryImport, applyEccMemoryImport, resolveEccMemoryRoots.
  * 3. Read-only source walk; writes only via saveMemory when apply.

@@ -27,6 +27,27 @@ const REMOVED_ARTIFACT_SYMBOLS = [
 	"isSubagent" + "ArtifactPath",
 	"isSubagent" + "ArtifactBashWrite",
 ];
+const CURRENT_CONTRACT_FILES = [
+	"extensions/hkx-gateguard.ts",
+	"skills/gateguard/SKILL.md",
+	"docs/architecture.md",
+	"docs/conversion-map.md",
+	"docs/language-hooks.md",
+	"skills/hookify-rules/SKILL.md",
+	"extensions/hkx-hookify.ts",
+	"agents/conversation-analyzer.md",
+];
+const STALE_CURRENT_PATTERNS = [
+	["fact-forcing gate", /fact-forcing gate/i],
+	["pre-edit gatekeeping", /pre-edit \/ destructive-action gatekeeping/i],
+	["artifact pre-authorization", /pre-authoriz(?:es|ed)[^\n]*\.pi-subagents/i],
+	["GateGuard investigation gate", /GateGuard \(investigation gate\)/i],
+	["GateGuard investigation wording", /GateGuard investigation gates?/i],
+	["GateGuard-style investigation", /GateGuard-style investigation/i],
+	["GateGuard artifact classifier", /artifact-write \/ GateGuard \/ chain-run path/i],
+	["GateGuard artifact allowlist", /GateGuard's `?\.pi-subagents\/?`? allowlist/i],
+	["approve-and-rephrase", /approve-and-rephrase/i],
+];
 const pass = [];
 const fail = [];
 
@@ -250,6 +271,67 @@ for (const [name, cmd] of TRUE_POSITIVE_CASES) {
 			`${symbol} is still present`,
 		);
 	}
+
+	for (const relativePath of CURRENT_CONTRACT_FILES) {
+		const text = fs.readFileSync(path.join(root, relativePath), "utf8");
+		for (const [label, pattern] of STALE_CURRENT_PATTERNS) {
+			check(
+				`source: ${relativePath} omits ${label}`,
+				!pattern.test(text),
+				label,
+			);
+		}
+	}
+
+	const skillPath = path.join(root, "skills/gateguard/SKILL.md");
+	const skill = fs.readFileSync(skillPath, "utf8");
+	const evidenceStart = skill.indexOf("## Evidence");
+	const currentBehaviorStart = skill.indexOf("## What The Gate Does");
+	check(
+		"source: GateGuard skill has bounded Evidence section",
+		evidenceStart >= 0 && currentBehaviorStart > evidenceStart,
+	);
+	if (evidenceStart >= 0 && currentBehaviorStart > evidenceStart) {
+		const outsideEvidence =
+			skill.slice(0, evidenceStart) + skill.slice(currentBehaviorStart);
+		check(
+			"source: first-edit history only appears in Evidence",
+			!/first[- ]?edit|first-per-file|investigation forcer/i.test(
+				outsideEvidence,
+			),
+		);
+	}
+
+	const historicalDeclaration =
+		/(?:GateGuard\s*\(create\)|GateGuard notes(?:\s*\(first create\))?|Investigation\s*\(GateGuard\))/i;
+	const currentTestPath = fileURLToPath(import.meta.url);
+	const historicalDeclarations = [];
+	const pendingDirs = ["commands", "extensions", "scripts"].map((dir) =>
+		path.join(root, dir),
+	);
+	while (pendingDirs.length > 0) {
+		const dir = pendingDirs.pop();
+		if (!dir) continue;
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const entryPath = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				pendingDirs.push(entryPath);
+				continue;
+			}
+			if (entryPath === currentTestPath || !/\.(?:md|mjs|ts)$/.test(entry.name)) {
+				continue;
+			}
+			const text = fs.readFileSync(entryPath, "utf8");
+			if (historicalDeclaration.test(text)) {
+				historicalDeclarations.push(path.relative(root, entryPath));
+			}
+		}
+	}
+	check(
+		"source: historical GateGuard declarations removed",
+		historicalDeclarations.length === 0,
+		historicalDeclarations.join(", "),
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +357,42 @@ for (const [name, cmd] of falsePositives) {
 }
 for (const [name, cmd] of truePositives) {
   (isDestructiveCommand(cmd) ? ok : bad).push("TP: " + name);
+}
+
+let toolHandler;
+gate.default({
+  on(event, handler) {
+    if (event === "tool_call") toolHandler = handler;
+  },
+});
+if (typeof toolHandler !== "function") {
+  bad.push("runtime: tool_call handler registered");
+} else {
+  const reasons = [];
+  for (let i = 0; i < 4; i++) {
+    const result = await toolHandler({
+      toolName: "bash",
+      input: { command: "git reset --hard" },
+    });
+    reasons.push(result?.reason ?? "");
+  }
+  const full = reasons[0];
+  const condensed = reasons[3];
+  (/non-destructive alternative/i.test(full) ? ok : bad).push(
+    "runtime: full denial names safe alternative",
+  );
+  (full.includes("HKX_GATEGUARD=off") ? ok : bad).push(
+    "runtime: full denial names disable-restart path",
+  );
+  (/non-destructive alternative/i.test(condensed) ? ok : bad).push(
+    "runtime: condensed denial names safe alternative",
+  );
+  (condensed.includes("HKX_GATEGUARD=off") ? ok : bad).push(
+    "runtime: condensed denial names disable-restart path",
+  );
+  (!/before retrying|investigate target scope before retrying/i.test(reasons.join("\\n")) ? ok : bad).push(
+    "runtime: denials do not imply retry unlock",
+  );
 }
 console.log(JSON.stringify({ ok, bad }));
 process.exit(bad.length ? 1 : 0);

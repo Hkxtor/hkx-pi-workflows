@@ -8,7 +8,7 @@ argument-hint: "[--apply] [--max-age 30] [--scope project|global|all] [--as-of Y
 
 Remove **pending** instincts that were never accepted/promoted and are older than the TTL.
 
-## GateGuard (create)
+## Implementation
 
 1. Loaded via `package.json` `pi.prompts` → `./commands`; Path B `install.mjs` links into `~/.pi/agent/commands` and `prompts/`.
 2. Surfaces: slash prompt only; delegates to `scripts/instinct/cli.mjs prune` (planPrune/applyPrune).

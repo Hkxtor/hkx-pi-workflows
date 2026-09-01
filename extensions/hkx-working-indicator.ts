@@ -6,7 +6,7 @@
  * - Disable auto-enable: `HKX_WORKING_INDICATOR=off`
  * - Toggle during a session: `/hkx-working-indicator`
  *
- * Investigation (GateGuard):
+ * Implementation notes:
  * 1. Callers/docs: package.json pi.extensions, scripts/validate.mjs required
  *    files, docs/architecture.md + docs/conversion-map.md, README appearance.
  * 2. Public surface: default export ExtensionFactory; command

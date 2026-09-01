@@ -8,7 +8,7 @@ argument-hint: "[base-branch] [--draft] (default base: main)"
 
 > Adapted from ECC `/prp-pr` (PRPs-agentic-eng lineage) for Pi. Pair with `/prp-commit`.
 
-## GateGuard (create)
+## Implementation
 
 1. Callers: operator slash prompt via `pi.prompts`/`commands/`; install-global mirrors to prompts/.
 2. Affects: remote branch push + GitHub PR create via `gh`; no package runtime schema.

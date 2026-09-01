@@ -2,8 +2,8 @@
  * HKX Hookify — operator-authored behavior guardrails for Pi.
  *
  * Loads Markdown+YAML rule files and enforces them on tool_call /
- * before_agent_start / agent_end. Complements GateGuard (investigation gate)
- * with user-defined pattern gates.
+ * before_agent_start / agent_end. Complements GateGuard's destructive-command
+ * hard gate with user-defined pattern rules.
  *
  * Rule locations:
  * - project: `.pi/hookify.{name}.local.md` (under cwd)

@@ -10,7 +10,7 @@ argument-hint: "[plan|execute|backend|frontend|review|fix|refactor|docs] [task d
 > **不**依赖 `npx ccg-workflow`、`codeagent-wrapper`、Codex/Gemini 外挂或 `~/.claude/.ccg`。
 > 编排落在 **现有** commands / orch skills / `chains/*.chain.json`（pi-subagents）。
 
-## GateGuard (create)
+## Implementation
 
 1. Loaded via `package.json` `pi.prompts` → `./commands`; Path B install links `commands/` + `prompts/`.
 2. Surfaces: slash router only; delegates to existing `workflow`, orch skills, and chains — no new runtime code.

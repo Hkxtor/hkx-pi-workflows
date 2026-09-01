@@ -6,7 +6,7 @@
  * Auth: user "proceed" on unified-memory M1
  * Verify: node scripts/tests/instinct-memory.mjs; npm test
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. scripts/instinct/lib/* pattern; install.mjs copies scripts/instinct tree.
  * 2. Exports: MEMORY_SCHEMA, parse/serialize/validate, slugMemoryId.
  * 3. Frontmatter schema string hkx.memory.v1; ids via isValidInstinctId.

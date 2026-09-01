@@ -6,7 +6,7 @@
  * Auth: user "proceed" on unified-memory M1
  * Verify: node scripts/tests/instinct-memory.mjs; npm test
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. lib next to store.mjs; install copies full scripts/instinct.
  * 2. Exports: memoryDirForScope, recallMemories, saveMemory, validateMemories.
  * 3. Layout via layoutPaths projectMemory/userMemory/teamMemory.

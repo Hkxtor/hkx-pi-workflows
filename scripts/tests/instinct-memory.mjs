@@ -1,7 +1,7 @@
 /**
  * M1 unified memory vault tests (schema + store + CLI).
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. Runner: scripts/tests/run.mjs picks up every *.mjs except itself; npm test.
  * 2. Exercises: memory-schema, memory-store, paths memory dirs, cli memory; no prod exports.
  * 3. Temp HKX_HOMUNCULUS_DIR; 12-hex project ids; hkx.memory.v1 frontmatter.

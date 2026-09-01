@@ -8,7 +8,7 @@ argument-hint: "[--json]"
 
 List the instinct **project registry** and per-project statistics.
 
-## GateGuard (create)
+## Implementation
 
 1. Loaded via `package.json` `pi.prompts` → `./commands`; Path B install links commands/prompts.
 2. Surfaces: slash prompt; delegates to `scripts/instinct/cli.mjs projects` (listProjectStats).

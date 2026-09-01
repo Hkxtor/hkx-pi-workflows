@@ -7,7 +7,7 @@
  * Auth: user "proceed" on M3
  * Verify: scripts/tests/instinct-om.mjs
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. scripts/instinct/lib next to om-map; install copies instinct tree.
  * 2. Export mapProjectionToVaultDocs, vaultIdFromReflection.
  * 3. Produces partial MemoryDoc inputs for saveMemory (source om).

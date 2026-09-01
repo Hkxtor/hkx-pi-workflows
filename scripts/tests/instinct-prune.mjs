@@ -1,7 +1,7 @@
 /**
  * Pending prune + projects stats tests (P0 instinct gap fill).
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. Runner: scripts/tests/run.mjs picks up every *.mjs except itself; npm test.
  * 2. Exercises: lib/prune.mjs, lib/projects.mjs, cli prune/projects; no production exports.
  * 3. Temp HKX_HOMUNCULUS_DIR layouts; created dates YYYY-MM-DD; 12-hex project ids.

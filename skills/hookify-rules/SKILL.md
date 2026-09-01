@@ -1,6 +1,6 @@
 ---
 name: hookify-rules
-description: "Write and maintain Hookify behavior-guardrail rules for Pi: Markdown+YAML pattern files enforced by the hkx-hookify extension. Use when creating, editing, listing, or toggling hookify rules, or when the user wants to prevent a repeated agent behavior. Not for GateGuard investigation gates, instinct evolve, or full security threat review."
+description: "Write and maintain Hookify behavior-guardrail rules for Pi: Markdown+YAML pattern files enforced by the hkx-hookify extension. Use when creating, editing, listing, or toggling hookify rules, or when the user wants to prevent a repeated agent behavior. Not for destructive-command gating (use gateguard), instinct evolve, or full security threat review."
 origin: ECC-converted-for-Pi
 ---
 
@@ -128,7 +128,7 @@ Creation must **propose first** and only write after user confirmation. Default 
 
 ## Relationship to other surfaces
 
-- **GateGuard** — hard blocks destructive bash commands; does not gate edits or files. Not pattern-based.
+- **GateGuard** — hard-blocks matched destructive Bash commands while enabled; it does not gate edits, authorize file writes, or provide an in-session exemption. Not pattern-based.
 - **Instinct** — cross-session learned behaviors with accept/promote. Hookify is immediate and explicit.
 - **safety-guard / security-*** — broader policy and review; Hookify is a narrow runtime matcher.
 

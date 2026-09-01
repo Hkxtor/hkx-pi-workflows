@@ -1,7 +1,7 @@
 /**
  * Prune expired pending instincts (ECC continuous-learning-v2 parity).
  *
- * GateGuard notes (first create):
+ * Implementation notes:
  * 1. Importers/callers: scripts/instinct/cli.mjs (new `prune` subcommand);
  *    docs: commands/instinct-prune.md, docs/conversion-map.md, skills/instinct-evolve.
  * 2. Public exports: DEFAULT_PENDING_TTL_DAYS, ageDays, resolvePendingCreated,

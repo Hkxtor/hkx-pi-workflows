@@ -1,14 +1,14 @@
 ---
 name: gateguard
-description: Pi destructive-command hard gate. Blocks destructive shell commands until the operator states scope, target environment, rollback path, and authorization. Formerly also gated first-per-file edits; that gate was retired after A/B re-testing showed zero benefit on current models.
+description: Pi destructive-command hard gate. Unconditionally blocks matched shell commands while enabled; use a non-destructive alternative or restart with HKX_GATEGUARD=off after explicit authorization.
 origin: HKX-converted-for-Pi
 ---
 
 # HKX GateGuard For Pi
 
-GateGuard is now a **destructive-command hard gate**, not an investigation
-forcer. It intercepts shell commands that can destroy data or history and
-refuses them until the operator confirms the action deliberately.
+GateGuard is a **destructive-command hard gate**. It intercepts shell commands
+that can destroy data or history and rejects them while the gate is enabled.
+There is no in-session exemption for a matched command.
 
 ## Evidence
 
@@ -51,26 +51,25 @@ are a **policy** concern (irreversibility), not an intelligence deficit.
   eval-invoker (`bash -c`, `sh -c`, `eval`, `node -e`, `python -c`, `psql -c`,
   `perl -e`), the masked fragments are scanned too, so
   `bash -c 'rm -rf build/'` stays blocked while `echo 'rm -rf build/'` passes.
-- **`.pi-subagents/` artifact writes are pre-authorized** once the command is
-  provably non-destructive (MF1: destructive check always runs first).
-
-Disable per session: `HKX_GATEGUARD=off`.
+Disable before starting or restarting a session: `HKX_GATEGUARD=off`.
 
 ## Triggers
 
 - The command deletes files/data, rewrites history, force-pushes, drops or
   truncates tables, kills processes, or formats devices.
 
-## Gate Questions
+## Decision Checklist
 
-Answer before retrying a blocked command:
+Use these questions to choose whether to stop, use a non-destructive
+alternative, or restart with the gate disabled. Answering them does not unlock
+the blocked command in the current session.
 
 ```text
-Before running <action>:
+Before choosing a path:
 1. What files, data, branches, services, accounts, or users can be modified?
 2. Is the target local, test, staging, or production?
 3. What rollback or recovery path exists?
-4. What exact user instruction authorizes this action?
+4. What exact user instruction authorizes disabling the gate, if needed?
 ```
 
 ## Known Limits
@@ -79,16 +78,15 @@ Before running <action>:
   as `find -delete`, `truncate -s0`, or interpreter one-liners are not
   statically recognizable, and quoted fragments are trusted unless re-executed
   by an eval-invoker.
-- Blocked destructive commands have no in-session exemption path; an operator
-  must either approve-and-rephrase or restart with `HKX_GATEGUARD=off`.
-  (Candidate follow-up PRD: session-scoped "explain once, then allow".)
+- Blocked destructive commands have no in-session exemption path. Replace the
+  command with a genuinely non-destructive alternative, stop, or restart with
+  `HKX_GATEGUARD=off` after explicit operator authorization.
 
 ## Output
 
 ```text
 Gate:
-Facts gathered:
-Risk:
+Scope and risk:
 Authorization:
-Proceed / stop:
+Decision: safe alternative / disable-and-restart / stop
 ```

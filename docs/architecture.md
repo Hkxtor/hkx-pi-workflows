@@ -139,10 +139,10 @@ Use an extension when the behavior must happen at runtime, for example:
 
 Current extensions:
 
-- `hkx-gateguard.ts` — fact-forcing gate; pre-authorizes `.pi-subagents/` chain artifact writes
+- `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands remain blocked while enabled
 - `hkx-hookify.ts` — operator Hookify pattern rules (warn/block); `.pi/hookify.*.local.md`; `HKX_HOOKIFY=off`
 - `hkx-language-quality.ts` — post-mutation validation notifications
-- `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to artifact-write intercom asks so review chains do not detach
+- `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to scoped permission/configured-output artifact asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 - `hkx-custom-header.ts` — custom startup header (logo + keybinding hints); `/hkx-custom-header`, `HKX_CUSTOM_HEADER=off`; adapted from amosblomqvist/pi-config
 

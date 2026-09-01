@@ -8,7 +8,7 @@ argument-hint: "[target description] (blank = all changes)"
 
 > Adapted from ECC `/prp-commit` (PRPs-agentic-eng lineage) for Pi. Part of the thin PRP operator surface.
 
-## GateGuard (create)
+## Implementation
 
 1. Callers: operator slash prompt via `pi.prompts`/`commands/`; install-global mirrors to prompts/.
 2. Affects: git index + creates a commit only; no package runtime schema.

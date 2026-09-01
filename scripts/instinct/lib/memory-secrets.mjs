@@ -7,7 +7,7 @@
  * Auth: user "proceed" on M4
  * Verify: scripts/tests/instinct-memory.mjs
  *
- * GateGuard (create):
+ * Implementation notes:
  * 1. scripts/instinct/lib next to memory-store.
  * 2. Export scanMemoryText, hasBlockingSecrets, redactSnippet.
  * 3. Pure text scan; no I/O.

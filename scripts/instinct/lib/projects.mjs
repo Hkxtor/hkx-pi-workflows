@@ -1,7 +1,7 @@
 /**
  * Project registry + per-project instinct statistics.
  *
- * GateGuard notes (first create):
+ * Implementation notes:
  * 1. Importers/callers: scripts/instinct/cli.mjs (new `projects` subcommand);
  *    docs: commands/instinct-projects.md, docs/conversion-map.md,
  *    skills/instinct-evolve. Reuses promote.mjs loadRegistry/listProjectIds.

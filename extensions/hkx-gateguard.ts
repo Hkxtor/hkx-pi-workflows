@@ -25,12 +25,10 @@ type ExtensionFactory = (pi: ExtensionRuntime) => void;
 /**
  * HKX GateGuard — destructive-command hard gate for Pi.
  *
- * A `tool_call` hook that blocks destructive shell commands. The former
- * first-edit-per-file interception was retired (see skills/gateguard/SKILL.md):
- * a 2026-08 A/B retest on current models measured zero score gap (8.5 vs 8.5),
- * while every first edit paid a wasted round-trip.
- *
- * Disable per-session: set `HKX_GATEGUARD=off` in the environment.
+ * A `tool_call` hook that unconditionally blocks recognized destructive shell
+ * commands while enabled. There is no in-session exemption: use a
+ * non-destructive alternative, or restart with `HKX_GATEGUARD=off` after
+ * explicit operator authorization.
  *
  * Destructive detection runs on a masked view of the command: quoted strings
  * and heredoc bodies are removed so commands merely *mentioning* destructive
@@ -189,15 +187,16 @@ export function isDestructiveCommand(command: string): boolean {
 function gateMessage(): string {
 	denialCount++;
 	if (denialCount > MAX_FULL_DENIALS) {
-		return `[GateGuard #${denialCount}] Destructive command blocked. Investigate target scope before retrying.`;
+		return `[GateGuard #${denialCount}] Destructive command blocked while GateGuard is enabled. Use a non-destructive alternative, or restart with HKX_GATEGUARD=off.`;
 	}
 	return [
-		`[GateGuard] Destructive command blocked.`,
-		`Before running:`,
+		`[GateGuard] Destructive command blocked while GateGuard is enabled.`,
+		`Review before choosing a safer path:`,
 		`1. What files, data, branches, services, or accounts can be modified?`,
 		`2. Is the target local, test, staging, or production?`,
 		`3. What rollback or recovery path exists?`,
 		`4. What exact user instruction authorizes this action?`,
+		`This command remains blocked. Use a non-destructive alternative, stop, or restart with HKX_GATEGUARD=off.`,
 	].join("\n");
 }
 
