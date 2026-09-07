@@ -132,22 +132,22 @@ pi -e .
 
 ## MCP 默认值与可选 profile
 
-路径 B 会以加法方式合并受版本控制的 `.mcp.json`。默认采用 proxy-first
-（`settings.directTools: false`），仅指定 server 直接暴露 tools：
+路径 B 会以加法方式合并受版本控制的 `.mcp.json`。默认 surface 刻意保持最小：
+proxy-first（`settings.directTools: false`），且只有一个默认 server：
 
-- `context7`、`sequential-thinking`、`mcp-server-time` 与 `mcp-deepwiki`
-  使用 eager 连接并直接暴露 tools。
-- `playwright` 与 `chrome-devtools-mcp` 保持 lazy，使用跨平台的 `npx`
-  命令；不依赖 Windows 的 `cmd /c` 包装。
-- `github` 与 `exa` 保持通过 proxy 发现的默认能力。
+- `context7` 使用公开的远程 HTTP MCP endpoint，采用 lazy 连接
+  （`lifecycle: "lazy"`），是默认 surface 中唯一直接暴露 tools 的 server。
 
-`context7` 是唯一的默认 Context7 条目，使用公开的远程 HTTP MCP endpoint。
-下次执行 `install-global` 时，安装器只会迁移旧版本包曾写入的精确 stdio 默认值；
-用户自定义的 stdio 条目会被保留，而不会生成无效的混合 transport。Context7 与
-DeepWiki 的凭据仅在需要时才放进更高优先级的本地 MCP 覆盖配置。
+其他能力（GitHub、Exa、浏览器自动化、推理辅助、任务管理）一律不进默认值，
+按需通过项目配置或 `npm run mcp:apply-profile` 启用。
 
-`mcp-server-time` 需要 `uvx` 位于 `PATH`。Shrimp Task Manager 因其持久化数据
-目录由机器所有，故不作为默认 server；选择目录后再显式应用：
+下次执行 `install-global` 时，安装器只会迁移旧版本包曾写入的精确 stdio
+Context7 默认值；用户自定义的 stdio 条目会被保留，而不会生成无效的混合
+transport。由于合并是加法，`~/.pi/agent/mcp.json` 中已存在的 server 会被保留
+——如需本地的最小 surface，可用 `/mcp` 禁用或移除遗留条目。
+
+Shrimp Task Manager 因其持久化数据目录由机器所有，故不作为默认 server；选择
+目录后再显式应用：
 
 ```bash
 export MCP_DATA_DIR="$HOME/.local/share/mcp-shrimp"

@@ -39,55 +39,33 @@ check(
 	JSON.stringify(defaults.settings),
 );
 
-const context7 = defaults.mcpServers?.context7;
+const servers = defaults.mcpServers ?? {};
+const context7 = servers.context7;
 check(
-	"Context7 is the sole HTTP default with direct eager tools",
-	defaults.mcpServers?.["context7-1"] === undefined &&
+	"Context7 is the sole default server: HTTP, lazy, direct tools",
+	Object.keys(servers).length === 1 &&
 		context7?.url === "https://mcp.context7.com/mcp" &&
 		context7?.command === undefined &&
 		context7?.args === undefined &&
 		context7?.protocolVersion === "auto" &&
-		context7?.lifecycle === "eager" &&
+		context7?.lifecycle === "lazy" &&
 		context7?.directTools === true,
-	JSON.stringify(context7),
+	JSON.stringify(servers),
 );
 
-const sequentialThinking = defaults.mcpServers?.["sequential-thinking"];
-check(
-	"sequential-thinking is eager and direct",
-	sequentialThinking?.command === "npx" &&
-		sequentialThinking?.lifecycle === "eager" &&
-		sequentialThinking?.directTools === true,
-	JSON.stringify(sequentialThinking),
-);
-
-const timeServer = defaults.mcpServers?.["mcp-server-time"];
-check(
-	"time server uses the requested Asia/Shanghai uvx configuration",
-	timeServer?.command === "uvx" &&
-		timeServer?.args?.includes("mcp-server-time") &&
-		timeServer?.args?.includes("--local-timezone=Asia/Shanghai") &&
-		timeServer?.lifecycle === "eager" &&
-		timeServer?.directTools === true,
-	JSON.stringify(timeServer),
-);
-
-const deepWiki = defaults.mcpServers?.["mcp-deepwiki"];
-check(
-	"DeepWiki uses the canonical public remote endpoint with direct eager tools",
-	deepWiki?.url === "https://mcp.deepwiki.com/mcp" &&
-		deepWiki?.protocolVersion === "auto" &&
-		deepWiki?.lifecycle === "eager" &&
-		deepWiki?.directTools === true,
-	JSON.stringify(deepWiki),
-);
-
-for (const name of ["playwright", "chrome-devtools-mcp"]) {
-	const server = defaults.mcpServers?.[name];
+for (const name of [
+	"github",
+	"exa",
+	"playwright",
+	"sequential-thinking",
+	"mcp-server-time",
+	"mcp-deepwiki",
+	"chrome-devtools-mcp",
+]) {
 	check(
-		`${name} uses a cross-platform lazy npx invocation`,
-		server?.command === "npx" && server?.lifecycle === "lazy" && !server?.args?.includes("--extension"),
-		JSON.stringify(server),
+		`${name} stays out of the default surface (opt-in only)`,
+		servers[name] === undefined,
+		JSON.stringify(servers[name]),
 	);
 }
 

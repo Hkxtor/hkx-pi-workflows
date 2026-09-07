@@ -132,25 +132,27 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 
 ## MCP defaults and optional profiles
 
-Path B merges the checked-in `.mcp.json` additively. Its default is proxy-first
-(`settings.directTools: false`), while only selected servers expose direct tools:
+Path B merges the checked-in `.mcp.json` additively. The default surface is
+deliberately minimal: proxy-first (`settings.directTools: false`) with a single
+default server:
 
-- `context7`, `sequential-thinking`, `mcp-server-time`, and `mcp-deepwiki`
-  connect eagerly and expose direct tools.
-- `playwright` and `chrome-devtools-mcp` stay lazy and use shell-neutral `npx`
-  commands; they do not require a Windows `cmd /c` wrapper.
-- `github` and `exa` remain available as proxy-discovered defaults.
+- `context7` uses the public remote HTTP MCP endpoint, connects lazily (`lifecycle: "lazy"`),
+  and is the only default server exposing direct tools.
 
-`context7` is the sole default Context7 entry and uses the public remote HTTP
-MCP endpoint. On the next `install-global`, the installer migrates only the
-exact stdio default shipped by an earlier package version; it retains a
+Everything else (GitHub, Exa, browser automation, reasoning helpers, task
+managers) stays out of the default; add it per project or via
+`npm run mcp:apply-profile` when actually needed.
+
+On the next `install-global`, the installer migrates only the exact stdio
+Context7 default shipped by an earlier package version; it retains a
 user-customized stdio entry rather than creating an invalid mixed transport.
-Context7 and DeepWiki credentials belong in a higher-precedence local MCP
-override only when needed.
+Because the merge is additive, servers already present in
+`~/.pi/agent/mcp.json` are preserved — disable or remove legacy entries with
+`/mcp` if you want the minimal surface locally.
 
-`mcp-server-time` requires `uvx` on `PATH`. Shrimp Task Manager is deliberately
-not a default server because its persistent data directory is machine-owned.
-Apply it explicitly after selecting a directory:
+Shrimp Task Manager is deliberately not a default server because its persistent
+data directory is machine-owned. Apply it explicitly after selecting a
+directory:
 
 ```bash
 export MCP_DATA_DIR="$HOME/.local/share/mcp-shrimp"
