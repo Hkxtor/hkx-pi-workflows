@@ -3,52 +3,11 @@
     "directTools": false
   },
   "mcpServers": {
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github@2025.4.8"]
-    },
     "context7": {
       "url": "https://mcp.context7.com/mcp",
       "protocolVersion": "auto",
-      "lifecycle": "eager",
+      "lifecycle": "lazy",
       "directTools": true
-    },
-    "exa": {
-      "type": "http",
-      "url": "https://mcp.exa.ai/mcp"
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "lifecycle": "lazy"
-    },
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "lifecycle": "eager",
-      "directTools": true
-    },
-    "mcp-server-time": {
-      "command": "uvx",
-      "args": [
-        "--with",
-        "mcp>=1.23,<2",
-        "mcp-server-time",
-        "--local-timezone=Asia/Shanghai"
-      ],
-      "lifecycle": "eager",
-      "directTools": true
-    },
-    "mcp-deepwiki": {
-      "url": "https://mcp.deepwiki.com/mcp",
-      "protocolVersion": "auto",
-      "lifecycle": "eager",
-      "directTools": true
-    },
-    "chrome-devtools-mcp": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"],
-      "lifecycle": "lazy"
     }
   }
 }
