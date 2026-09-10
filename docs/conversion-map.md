@@ -35,7 +35,7 @@ Manifest shape (authoritative):
 | agents | 26 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 14 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 99 | `skills/` | yes | `~/.pi/agent/skills/` |
+| skills | 101 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
 | extensions | 5 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |

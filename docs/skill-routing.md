@@ -43,6 +43,9 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | PRD → capability / interfaces | `product-capability` | `intent-driven-development` | `product-lens` only |
 | acceptance criteria for this change | `intent-driven-development` | `tdd-workflow` | `council` |
 | multi-path go/no-go tradeoff | `council` | `product-lens` | routine implementation |
+| stress-test a plan / grill me | `grill-with-docs` | `grilling`, `domain-modeling` | `council` (decisions, not interview) |
+| record a durable decision / ADR | `architecture-decision-records` | `domain-modeling` (lighter, inline) | `grill-with-docs` (interview-driven) |
+| glossary / CONTEXT.md terms | `domain-modeling` | `architecture-decision-records` (for decisions) | `unified-memory` (vault, not glossary) |
 | dual independent review until ship-ready | `santa-method` | `verification-loop` first | `council` (decisions, not correctness) |
 | extract session patterns as instincts | `instinct-evolve` | commands `learn` / `learn-eval` | `growth-log` (human journal) |
 | durable project/user context vault | `unified-memory` | `/unified-memory` / CLI `memory` | `instinct-evolve` (behaviors) or `/om` (session) |
