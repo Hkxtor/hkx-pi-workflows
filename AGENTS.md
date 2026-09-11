@@ -82,6 +82,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
   - `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (after `pi update --extensions`; creates dir if missing).
   - `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/...`) **only if missing** — never overwrite `/advisor` model picks; do not version `modelKey`.
   - `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** — the extension's `/tool-display` settings UI rewrites that file at runtime; never overwrite operator choices.
+  - `configs/magic-context/magic-context.jsonc` → authoritative managed overlay written to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`) on every install. The previous destination is backed up (timestamped `.bak.*` sibling) before overwrite; never symlinked (a runtime config symlinked at the repo would let plugin edits mutate the checkout). Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`.
 - Do not vendor third-party extension source into this package unless it becomes a first-party pi extension.
 
 ### Global agent settings
@@ -90,7 +91,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Install deep-merges managed keys into `~/.pi/agent/settings.json` (does not wipe machine-local keys).
 - Managed scope: `packages` (authoritative list), plus portable defaults such as `compaction` and `quietStartup`. Do **not** manage operator `theme`.
 - Do **not** version machine-local keys here: `shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`.
-- After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays (permission + rpiv-advisor seed).
+- After writing settings, `npm run install-global` runs `pi update --extensions` to install/update listed packages, then installs managed extension config overlays (permission + rpiv-advisor seed + pi-tool-display seed + magic-context authoritative overlay).
 
 ### Global keybindings
 

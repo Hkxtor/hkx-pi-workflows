@@ -41,6 +41,7 @@ Manifest shape (authoritative):
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
+| magic-context config overlay | 1 | `configs/magic-context/magic-context.jsonc` | no | authoritative copy to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/...`); backup previous destination; never symlink. Magic Context owns compaction; pi native compaction is disabled in `configs/agent-settings.json` |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
 | managed keybindings | 1 | `configs/keybindings.json` | no | merge 11 managed actions into `~/.pi/agent/keybindings.json`; preserve unrelated actions |
 | global AGENTS source | 1 | `GLOBAL_AGENTS.md` | no | `~/.pi/agent/AGENTS.md` |
@@ -362,6 +363,10 @@ Current overlays:
 - `configs/pi-tool-display/config.json`
   - seeded by `npm run install-global` to `~/.pi/agent/extensions/pi-tool-display/config.json` **only when missing**
   - the extension's `/tool-display` settings UI rewrites the file at runtime; never overwrite operator choices
+- `configs/magic-context/magic-context.jsonc`
+  - installed by `npm run install-global` to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`) as an **authoritative managed overlay**
+  - copied on every install (never symlinked); the previous destination is backed up (timestamped `.bak.*` sibling) before overwrite
+  - Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`
 
 ## Global agent settings
 
@@ -369,7 +374,7 @@ Portable global settings and the desired pi package list are versioned here:
 
 - source: `configs/agent-settings.json`
 - install: deep-merge into `~/.pi/agent/settings.json`
-- managed keys: `packages` (authoritative), plus portable defaults such as `compaction` (does **not** set operator theme)
+- managed keys: `packages` (authoritative), plus portable defaults such as `compaction` (does **not** set operator theme). When `@cortexkit/pi-magic-context` is in `packages`, Magic Context owns compaction and pi native `compaction.enabled` is `false`; the two halves are validated together in `scripts/validate.mjs`
 - not versioned here: machine-local keys (`shellPath`, `defaultProvider`, `defaultModel`, …)
 - after merge: `npm run install-global` runs `pi update --extensions`
 

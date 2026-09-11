@@ -17,13 +17,14 @@
     "npm:pi-mcp-adapter",
     "npm:@narumitw/pi-lsp",
     "npm:pi-simplify",
-    "npm:pi-tool-display"
+    "npm:pi-tool-display",
+    "npm:@cortexkit/pi-magic-context"
   ],
   "quietStartup": true,
   "compaction": {
-    "enabled": true,
-    "reserveTokens": 32768,
-    "keepRecentTokens": 48000
+    "enabled": false,
+    "reserveTokens": 65536,
+    "keepRecentTokens": 24000
   },
   "tuiMode": "fullscreen",
   "fullscreenScrollbar": "auto",

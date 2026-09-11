@@ -1,0 +1,31 @@
+{
+  "enabled": true,
+  "auto_update": true,
+  "language": "zh",
+  "cache_ttl": "5m",
+  "execute_threshold_percentage": 65,
+  "history_budget_percentage": 0.18,
+  "protected_tags": 24,
+  "compaction": {
+    "enabled": true
+  },
+  "smart_drops": false,
+  "caveman_text_compression": {
+    "enabled": false
+  },
+  "dreamer": {
+    "disable": true
+  },
+  "memory": {
+    "enabled": false
+  },
+  "todowrite": {
+    "enabled": false
+  },
+  "sidekick": {
+    "disable": true
+  },
+  "embedding": {
+    "provider": "off"
+  }
+}

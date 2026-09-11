@@ -38,6 +38,7 @@ const requiredFiles = [
 	"configs/pi-lsp/pi-lsp.json",
 	"configs/rpiv-advisor/advisor.json",
 	"configs/pi-tool-display/config.json",
+	"configs/magic-context/magic-context.jsonc",
 	"configs/agent-settings.json",
 	"configs/keybindings.json",
 	"agents/code-reviewer.md",
@@ -66,6 +67,8 @@ const requiredFiles = [
 	"scripts/tests/install-apply-packaging.mjs",
 	// rpiv-advisor XDG seed (Path B; never overwrite operator modelKey).
 	"scripts/tests/rpiv-advisor-seed.mjs",
+	// magic-context authoritative managed overlay (Path B; backup + overwrite).
+	"scripts/tests/magic-context-install.mjs",
 	// GateGuard destructive-command + independent artifact auto-reply suites.
 	"scripts/tests/gateguard-selfmatch.mjs",
 	"scripts/tests/subagent-artifact-auto-reply.mjs",
@@ -668,6 +671,69 @@ async function main() {
 		}
 	}
 
+	// Authoritative managed overlay for @cortexkit/pi-magic-context.
+	// Magic Context owns compaction; pi native compaction is disabled in
+	// configs/agent-settings.json. Validate the full requested contract
+	// (every field the operator pinned) and the complementary compaction
+	// ownership between the two files.
+	const magicContextConfigPath = path.join(
+		root,
+		"configs",
+		"magic-context",
+		"magic-context.jsonc",
+	);
+	let magicContextParseOk = true;
+	let magicContextConfig;
+	try {
+		magicContextConfig = JSON.parse(
+			await fs.readFile(magicContextConfigPath, "utf8"),
+		);
+	} catch (err) {
+		magicContextParseOk = false;
+		if (err && err.code !== "ENOENT") {
+			errors.push(
+				`configs/magic-context/magic-context.jsonc: invalid JSON: ${err.message}`,
+			);
+		}
+	}
+	// Track parse success separately so a valid-JSON-but-non-object value
+	// (null, false, 0, "") cannot bypass the object-shape check. A bare
+	// null template must fail "must be a JSON object", not silently skip.
+	if (magicContextParseOk) {
+		if (
+			!magicContextConfig ||
+			typeof magicContextConfig !== "object" ||
+			Array.isArray(magicContextConfig)
+		) {
+			errors.push(
+				"configs/magic-context/magic-context.jsonc: must be a JSON object",
+			);
+		} else {
+			const mc = magicContextConfig;
+			const mcPath = "configs/magic-context/magic-context.jsonc";
+			const assert = (cond, msg) => {
+				if (!cond) errors.push(`${mcPath}: ${msg}`);
+			};
+			assert(mc.enabled === true, "enabled must be true (managed overlay)");
+			assert(mc.auto_update === true, "auto_update must be true");
+			assert(mc.language === "zh", 'language must be "zh"');
+			assert(mc.cache_ttl === "5m", 'cache_ttl must be "5m"');
+			assert(mc.execute_threshold_percentage === 65, "execute_threshold_percentage must be 65");
+			assert(mc.history_budget_percentage === 0.18, "history_budget_percentage must be 0.18");
+			assert(mc.protected_tags === 24, "protected_tags must be 24");
+			assert(mc.compaction?.enabled === true, "compaction.enabled must be true (Magic Context owns compaction)");
+			assert(mc.smart_drops === false, "smart_drops must be false");
+			assert(mc.caveman_text_compression?.enabled === false, "caveman_text_compression.enabled must be false");
+			assert(mc.dreamer?.disable === true, "dreamer.disable must be true");
+			assert(mc.sidekick?.disable === true, "sidekick.disable must be true");
+			assert(mc.memory?.enabled === false, "memory.enabled must be false");
+			assert(mc.todowrite?.enabled === false, "todowrite.enabled must be false");
+			assert(mc.embedding?.provider === "off", 'embedding.provider must be "off"');
+		}
+	}
+
+	// Managed global agent settings (packages + portable defaults)
+
 	// Managed global agent settings (packages + portable defaults)
 	const agentSettingsPath = path.join(root, "configs", "agent-settings.json");
 	try {
@@ -708,6 +774,49 @@ async function main() {
 						`configs/agent-settings.json: do not version machine-local key "${banned}"`,
 					);
 				}
+			}
+			// Complementary compaction ownership: when @cortexkit/pi-magic-context
+			// is in the managed package list, Magic Context owns compaction and
+			// pi native compaction must be disabled here. The two halves are
+			// validated together so an install cannot ship a configuration that
+			// double-runs (or double-disables) compaction.
+			const packagesList = Array.isArray(agentSettings.packages)
+				? agentSettings.packages.map((entry) =>
+						typeof entry === "string" ? entry : entry?.source,
+				  )
+				: [];
+			const hasMagicContext = packagesList.some((p) =>
+				typeof p === "string" ? p.includes("@cortexkit/pi-magic-context") : false,
+			);
+			if (!hasMagicContext) {
+				errors.push(
+					'configs/agent-settings.json: packages must include "npm:@cortexkit/pi-magic-context" so the one-click install manages Magic Context',
+				);
+			}
+			if (hasMagicContext) {
+				// Magic Context owns compaction; pi native compaction is disabled
+				// with the exact values the operator pinned. Assert every field so
+				// a drift in reserve/keep-recent tokens cannot slip past validate.
+				const c = agentSettings.compaction || {};
+				if (c.enabled !== false) {
+					errors.push(
+						"configs/agent-settings.json: compaction.enabled must be false when @cortexkit/pi-magic-context is in packages (Magic Context owns compaction)",
+				);
+				}
+				if (c.reserveTokens !== 65536) {
+					errors.push(
+						"configs/agent-settings.json: compaction.reserveTokens must be 65536 (Magic Context managed)",
+				);
+				}
+				if (c.keepRecentTokens !== 24000) {
+					errors.push(
+						"configs/agent-settings.json: compaction.keepRecentTokens must be 24000 (Magic Context managed)",
+				);
+				}
+			} else if (agentSettings.compaction?.enabled === false) {
+				errors.push(
+					"configs/agent-settings.json: compaction.enabled is false but @cortexkit/pi-magic-context is not in packages; re-enable pi native compaction or add the Magic Context package",
+			);
 			}
 		}
 	} catch (err) {

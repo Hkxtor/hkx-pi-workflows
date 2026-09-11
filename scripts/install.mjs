@@ -53,6 +53,15 @@
  *                            -> ~/.pi/agent/extensions/pi-tool-display/config.json
  *                              (after package update; seed-if-missing only: the
  *                               extension's /tool-display settings UI rewrites it)
+ * - configs/magic-context/magic-context.jsonc
+ *                            -> ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc
+ *                              (or ~/.config/cortexkit/magic-context.jsonc)
+ *                              authoritative managed overlay: copied on every
+ *                              install (never symlinked); existing destination
+ *                              is backed up before write so operator-edited
+ *                              values are recoverable. Magic Context owns
+ *                              compaction; pi native compaction is disabled
+ *                              in configs/agent-settings.json.
  *
  * This is the full operator install path. It does not run migration helpers.
  */
@@ -955,6 +964,90 @@ async function installPiToolDisplayConfig() {
 	return true;
 }
 
+/**
+ * Install the authoritative managed overlay for @cortexkit/pi-magic-context.
+ *
+ * Unlike rpiv-advisor (seed-if-missing) and pi-tool-display (seed-if-missing),
+ * this overlay is the source of truth for Magic Context behavior: it is copied
+ * on every install so re-running `npm run install-global` keeps the operator on
+ * the package-managed settings. A previous destination is backed up before
+ * write (timestamped `.bak.*` sibling, same scheme as mergeMcpConfig) so
+ * operator-edited values remain recoverable.
+ *
+ * Path: ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc (or ~/.config/...).
+ * Never symlinked: a runtime config symlinked at the repo would let plugin
+ * edits mutate the checkout. Magic Context owns compaction; pi native
+ * compaction is disabled in configs/agent-settings.json.
+ *
+ * The source is plain JSON (despite the .jsonc extension) so JSON.parse is
+ * sufficient. Returns true on success, false on a read/parse/write failure.
+ */
+async function installMagicContextConfig() {
+	const src = path.join(
+		repoRoot,
+		"configs",
+		"magic-context",
+		"magic-context.jsonc",
+	);
+	if (!(await pathExists(src))) {
+		console.warn("Skip magic-context config: source missing at", src);
+		return false;
+	}
+
+	let body;
+	try {
+		body = await fs.readFile(src, "utf-8");
+	} catch (err) {
+		console.error(`Failed to read magic-context template: ${err.message}`);
+		return false;
+	}
+	// Validate JSON before writing so we never ship a broken overlay. The
+	// template is plain JSON; a future JSONC comment would need a stripper.
+	try {
+		JSON.parse(body);
+	} catch (err) {
+		console.error(
+			`magic-context template is invalid JSON (${src}): ${err.message}`,
+		);
+		return false;
+	}
+
+	const destDir = path.join(resolveXdgConfigDir(), "cortexkit");
+	await ensureDir(destDir);
+	const dest = path.join(destDir, "magic-context.jsonc");
+
+	// Back up an existing destination before the authoritative overwrite, so
+	// operator-edited values are recoverable. Mirrors mergeMcpConfig backup.
+	if (await pathExists(dest)) {
+		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const backupPath = `${dest}.bak.${stamp}`;
+		try {
+			await fs.copyFile(dest, backupPath);
+			console.log(`Backed up magic-context config: ${backupPath}`);
+		} catch (err) {
+			console.error(
+				`Failed to back up existing magic-context config (${dest}): ${err.message}`,
+			);
+			return false;
+		}
+	}
+
+	try {
+		await fs.writeFile(dest, body.endsWith("\n") ? body : `${body}\n`, {
+			encoding: "utf-8",
+			mode: 0o600,
+		});
+		// writeFile mode is umask-sensitive on some platforms; force 0600 so a
+		// runtime config holding behavior flags does not end up world-readable.
+		await fs.chmod(dest, 0o600);
+	} catch (err) {
+		console.error(`Failed to write magic-context config (${dest}): ${err.message}`);
+		return false;
+	}
+	console.log(`Installed managed magic-context config: ${dest}`);
+	return true;
+}
+
 async function main() {
 	console.log(`Installing Pi Workflows globally to ${piHome}...`);
 	const packageAssetRoot = path.join(piHome, "hkx-pi-workflows");
@@ -1224,6 +1317,12 @@ async function main() {
 	const toolDisplayConfigOk = await installPiToolDisplayConfig();
 	if (!toolDisplayConfigOk) failed.push("pi-tool-display config");
 
+	// Authoritative managed overlay for @cortexkit/pi-magic-context.
+	// Magic Context owns compaction; pi native compaction is disabled in
+	// configs/agent-settings.json. Copy on every install (backup first).
+	const magicContextConfigOk = await installMagicContextConfig();
+	if (!magicContextConfigOk) failed.push("magic-context config");
+
 	if (failed.length > 0) {
 		console.error(
 			`\nInstall completed with ${failed.length} non-fatal issue(s): ${failed.join(", ")}`,
@@ -1251,9 +1350,23 @@ async function main() {
 	console.log(
 		"pi-tool-display: configs/pi-tool-display/config.json → seed ~/.pi/agent/extensions/pi-tool-display/config.json (if missing)",
 	);
+	console.log(
+		"magic-context: configs/magic-context/magic-context.jsonc → ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc (authoritative; backup previous)",
+	);
 }
 
-main().catch((err) => {
-	console.error(err);
-	process.exit(1);
-});
+// Export the managed-overlay installer so the versioned smoke suite can
+// exercise the real implementation against a temporary HOME/XDG_CONFIG_HOME
+// instead of a duplicated mirror. main() only runs when this file is the
+// entry point (node scripts/install.mjs), not when imported by a test.
+const isMain =
+	process.argv[1] &&
+	path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) {
+	main().catch((err) => {
+		console.error(err);
+		process.exit(1);
+	});
+}
+
+export { installMagicContextConfig };

@@ -47,7 +47,7 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 
 **Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, `configs/keybindings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor and pi-tool-display config seeds. Use Path B for those.
+**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, `configs/keybindings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor, pi-tool-display, and magic-context config overlays. Use Path B for those.
 
 Update later with:
 
@@ -65,7 +65,7 @@ From a clone of this repo:
 npm run install-global
 ```
 
-This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, merges managed keybindings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp, extension config overlays, and rpiv-advisor / pi-tool-display config seeds.
+This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, merges managed keybindings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp, extension config overlays, and rpiv-advisor / pi-tool-display config seeds plus the magic-context authoritative overlay.
 
 Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, managed keybindings, and managed dependency packages — not only the package-native resources. In an already-open Pi session, run `/reload` after installation so the new keybindings take effect.
 
@@ -104,6 +104,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | permission config overlay | no | yes |
 | rpiv-advisor config seed | no | yes (if missing) |
 | pi-tool-display config seed | no | yes (if missing) |
+| magic-context config overlay | no | yes (authoritative; backup previous) |
 | GLOBAL_AGENTS / APPEND_SYSTEM | no | yes |
 | MCP defaults / templates | no | yes |
 
@@ -124,6 +125,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing; on Windows the overlay is copied rather than symlinked and seeded with `shellTools.powershell` so the permission system gates the Windows shell tool through the `bash:` rule stack, per-tool **only if missing**) |
 | rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
 | pi-tool-display config seed | after package update: `configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** (the `/tool-display` settings UI rewrites it at runtime) |
+| magic-context config overlay | after package update: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`). Authoritative managed overlay: copied on every install (never symlinked); previous destination is backed up before overwrite. Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`. |
 | global AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP defaults | `.mcp.json` → merge into `~/.pi/agent/mcp.json` |
