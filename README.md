@@ -117,7 +117,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
 | extensions | `~/.pi/agent/extensions/` |
-| agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, portable defaults; preserves machine-local keys; does **not** set `theme`) |
+| agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, portable defaults; preserves machine-local keys; does **not** set `theme`; on Windows installs also seeds PowerShell 7 `shellPath` + a pi-native `defaultTools` list **only if missing**) |
 | keybindings | `configs/keybindings.json` → merge into `~/.pi/agent/keybindings.json` (11 managed actions; preserves unrelated operator actions; frees `Ctrl+Shift+G` for `pi-until-done`) |
 | pi packages | after settings merge: `pi update --extensions` |
 | pi-lsp route config | after package update: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json` (managed TypeScript/JavaScript, Python, Rust, and Go routes) |

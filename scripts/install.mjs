@@ -373,16 +373,49 @@ function deepMerge(target, source) {
 }
 
 /**
+ * Machine-local agent settings seeded on Windows installs only, and only when
+ * the operator has NOT already set them. These are deliberately NOT versioned
+ * in configs/agent-settings.json (validate.mjs rejects shellPath as a
+ * managed key): they come from the OS the install runs on, so the repo stays
+ * portable while a fresh Windows operator still lands a sensible default
+ * shell (PowerShell 7) and a pi-native tool list.
+ */
+const WINDOWS_AGENT_SETTINGS_DEFAULTS = {
+	shellPath: "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+	defaultTools: [
+		"read",
+		"powershell",
+		"edit",
+		"write",
+		"grep",
+		"find",
+		"ls",
+	],
+};
+
+/**
  * Merge managed agent settings into ~/.pi/agent/settings.json.
  * Managed keys from configs/agent-settings.json overwrite local values.
  * packages is replaced by the managed list (authoritative), not unioned.
  * Machine-local keys (shellPath, defaultProvider, …) are preserved when absent from source.
  *
+ * Optional `options.platform` (defaults to process.platform when available)
+ * lets tests pin a fixed platform via vm without a global `process`. These are
+ * machine-local keys, so a Windows default is seeded ONLY when the operator has
+ * not already set it (seed-if-missing, same contract as the rpiv-advisor and
+ * pi-tool-display overlays).
+ *
  * Returns `true` on success, `false` on a read/parse failure. The caller must
  * push a label into failed[] on `false` so the install path cannot silently
  * claim success while agent settings failed to merge (MF-7).
  */
-async function mergeAgentSettings(srcPath, destPath) {
+async function mergeAgentSettings(srcPath, destPath, options) {
+	// IMPORTANT: never reference process.platform in a parameter default here.
+	// The vm-isolated regression suite loads mergeAgentSettings without a global
+	// `process`, so a default parameter would throw ReferenceError on evaluation.
+	const platform =
+		options?.platform ??
+		(typeof process !== "undefined" ? process.platform : undefined);
 	let managed;
 	try {
 		managed = JSON.parse(await fs.readFile(srcPath, "utf-8"));
@@ -434,6 +467,19 @@ async function mergeAgentSettings(srcPath, destPath) {
 	// leave pi-observational-memory options behind after its package is removed.
 	for (const retiredKey of ["observational-memory"]) {
 		delete next[retiredKey];
+	}
+
+	// Windows-only machine-local defaults, seeded only when the operator has
+	// not already set them. deepMerge already carries a pre-existing dest
+	// shellPath/defaultTools through (they are not managed keys), so this is a
+	// documented seed-if-missing fallback, not an overwrite.
+	if (platform === "win32") {
+		if (next.shellPath === undefined) {
+			next.shellPath = WINDOWS_AGENT_SETTINGS_DEFAULTS.shellPath;
+		}
+		if (next.defaultTools === undefined) {
+			next.defaultTools = [...WINDOWS_AGENT_SETTINGS_DEFAULTS.defaultTools];
+		}
 	}
 
 	await fs.writeFile(destPath, `${JSON.stringify(next, null, 2)}\n`, "utf-8");

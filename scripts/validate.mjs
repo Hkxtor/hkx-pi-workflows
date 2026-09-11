@@ -49,6 +49,9 @@ const requiredFiles = [
 	"scripts/tests/merge-contract.mjs",
 	"scripts/tests/resolve-env-vars.mjs",
 	"scripts/tests/merge-agent-settings.mjs",
+	// Platform-default (Windows shellPath/defaultTools) regression for
+	// mergeAgentSettings; keep it versioned with the other settings smokes.
+	"scripts/tests/merge-agent-settings-windows.mjs",
 	"scripts/tests/keybindings-install.mjs",
 	"scripts/tests/install-resolver-guards.mjs",
 	"scripts/tests/mcp-defaults.mjs",
