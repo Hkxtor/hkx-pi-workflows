@@ -394,6 +394,136 @@ const WINDOWS_AGENT_SETTINGS_DEFAULTS = {
 };
 
 /**
+ * Build Windows tool overrides for pi-subagents discovered agents by scanning
+ * the installed hkx agent definitions (`~/.pi/agent/agents/hkx/*.md`), not by
+ * hard-coding a role name. Each agent keeps its own declared tool set, with the
+ * native `bash` shell replaced by `powershell` (the shell available on win32).
+ * Agents already carrying `powershell` or that do not use a shell are left
+ * unchanged. These are machine-local, so they are never versioned in
+ * configs/agent-settings.json — they come from the OS the install runs on.
+ *
+ * The returned keys are the pi-subagents RUNTIME names (`<package>.<name>`, or
+ * bare `<name>` when no package frontmatter), because `agentOverrides.<name>`
+ * is matched against the agent's runtime name (agents.ts: `agent.name`). For
+ * the hkx package that is `hkx.<name>`.
+ *
+ * Returns `{ runtimeName: { tools: [...] } }` keyed by runtime name.
+ */
+async function buildWindowsSubagentOverrides(agentsDir) {
+	const overrides = {};
+	let names;
+	try {
+		names = await fs.readdir(agentsDir);
+	} catch (err) {
+		// Missing/unreadable agent dir is not a settings failure: nothing to
+		// seed. Callers must not treat this as a merge error.
+		console.warn(`Skipping Windows subagent overrides (cannot read ${agentsDir}): ${err.message}`);
+		return overrides;
+	}
+
+	for (const file of names) {
+		if (!file.endsWith(".md")) continue;
+		let text;
+		try {
+			text = await fs.readFile(path.join(agentsDir, file), "utf-8");
+		} catch {
+			continue;
+		}
+		const localName = parseAgentFrontmatterName(text);
+		const rawTools = parseAgentFrontmatterTools(text);
+		if (!localName || !rawTools) continue;
+		// Runtime name matches how pi-subagents keys agentOverrides:
+		// `<package>.<name>` when a package is declared, else bare `<name>`.
+		const pkg = parseAgentFrontmatterPackage(text);
+		const runtimeName = pkg ? `${pkg}.${localName}` : localName;
+		// Swap the native shell for the Windows shell; keep every other tool.
+		const windowsTools = rawTools.map((t) => (t === "bash" ? "powershell" : t));
+		overrides[runtimeName] = { tools: windowsTools };
+	}
+	return overrides;
+}
+
+/** Extract the `name` value from an agent frontmatter block, or null. */
+function parseAgentFrontmatterName(text) {
+	const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
+	if (!m) return null;
+	const line = /^name:\s*(.*)$/m.exec(m[1]);
+	return line ? line[1].trim() : null;
+}
+
+/** Extract the `package` namespace value from an agent frontmatter block, or null. */
+function parseAgentFrontmatterPackage(text) {
+	const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
+	if (!m) return null;
+	const line = /^package:\s*(.*)$/m.exec(m[1]);
+	const value = line ? line[1].trim() : "";
+	return value ? value : null;
+}
+
+/**
+ * Extract the `tools` array from an agent frontmatter block. Accepts a JSON
+ * array (`tools: ["read", "edit"]`) or the comma/space-separated YAML form
+ * (`tools: read, ffgrep, find`). A JSON-ish entry that fails to parse falls
+ * through to the comma/split path (matching validate.mjs parseToolsList) so an
+ * agent is never silently skipped. Returns null when tools is absent/blank.
+ */
+function parseAgentFrontmatterTools(text) {
+	const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
+	if (!m) return null;
+	const line = /^tools:\s*(.*)$/m.exec(m[1]);
+	if (!line) return null;
+	const raw = line[1].trim();
+	if (!raw) return null;
+	if (raw.startsWith("[")) {
+		try {
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed)) return parsed.map(String);
+		} catch {
+			// fall through to the comma/split path below (e.g. [read, grep])
+		}
+	}
+	return raw
+		.replace(/[\[\]"]/g, "")
+		.split(/,/)
+		.map((s) => s.trim())
+		.filter(Boolean);
+}
+
+/**
+ * Seed Windows subagent tool overrides into a settings object in place,
+ * keyed by agent name from the scan. Each agent's `tools` list is set ONLY
+ * when that agent has none yet (seed-if-missing): an operator who already
+ * configured a tool list for a given agent keeps theirs, and unrelated
+ * agentOverrides keys are untouched. Missing nested objects are created so a
+ * fresh install still lands the per-agent defaults.
+ */
+function seedWindowsSubagentOverrides(target, overrides) {
+	// Nothing derived from the agent dir -> leave subagents untouched (no
+	// empty agentOverrides scaffold on a blank dest).
+	const entries = Object.entries(overrides || {});
+	if (entries.length === 0) return;
+
+	const sub = target.subagents;
+	const subagents = isPlainObject(sub) ? sub : {};
+	const agentOverrides = isPlainObject(subagents.agentOverrides)
+		? subagents.agentOverrides
+		: {};
+
+	for (const [agentName, override] of entries) {
+		if (!isPlainObject(agentOverrides[agentName])) {
+			agentOverrides[agentName] = {
+				tools: [...override.tools],
+			};
+		} else if (agentOverrides[agentName].tools === undefined) {
+			agentOverrides[agentName].tools = [...override.tools];
+		}
+	}
+
+	subagents.agentOverrides = agentOverrides;
+	target.subagents = subagents;
+}
+
+/**
  * Merge managed agent settings into ~/.pi/agent/settings.json.
  * Managed keys from configs/agent-settings.json overwrite local values.
  * packages is replaced by the managed list (authoritative), not unioned.
@@ -404,6 +534,12 @@ const WINDOWS_AGENT_SETTINGS_DEFAULTS = {
  * machine-local keys, so a Windows default is seeded ONLY when the operator has
  * not already set it (seed-if-missing, same contract as the rpiv-advisor and
  * pi-tool-display overlays).
+ *
+ * Optional `options.agentsDir` points at the installed hkx agent directory;
+ * when platform is win32 and it is set, per-agent `subagents.agentOverrides`
+ * tool lists (bash -> powershell) are derived from those agent definitions and
+ * seeded under `subagents.agentOverrides.<name>.tools` (seed-if-missing per
+ * agent). Tests pass a temp agent dir; the install path passes the hkx dir.
  *
  * Returns `true` on success, `false` on a read/parse failure. The caller must
  * push a label into failed[] on `false` so the install path cannot silently
@@ -471,14 +607,24 @@ async function mergeAgentSettings(srcPath, destPath, options) {
 
 	// Windows-only machine-local defaults, seeded only when the operator has
 	// not already set them. deepMerge already carries a pre-existing dest
-	// shellPath/defaultTools through (they are not managed keys), so this is a
-	// documented seed-if-missing fallback, not an overwrite.
+	// shellPath/defaultTools and any agentOverrides through (they are not
+	// managed keys), so this is a documented seed-if-missing fallback, not an
+	// overwrite.
 	if (platform === "win32") {
 		if (next.shellPath === undefined) {
 			next.shellPath = WINDOWS_AGENT_SETTINGS_DEFAULTS.shellPath;
 		}
 		if (next.defaultTools === undefined) {
 			next.defaultTools = [...WINDOWS_AGENT_SETTINGS_DEFAULTS.defaultTools];
+		}
+		// Per-agent Windows tool overrides, derived from the installed hkx
+		// agent definitions (bash -> powershell), seeded only for agents the
+		// operator has not already configured. Requires the scanned agent dir.
+		if (options?.agentsDir) {
+			const subagentOverrides = await buildWindowsSubagentOverrides(
+				options.agentsDir,
+			);
+			seedWindowsSubagentOverrides(next, subagentOverrides);
 		}
 	}
 
@@ -868,6 +1014,9 @@ async function main() {
 		const agentSettingsOk = await mergeAgentSettings(
 			agentSettingsSrc,
 			path.join(piHome, "settings.json"),
+			// Windows per-agent subagent overrides are derived from the hkx
+			// agents that were just installed into ~/.pi/agent/agents/hkx.
+			{ agentsDir: path.join(piHome, "agents", "hkx") },
 		);
 		if (!agentSettingsOk) {
 			failed.push("merge agent settings");
