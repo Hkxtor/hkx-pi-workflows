@@ -10,7 +10,8 @@
       "On multi-step tasks, call `advisor` at least once before locking an approach and once before declaring done. Short reactive turns driven by fresh tool output do not need repeated calls.",
       "Prefer the advisor for cross-checks on: install/manifest dual-path (Path A vs B), destructive git, package surface placement, and 'done' claims without verifyCommand/tests.",
       "Give advisor guidance serious weight. If local evidence conflicts with a claim, make one reconcile `advisor` call instead of silently switching branches.",
-      "Do not call `advisor` for pure formatting nits or single-line renames with an obvious correct edit."
+      "Do not call `advisor` for pure formatting nits or single-line renames with an obvious correct edit.",
+      "After each `advisor` result, put the advisor's key guidance into your next visible reply to the user before continuing — quote or paraphrase the plan, correction, or stop signal. The user often cannot see collapsed tool results; do not keep the advisor's words only in silent tool context."
     ]
   }
 }
