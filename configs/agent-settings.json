@@ -13,7 +13,6 @@
     "npm:@narumitw/pi-plan-mode",
     "npm:pi-until-done",
     "npm:context-mode",
-    "npm:pi-ultra-compact",
     "npm:pi-subagents",
     "npm:pi-mcp-adapter",
     "npm:@narumitw/pi-lsp",

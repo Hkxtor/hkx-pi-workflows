@@ -109,6 +109,19 @@ Read this when you need to decide:
 - how `hkx-language-quality.ts` and `hkx-gateguard.ts` are intended to behave
 - where TUI appearance (statusline / working indicator) is documented (`architecture.md`, `conversion-map.md`, root README appearance section)
 
+### `sol-pi-overlap.md`
+
+Advisory research note comparing NVIDIA `SoL-Pi` vs this package's extensions/skills.
+
+Read this when you need to decide:
+
+- how SoL-Pi's four mechanisms (Action Fusion / ObservationPack / Evidence-Preserving Reducer / Online Context Compact) map to Pi's tool/observation/delegation/context surfaces
+- where this package already overlaps (neighbors: `hkx-language-quality`, `hkx-subagent-supervisor-auto-reply`, `hkx-session-summary`)
+- what is currently a gap and which mechanisms are worth piloting
+- the maintainer workflow for promoting a pilot into a shipped surface
+
+This is an **advisory research record, not a shipped surface** — nothing here is installed or adopted.
+
 ## Outside This Directory
 
 These files live at the package root, but they complete the documentation set:
@@ -129,7 +142,8 @@ These files live at the package root, but they complete the documentation set:
 4. `skill-routing.md` — which skill to prefer when families overlap
 5. `language-hooks.md` — only if you are changing rules or extensions
 6. `prds/unified-memory-instinct-om.prd.md` — only if you need the closed vault PRD
-7. `../AGENTS.md` — only if you are maintaining this repository
+7. `sol-pi-overlap.md` — advisory; only if evaluating SoL-Pi / context efficiency
+8. `../AGENTS.md` — only if you are maintaining this repository
 
 ## Scripts And Helpers
 
