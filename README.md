@@ -121,7 +121,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | keybindings | `configs/keybindings.json` → merge into `~/.pi/agent/keybindings.json` (11 managed actions; preserves unrelated operator actions; frees `Ctrl+Shift+G` for `pi-until-done`) |
 | pi packages | after settings merge: `pi update --extensions` |
 | pi-lsp route config | after package update: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json` (managed TypeScript/JavaScript, Python, Rust, and Go routes) |
-| permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing) |
+| permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing; on Windows the overlay is copied rather than symlinked and seeded with `shellTools.powershell` so the permission system gates the Windows shell tool through the `bash:` rule stack, per-tool **only if missing**) |
 | rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
 | pi-tool-display config seed | after package update: `configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** (the `/tool-display` settings UI rewrites it at runtime) |
 | global AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |

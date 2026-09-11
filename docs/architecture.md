@@ -167,7 +167,7 @@ Current overlays:
   - source: `configs/pi-permission-system/config.json`
   - install target: `~/.pi/agent/extensions/pi-permission-system/config.json`
   - install order: after `pi update --extensions`
-  - install behavior: create the extension dir when missing, then write/link the managed config (cold install often has no config yet)
+  - install behavior: create the extension dir when missing, then symlink (or copy on a cold install) the managed config; on win32 the overlay is copied — not symlinked — and seeded with `shellTools.powershell = { commandArgument: "command" }` per-tool only-if-missing, so the permission system gates the Windows `powershell` shell tool through the same enforcement stack as native `bash`
 - `rpiv-advisor`
   - source: `configs/rpiv-advisor/advisor.json`
   - install target: `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/rpiv-advisor/advisor.json`)
@@ -288,7 +288,7 @@ Important mappings:
 - `configs/keybindings.json` → merge managed actions into `~/.pi/agent/keybindings.json` while preserving unrelated actions
 - then: `pi update --extensions` for packages listed in settings
 - then: `configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`
-- then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing)
+- then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing; on win32 the overlay is copied — not symlinked — and seeded with `shellTools.powershell = { commandArgument: "command" }` per-tool only-if-missing, so the permission system gates the Windows `powershell` shell tool through the same stack as native `bash`)
 - then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
 - then: `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` if missing (never overwrite; `/tool-display` UI rewrites it at runtime)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`

@@ -52,6 +52,9 @@ const requiredFiles = [
 	// Platform-default (Windows shellPath/defaultTools) regression for
 	// mergeAgentSettings; keep it versioned with the other settings smokes.
 	"scripts/tests/merge-agent-settings-windows.mjs",
+	// Windows pi-permission-system shellTools.powershell seed regression;
+	// keep it versioned with the other permission-overlay smokes.
+	"scripts/tests/merge-permission-config-windows.mjs",
 	"scripts/tests/keybindings-install.mjs",
 	"scripts/tests/install-resolver-guards.mjs",
 	"scripts/tests/mcp-defaults.mjs",

@@ -705,6 +705,40 @@ function getPiUpdateInvocation(platform = process.platform, env = process.env) {
 	return { command: "pi", args: ["update", "--extensions"] };
 }
 
+/**
+ * Windows-only shell-tool alias seeded into pi-permission-system config. On
+ * win32 the native `bash` tool is replaced by `powershell` (see
+ * mergeAgentSettings), so the permission system must be told that
+ * `powershell` carries shell semantics — otherwise `powershell` calls bypass
+ * the bash enforcement stack (command decomposition, wrapper flooring,
+ * path/external-directory token gates, and `bash:` rules). The tool's input
+ * argument holding the command string is `command`. Never versioned in the
+ * source config; it is a machine-local Windows seed.
+ */
+const WINDOWS_PERMISSION_SHELL_TOOLS = {
+	powershell: { commandArgument: "command" },
+};
+
+/**
+ * Seed Windows shell-tool aliases into a pi-permission-system config object
+ * in place, adding each tool ONLY when the operator has not already set it
+ * (seed-if-missing). A non-object `shellTools` value is treated as missing
+ * (the schema requires an object, so a non-object entry is invalid) and is
+ * replaced with a seeded object; missing nested objects are created so a
+ * fresh install still lands the defaults.
+ */
+function seedWindowsPermissionShellTools(config) {
+	const shellTools = isPlainObject(config.shellTools)
+		? config.shellTools
+		: {};
+	for (const [tool, mapping] of Object.entries(WINDOWS_PERMISSION_SHELL_TOOLS)) {
+		if (!isPlainObject(shellTools[tool])) {
+			shellTools[tool] = { ...mapping };
+		}
+	}
+	config.shellTools = shellTools;
+}
+
 function runCommand(command, args, options = {}) {
 	return new Promise((resolve) => {
 		const child = spawn(command, args, {
@@ -740,8 +774,18 @@ async function updatePiExtensions() {
  * Runs after `pi update --extensions` so a first-time install can create
  * ~/.pi/agent/extensions/pi-permission-system/ when the package did not
  * materialize that path yet (common on cold install).
+ *
+ * Optional `options.platform` (defaults to process.platform when available)
+ * lets tests pin a fixed platform. On win32 the overlay is copied (not
+ * symlinked) and seeded with `shellTools.powershell` so the permission system
+ * gates the Windows `powershell` shell tool through the same stack as native
+ * `bash`; the seed is per-tool seed-if-missing. On other platforms the source
+ * is symlinked as before.
  */
-async function installPermissionSystemConfig() {
+async function installPermissionSystemConfig(options) {
+	const platform =
+		options?.platform ??
+		(typeof process !== "undefined" ? process.platform : undefined);
 	const permissionConfigSrc = path.join(
 		repoRoot,
 		"configs",
@@ -762,10 +806,35 @@ async function installPermissionSystemConfig() {
 		"pi-permission-system",
 	);
 	await ensureDir(permissionExtDir);
-	await linkOrCopy(
-		permissionConfigSrc,
-		path.join(permissionExtDir, "config.json"),
-	);
+	const dest = path.join(permissionExtDir, "config.json");
+	// On win32, copy (not symlink) so we can merge the Windows shellTools seed
+	// into the target without mutating the cross-platform source file. Other
+	// platforms keep the symlink for source-update propagation.
+	const copyOnly = platform === "win32";
+	await linkOrCopy(permissionConfigSrc, dest, { copyOnly });
+	if (copyOnly) {
+		let raw;
+		try {
+			raw = await fs.readFile(dest, "utf-8");
+		} catch (err) {
+			console.error(
+				`Failed to read pi-permission-system config for Windows seed: ${err.message}`,
+			);
+			return false;
+		}
+		let config;
+		try {
+			config = JSON.parse(raw);
+		} catch (err) {
+			console.error(
+				`Failed to parse pi-permission-system config for Windows seed: ${err.message}`,
+			);
+			return false;
+		}
+		seedWindowsPermissionShellTools(config);
+		await fs.writeFile(dest, `${JSON.stringify(config, null, 2)}\n`, "utf-8");
+		console.log("Seeded Windows shellTools.powershell into:", dest);
+	}
 	return true;
 }
 
