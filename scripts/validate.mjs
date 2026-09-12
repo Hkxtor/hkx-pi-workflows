@@ -112,6 +112,13 @@ const allowedPiTools = new Set([
 	"contact_supervisor",
 	"lsp_diagnostics",
 	"lsp_fix",
+	// ctx_search is provided by @cortexkit/pi-magic-context (managed package).
+	// Subagents with ctx_search can retrieve prior decisions and indexed
+	// knowledge from the shared FTS5 library before reading files, so a fresh-
+	// context child agent does not lose durable project context. Read-only for
+	// subagents; writing to the shared library (ctx_index/ctx_fetch_and_index)
+	// stays with the parent session per the delegation contract.
+	"ctx_search",
 ]);
 
 const errors = [];
