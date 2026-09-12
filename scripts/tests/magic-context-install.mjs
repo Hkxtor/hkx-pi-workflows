@@ -109,18 +109,25 @@ if (templateObj) {
 }
 
 // Run installMagicContextConfig with a controlled env (HOME + XDG_CONFIG_HOME).
-// The function reads process.env.XDG_CONFIG_HOME and falls back to os.homedir()
-// (which respects HOME on POSIX). Restore the original env afterwards.
+// The function reads process.env.XDG_CONFIG_HOME and falls back to os.homedir().
+// On POSIX os.homedir() honors HOME; on win32 it reads USERPROFILE instead, so
+// to keep the HOME-fallback path (test C) isolated we also redirect USERPROFILE
+// on Windows — otherwise the test would back up and overwrite the operator's
+// real ~/.config/cortexkit/magic-context.jsonc. Restore the original env after.
 const savedHome = process.env.HOME;
 const savedXdg = process.env.XDG_CONFIG_HOME;
+const savedUserprofile = process.env.USERPROFILE;
+const isWin = process.platform === "win32";
 async function runInstall(env) {
 	process.env.HOME = env.HOME;
 	process.env.XDG_CONFIG_HOME = env.XDG_CONFIG_HOME;
+	if (isWin) process.env.USERPROFILE = env.HOME;
 	try {
 		return await installMagicContextConfig();
 	} finally {
 		process.env.HOME = savedHome;
 		process.env.XDG_CONFIG_HOME = savedXdg;
+		if (isWin) process.env.USERPROFILE = savedUserprofile;
 	}
 }
 function xdgDest(env) {
