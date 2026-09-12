@@ -260,7 +260,6 @@ The `agents/` directory is now a **pi-subagents native** surface.
 - runtime names: `hkx.<name>`
 - search surface: `ffgrep` / `fffind` (preferred) with native `grep` / `find` as co-resident fallback
 - code intelligence surface: `lsp_diagnostics` and `lsp_fix` for configured routes; targeted `ffgrep` and `read` for navigation and structure
-- shared-context surface: investigation, planning, review, and reuse agents (`code-explorer`, `conversation-analyzer`, `planner`, `architect`, `docs-lookup`, `code-reviewer`, `refactor-cleaner`) declare `ctx_search` and retrieve prior decisions from the shared Magic Context FTS5 library before reading files; writing to the shared library stays with the parent session (see `rules/hkx-shared-context-retrieval.md`)
 - reviewers are read-only by default
 - writer agents use scoped mutation plus supervisor/intercom escalation rules
 
