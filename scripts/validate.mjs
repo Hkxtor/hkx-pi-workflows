@@ -720,7 +720,12 @@ async function main() {
 			assert(mc.cache_ttl === "5m", 'cache_ttl must be "5m"');
 			assert(mc.execute_threshold_percentage === 65, "execute_threshold_percentage must be 65");
 			assert(mc.history_budget_percentage === 0.18, "history_budget_percentage must be 0.18");
-			assert(mc.protected_tags === 24, "protected_tags must be 24");
+			// protected_tags is DEPRECATED and ignored upstream (v0.42.x); the
+			// managed overlay must not pin it. protected_tokens is a token floor
+			// (min 4_000, max 1_000_000). We intentionally omit it so Magic Context
+			// derives the default (~16k–64k) from the usable soft cap.
+			assert(!("protected_tags" in mc), 'protected_tags is deprecated and must be absent; use protected_tokens if a token floor is needed');
+			assert(!("protected_tokens" in mc), "protected_tokens must be omitted so Magic Context derives the default token floor");
 			assert(mc.compaction?.enabled === true, "compaction.enabled must be true (Magic Context owns compaction)");
 			assert(mc.smart_drops === false, "smart_drops must be false");
 			assert(mc.caveman_text_compression?.enabled === false, "caveman_text_compression.enabled must be false");

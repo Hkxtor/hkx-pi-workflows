@@ -81,7 +81,6 @@ if (templateObj) {
 		cache_ttl: "5m",
 		execute_threshold_percentage: 65,
 		history_budget_percentage: 0.18,
-		protected_tags: 24,
 		compaction: { enabled: true },
 		smart_drops: false,
 		caveman_text_compression: { enabled: false },
@@ -104,6 +103,20 @@ if (templateObj) {
 	check(
 		"template omits historian (machine-local)",
 		!Object.hasOwn(templateObj, "historian"),
+		JSON.stringify(Object.keys(templateObj)),
+	);
+	// protected_tags is DEPRECATED upstream (v0.42.x) and ignored; the
+	// managed overlay must not pin it. protected_tokens is a token floor
+	// (min 4_000, max 1_000_000). We omit it so Magic Context derives the
+	// default token floor (~16k–64k) from the usable soft cap.
+	check(
+		"template omits deprecated protected_tags",
+		!Object.hasOwn(templateObj, "protected_tags"),
+		JSON.stringify(Object.keys(templateObj)),
+	);
+	check(
+		"template omits protected_tokens (derive default floor)",
+		!Object.hasOwn(templateObj, "protected_tokens"),
 		JSON.stringify(Object.keys(templateObj)),
 	);
 }
