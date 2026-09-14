@@ -965,16 +965,16 @@ async function installPiToolDisplayConfig() {
 }
 
 /**
- * Top-level keys the package never versions: operator-owned model picks for
- * Magic Context's hidden agents. The repo template must not carry them (see
- * scripts/tests/magic-context-install.mjs) and a managed install preserves the
- * operator value instead of dropping it, so `npm run install-global` cannot
- * silently undo a historian model pick.
+ * Top-level keys seeded only when the destination lacks them. The template
+ * carries a working default (so a cold install gets a usable historian) while
+ * an existing operator value wins verbatim, so `npm run install-global` cannot
+ * silently undo a historian model pick. Mirrors the rpiv-advisor /
+ * pi-tool-display seed-if-missing precedent.
  *
- * Keys the template DOES own (`dreamer`, `memory`, ...) stay package-managed;
- * add a name here only when the template stops versioning that key.
+ * Keys the template owns authoritatively (`dreamer`, `memory`, ...) are always
+ * overwritten; add a name here only when a key should become overridable.
  */
-const MAGIC_CONTEXT_MACHINE_LOCAL_KEYS = ["historian"];
+const MAGIC_CONTEXT_SEED_KEYS = ["historian"];
 
 /**
  * Install the authoritative managed overlay for @cortexkit/pi-magic-context.
@@ -983,14 +983,15 @@ const MAGIC_CONTEXT_MACHINE_LOCAL_KEYS = ["historian"];
  * this overlay is the source of truth for Magic Context behavior: it is backed
  * up before write (timestamped `.bak.*` sibling, same scheme as mergeMcpConfig)
  * and then written on every install, so re-running `npm run install-global`
- * keeps the operator on the package-managed settings. Two operator surfaces
- * survive that overwrite:
+ * keeps the operator on the package-managed settings. Exceptions:
  *
- * - keys listed in MAGIC_CONTEXT_MACHINE_LOCAL_KEYS, carried over verbatim;
- * - every other drifted value, through the backup sibling.
+ * - keys listed in MAGIC_CONTEXT_SEED_KEYS are seed-if-missing: the template
+ *   default is written only when the destination lacks the key, and an
+ *   existing operator value is carried over verbatim;
+ * - every other drifted value survives through the backup sibling.
  *
- * Preserved keys are written after the template keys (template order is kept),
- * so the merged object is deterministic rather than operator-order dependent.
+ * Seed keys keep their template position, so the merged object is
+ * deterministic rather than operator-order dependent.
  *
  * A destination that cannot be read as a JSON object fails closed (mirrors
  * mergeMcpConfig): a corrupt operator file is never replaced silently.
@@ -1044,6 +1045,7 @@ async function installMagicContextConfig() {
 
 	const destExists = await pathExists(dest);
 	const preservedKeys = [];
+	const seededKeys = [];
 	if (destExists) {
 		let destObj;
 		try {
@@ -1062,10 +1064,18 @@ async function installMagicContextConfig() {
 			);
 			return false;
 		}
-		for (const key of MAGIC_CONTEXT_MACHINE_LOCAL_KEYS) {
-			if (!Object.hasOwn(destObj, key)) continue;
-			templateObj[key] = destObj[key];
-			preservedKeys.push(key);
+		for (const key of MAGIC_CONTEXT_SEED_KEYS) {
+			if (!Object.hasOwn(templateObj, key)) continue;
+			if (Object.hasOwn(destObj, key)) {
+				templateObj[key] = destObj[key];
+				preservedKeys.push(key);
+			} else {
+				seededKeys.push(key);
+			}
+		}
+	} else {
+		for (const key of MAGIC_CONTEXT_SEED_KEYS) {
+			if (Object.hasOwn(templateObj, key)) seededKeys.push(key);
 		}
 	}
 	const body = `${JSON.stringify(templateObj, null, 2)}\n`;
@@ -1102,6 +1112,11 @@ async function installMagicContextConfig() {
 	if (preservedKeys.length > 0) {
 		console.log(
 			`Preserved operator-owned magic-context keys: ${preservedKeys.join(", ")}`,
+		);
+	}
+	if (seededKeys.length > 0) {
+		console.log(
+			`Seeded magic-context defaults (no operator value present): ${seededKeys.join(", ")}`,
 		);
 	}
 	console.log(`Installed managed magic-context config: ${dest}`);

@@ -179,7 +179,7 @@ Current overlays:
 - `magic-context` (@cortexkit/pi-magic-context)
   - source: `configs/magic-context/magic-context.jsonc`
   - install target: `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/magic-context.jsonc`)
-  - install behavior: **authoritative managed overlay** — rewritten on every install (never symlinked, so plugin/runtime edits cannot mutate the checkout); the previous destination is backed up to a timestamped `.bak.*` sibling before the write, so operator-edited values stay recoverable. Machine-local keys (`historian`) are the one exception: the template never versions them and `scripts/install.mjs` carries the operator value over instead of dropping it. An unreadable or non-object destination fails closed and is left untouched
+  - install behavior: **authoritative managed overlay** — rewritten on every install (never symlinked, so plugin/runtime edits cannot mutate the checkout); the previous destination is backed up to a timestamped `.bak.*` sibling before the write, so operator-edited values stay recoverable. The seed key (`historian`) is the one exception: `scripts/install.mjs` writes the template default only when the destination lacks the key, so a cold install gets a configured historian while an existing operator pick is carried over verbatim instead of being overwritten. An unreadable or non-object destination fails closed and is left untouched
   - compaction ownership: Magic Context owns compaction; pi native `compaction` is disabled (`enabled: false`) in `configs/agent-settings.json`. The two halves are validated together in `scripts/validate.mjs` so an install cannot ship a configuration that double-runs or double-disables compaction
 
 This package manages the **config**, not the third-party extension packages themselves.
@@ -296,7 +296,7 @@ Important mappings:
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing; on win32 the overlay is copied — not symlinked — and seeded with `shellTools.powershell = { commandArgument: "command" }` per-tool only-if-missing, so the permission system gates the Windows `powershell` shell tool through the same stack as native `bash`)
 - then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
 - then: `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` if missing (never overwrite; `/tool-display` UI rewrites it at runtime)
-- then: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (authoritative managed overlay: backup previous destination, then write on every install; machine-local `historian` preserved; managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger); never symlink)
+- then: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (authoritative managed overlay: backup previous destination, then write on every install; `historian` seed-if-missing (template default when absent, operator value preserved); managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger); never symlink)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
 - `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md`
 

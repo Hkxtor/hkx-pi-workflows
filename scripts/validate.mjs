@@ -770,6 +770,26 @@ async function main() {
 			assert(mc.memory?.enabled === false, "memory.enabled must be false");
 			assert(mc.todowrite?.enabled === false, "todowrite.enabled must be false");
 			assert(mc.embedding?.provider === "off", 'embedding.provider must be "off"');
+			// `historian` is a SEED default (seed-if-missing in install.mjs): the
+			// template carries a working model so a cold install has a configured
+			// historian, while an existing operator pick is preserved verbatim.
+			// Provider/model IDs are environment-specific, so only the shape is
+			// asserted here; the exact value is pinned by the smoke suite.
+			assert(
+				typeof mc.historian?.pi?.model?.model === "string" &&
+					mc.historian.pi.model.model.length > 0,
+				"historian.pi.model.model must be a non-empty string (seed default)",
+			);
+			assert(
+				mc.historian?.pi?.model?.thinking_level === undefined ||
+					typeof mc.historian.pi.model.thinking_level === "string",
+				"historian.pi.model.thinking_level must be a string when set",
+			);
+			assert(
+				mc.historian?.pi?.fallback_models === undefined ||
+					Array.isArray(mc.historian.pi.fallback_models),
+				"historian.pi.fallback_models must be an array when set",
+			);
 		}
 	}
 

@@ -104,7 +104,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | permission config overlay | no | yes |
 | rpiv-advisor config seed | no | yes (if missing) |
 | pi-tool-display config seed | no | yes (if missing) |
-| magic-context config overlay | no | yes (authoritative; backup previous; keeps machine-local `historian`) |
+| magic-context config overlay | no | yes (authoritative; backup previous; seeds `historian` when absent, keeps operator value) |
 | GLOBAL_AGENTS / APPEND_SYSTEM | no | yes |
 | MCP defaults / templates | no | yes |
 
@@ -125,7 +125,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | permission config overlay | after package update: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates the extension dir if missing; on Windows the overlay is copied rather than symlinked and seeded with `shellTools.powershell` so the permission system gates the Windows shell tool through the `bash:` rule stack, per-tool **only if missing**) |
 | rpiv-advisor config seed | after package update: `configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json` **only if missing** (never overwrites `/advisor` picks; no versioned `modelKey`) |
 | pi-tool-display config seed | after package update: `configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** (the `/tool-display` settings UI rewrites it at runtime) |
-| magic-context config overlay | after package update: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`). Authoritative managed overlay: written on every install (never symlinked); previous destination is backed up before the write, and machine-local keys (`historian`) are preserved from it. Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`; managed `execute_threshold_tokens` (absolute-token historian trigger). |
+| magic-context config overlay | after package update: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`). Authoritative managed overlay: written on every install (never symlinked); previous destination is backed up before the write, and `historian` is seed-if-missing (template default when the destination lacks it, operator value preserved when present). Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`; managed `execute_threshold_tokens` (absolute-token historian trigger). |
 | global AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP defaults | `.mcp.json` → merge into `~/.pi/agent/mcp.json` |

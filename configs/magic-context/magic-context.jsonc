@@ -18,6 +18,19 @@
   "dreamer": {
     "disable": true
   },
+  "historian": {
+    "pi": {
+      "model": {
+        "model": "meme/deepseek-v4-flash",
+        "thinking_level": "medium"
+      },
+      "fallback_models": [
+        {
+          "model": "pai/DeepSeek-V4.1-Flash"
+        }
+      ]
+    }
+  },
   "memory": {
     "enabled": false
   },

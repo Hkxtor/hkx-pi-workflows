@@ -9,11 +9,12 @@
  *   ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc  (or ~/.config/...)
  * as an AUTHORITATIVE managed overlay: written on every install, with the
  * previous destination backed up first (timestamped .bak.* sibling). This
- * differs from rpiv-advisor (seed-if-missing) because Magic Context behavior
- * is package-owned, not operator-picked. The one exception is the machine-local
- * key set (install.mjs MAGIC_CONTEXT_MACHINE_LOCAL_KEYS, currently `historian`):
- * the template must NOT version it, and an install preserves the operator value
- * instead of dropping it. An invalid destination fails closed.
+ * differs from rpiv-advisor (pure seed-if-missing) because Magic Context
+ * behavior is package-owned, not operator-picked. The exception is the seed key
+ * set (install.mjs MAGIC_CONTEXT_SEED_KEYS, currently `historian`): the
+ * template carries a working default that a cold install writes, while an
+ * existing operator value is preserved verbatim instead of being overwritten.
+ * An invalid destination fails closed.
  *
  * Magic Context owns compaction; pi native compaction is disabled in
  * configs/agent-settings.json. This suite also asserts the complementary
@@ -89,6 +90,12 @@ if (templateObj) {
 		smart_drops: false,
 		caveman_text_compression: { enabled: false },
 		dreamer: { disable: true },
+		historian: {
+			pi: {
+				model: { model: "meme/deepseek-v4-flash", thinking_level: "medium" },
+				fallback_models: [{ model: "pai/DeepSeek-V4.1-Flash" }],
+			},
+		},
 		memory: { enabled: false },
 		todowrite: { enabled: false },
 		embedding: { provider: "off" },
@@ -102,11 +109,14 @@ if (templateObj) {
 			`got ${JSON.stringify(got)}`,
 		);
 	}
-	// The template must NOT version machine-local fields (historian model).
+	// `historian` is seed-if-missing, not package-authoritative: the template
+	// carries a working default (asserted by the expected map above) that a cold
+	// install writes, while an existing operator pick survives (section B).
 	check(
-		"template omits historian (machine-local)",
-		!Object.hasOwn(templateObj, "historian"),
-		JSON.stringify(Object.keys(templateObj)),
+		"template carries historian seed default",
+		typeof templateObj.historian?.pi?.model?.model === "string" &&
+			templateObj.historian.pi.model.model.length > 0,
+		JSON.stringify(templateObj.historian),
 	);
 	// protected_tags is DEPRECATED upstream (v0.42.x) and ignored; the
 	// managed overlay must not pin it. protected_tokens is a token floor
@@ -190,7 +200,7 @@ function xdgDest(env) {
 	await runInstall(env);
 	const dest = xdgDest(env);
 	// Simulate an operator-edited config drifting from the managed overlay,
-	// including a machine-local historian pick that the template does not own.
+	// including a historian pick that must win over the template seed default.
 	const operatorDrift = {
 		enabled: false,
 		compaction: { enabled: false },
@@ -236,10 +246,17 @@ function xdgDest(env) {
 	// operator-owned machine-local key survives the overwrite.
 	const after = JSON.parse(readFileSync(dest, "utf8"));
 	const { historian: afterHistorian, ...afterManaged } = after;
+	const { historian: templateHistorian, ...templateManaged } = templateObj;
 	check(
 		"B: dest after rerun restores managed (template-owned) values",
-		JSON.stringify(afterManaged) === JSON.stringify(templateObj),
+		JSON.stringify(afterManaged) === JSON.stringify(templateManaged),
 		JSON.stringify(afterManaged),
+	);
+	check(
+		"B: seed key keeps its template position (not appended)",
+		Object.keys(after).indexOf("historian") ===
+			Object.keys(templateObj).indexOf("historian"),
+		JSON.stringify(Object.keys(after)),
 	);
 	// Stale keys removed from the template (e.g. the deprecated `sidekick`)
 	// are dropped, not carried over from the drifted destination.
@@ -259,6 +276,39 @@ function xdgDest(env) {
 		"B: preserved key keeps the drifted operator value",
 		JSON.stringify(afterHistorian) === JSON.stringify(operatorDrift.historian),
 		JSON.stringify(afterHistorian),
+	);
+}
+
+// ---------------------------------------------------------------------------
+// B3: seed-if-missing — a destination without the seed key gets the default
+// ---------------------------------------------------------------------------
+{
+	const home = path.join(tmpRoot, "b3-home");
+	const xdg = path.join(tmpRoot, "b3-xdg");
+	mkdirSync(home, { recursive: true });
+	mkdirSync(xdg, { recursive: true });
+	const env = { HOME: home, XDG_CONFIG_HOME: xdg };
+	await runInstall(env);
+	const dest = xdgDest(env);
+	// Destination predating the seed/authoritative defaults: managed keys present
+	// but missing both the seed key and a template-owned key.
+	const withoutDefaults = { ...templateObj };
+	delete withoutDefaults.historian;
+	delete withoutDefaults.execute_threshold_tokens;
+	writeFileSync(dest, `${JSON.stringify(withoutDefaults, null, 2)}\n`);
+	const ok = await runInstall(env);
+	check("B3: rerun returns true", ok === true, String(ok));
+	const after = JSON.parse(readFileSync(dest, "utf8"));
+	check(
+		"B3: missing seed key is filled from the template default",
+		JSON.stringify(after.historian) === JSON.stringify(templateObj.historian),
+		JSON.stringify(after.historian),
+	);
+	check(
+		"B3: template-owned key is restored too",
+		JSON.stringify(after.execute_threshold_tokens) ===
+			JSON.stringify(templateObj.execute_threshold_tokens),
+		JSON.stringify(after.execute_threshold_tokens),
 	);
 }
 
