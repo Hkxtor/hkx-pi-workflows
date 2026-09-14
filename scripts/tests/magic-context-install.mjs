@@ -92,8 +92,8 @@ if (templateObj) {
 		dreamer: { disable: true },
 		historian: {
 			pi: {
-				model: { model: "meme/deepseek-v4-flash", thinking_level: "medium" },
-				fallback_models: [{ model: "pai/DeepSeek-V4.1-Flash" }],
+				model: { model: "meme/grok-4.6", thinking_level: "medium" },
+				fallback_models: [{ model: "meme/deepseek-v4-flash" }],
 			},
 		},
 		memory: { enabled: false },
