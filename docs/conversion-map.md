@@ -41,7 +41,7 @@ Manifest shape (authoritative):
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
-| magic-context config overlay | 1 | `configs/magic-context/magic-context.jsonc` | no | authoritative copy to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/...`); backup previous destination; never symlink. Magic Context owns compaction; pi native compaction is disabled in `configs/agent-settings.json` |
+| magic-context config overlay | 1 | `configs/magic-context/magic-context.jsonc` | no | authoritative write to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/...`); backup previous destination; preserves machine-local `historian`; never symlink. Magic Context owns compaction; pi native compaction is disabled in `configs/agent-settings.json`; managed `execute_threshold_tokens` (absolute-token historian trigger) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
 | managed keybindings | 1 | `configs/keybindings.json` | no | merge 11 managed actions into `~/.pi/agent/keybindings.json`; preserve unrelated actions |
 | global AGENTS source | 1 | `GLOBAL_AGENTS.md` | no | `~/.pi/agent/AGENTS.md` |
@@ -364,8 +364,9 @@ Current overlays:
   - seeded by `npm run install-global` to `~/.pi/agent/extensions/pi-tool-display/config.json` **only when missing**
   - the extension's `/tool-display` settings UI rewrites the file at runtime; never overwrite operator choices
 - `configs/magic-context/magic-context.jsonc`
-  - installed by `npm run install-global` to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`) as an **authoritative managed overlay**
-  - copied on every install (never symlinked); the previous destination is backed up (timestamped `.bak.*` sibling) before overwrite
+  - installed by `npm run install-global` to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`) as an **authoritative managed overlay**; managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger)
+  - written on every install (never symlinked); the previous destination is backed up (timestamped `.bak.*` sibling) before the write
+  - machine-local keys (`historian`) are never versioned in the template and are carried over from the existing destination, so an operator historian model pick survives an install; an unreadable or non-object destination fails closed
   - Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`
 
 ## Global agent settings

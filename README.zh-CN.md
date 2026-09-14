@@ -104,7 +104,7 @@ pi -e .
 | permission 配置覆盖层 | 否 | 是 |
 | rpiv-advisor 配置种子 | 否 | 是（仅当缺失） |
 | pi-tool-display 配置种子 | 否 | 是（仅当缺失） |
-| magic-context 配置覆盖层 | 否 | 是（权威；先备份旧文件） |
+| magic-context 配置覆盖层 | 否 | 是（权威；先备份旧文件；保留 machine-local `historian`） |
 | GLOBAL_AGENTS / APPEND_SYSTEM | 否 | 是 |
 | MCP 默认值 / 模板 | 否 | 是 |
 
@@ -125,7 +125,7 @@ pi -e .
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
 | rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
 | pi-tool-display 配置种子 | 包更新后：`configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json`，**仅当目标不存在**（`/tool-display` 设置 UI 会在运行时改写该文件） |
-| magic-context 配置覆盖层 | 包更新后：`configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc`（或 `~/.config/cortexkit/...`）。权威受管覆盖层：每次安装都会拷贝（从不软链）；写入前先备份旧目标。Magic Context 接管压缩；pi 原生 `compaction` 在 `configs/agent-settings.json` 中被禁用。 |
+| magic-context 配置覆盖层 | 包更新后：`configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc`（或 `~/.config/cortexkit/...`）。权威受管覆盖层：每次安装都会写入（从不软链）；写入前先备份旧目标，并从旧目标中保留 machine-local 键（`historian`）。Magic Context 接管压缩；pi 原生 `compaction` 在 `configs/agent-settings.json` 中被禁用；受管 `execute_threshold_tokens`（绝对 token 数 historian 触发阈值）。 |
 | 全局 AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |
 | MCP 默认值 | `.mcp.json` → 合并进 `~/.pi/agent/mcp.json` |

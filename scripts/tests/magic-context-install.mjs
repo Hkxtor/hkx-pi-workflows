@@ -7,10 +7,13 @@
  *
  * installMagicContextConfig writes
  *   ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc  (or ~/.config/...)
- * as an AUTHORITATIVE managed overlay: copied on every install, with the
+ * as an AUTHORITATIVE managed overlay: written on every install, with the
  * previous destination backed up first (timestamped .bak.* sibling). This
  * differs from rpiv-advisor (seed-if-missing) because Magic Context behavior
- * is package-owned, not operator-picked.
+ * is package-owned, not operator-picked. The one exception is the machine-local
+ * key set (install.mjs MAGIC_CONTEXT_MACHINE_LOCAL_KEYS, currently `historian`):
+ * the template must NOT version it, and an install preserves the operator value
+ * instead of dropping it. An invalid destination fails closed.
  *
  * Magic Context owns compaction; pi native compaction is disabled in
  * configs/agent-settings.json. This suite also asserts the complementary
@@ -80,6 +83,7 @@ if (templateObj) {
 		language: "zh",
 		cache_ttl: "5m",
 		execute_threshold_percentage: 65,
+		execute_threshold_tokens: { default: 200000 },
 		history_budget_percentage: 0.18,
 		compaction: { enabled: true },
 		smart_drops: false,
@@ -87,7 +91,6 @@ if (templateObj) {
 		dreamer: { disable: true },
 		memory: { enabled: false },
 		todowrite: { enabled: false },
-		sidekick: { disable: true },
 		embedding: { provider: "off" },
 	};
 	for (const [key, want] of Object.entries(expected)) {
@@ -229,19 +232,87 @@ function xdgDest(env) {
 		backupObj.enabled === false,
 		JSON.stringify(backupObj),
 	);
-	// Destination now reflects the managed overlay (drift corrected).
+	// Destination now reflects the managed overlay (drift corrected) while the
+	// operator-owned machine-local key survives the overwrite.
 	const after = JSON.parse(readFileSync(dest, "utf8"));
+	const { historian: afterHistorian, ...afterManaged } = after;
 	check(
-		"B: dest after rerun deep-equals managed template",
-		JSON.stringify(after) === JSON.stringify(templateObj),
+		"B: dest after rerun restores managed (template-owned) values",
+		JSON.stringify(afterManaged) === JSON.stringify(templateObj),
+		JSON.stringify(afterManaged),
+	);
+	// Stale keys removed from the template (e.g. the deprecated `sidekick`)
+	// are dropped, not carried over from the drifted destination.
+	check(
+		"B: stale sidekick key is dropped",
+		after.sidekick === undefined,
+		JSON.stringify(after.sidekick),
+	);
+	// The operator historian pick IS carried into the managed overlay: the
+	// template does not version it, so install preserves it verbatim.
+	check(
+		"B: managed dest preserves operator historian pick",
+		afterHistorian?.pi?.model === "meme/operator-pick",
 		JSON.stringify(after),
 	);
-	// The operator historian pick is NOT carried into the managed overlay:
-	// the template does not version historian, so it is dropped on overwrite.
 	check(
-		"B: managed dest drops operator historian pick",
-		after.historian === undefined,
-		JSON.stringify(after),
+		"B: preserved key keeps the drifted operator value",
+		JSON.stringify(afterHistorian) === JSON.stringify(operatorDrift.historian),
+		JSON.stringify(afterHistorian),
+	);
+}
+
+// ---------------------------------------------------------------------------
+// B2: an invalid destination fails closed (mirrors mergeMcpConfig: never
+// replace an operator file install.mjs cannot read)
+// ---------------------------------------------------------------------------
+{
+	const home = path.join(tmpRoot, "b2-home");
+	const xdg = path.join(tmpRoot, "b2-xdg");
+	mkdirSync(home, { recursive: true });
+	mkdirSync(xdg, { recursive: true });
+	const env = { HOME: home, XDG_CONFIG_HOME: xdg };
+	await runInstall(env);
+	const dest = xdgDest(env);
+	const destDir = path.dirname(dest);
+
+	const corrupt = '{ "enabled": true, // operator comment\n';
+	writeFileSync(dest, corrupt);
+	const backupsBefore = readdirSync(destDir).filter((f) =>
+		f.startsWith("magic-context.jsonc.bak."),
+	);
+	const okCorrupt = await runInstall(env);
+	check(
+		"B2: install returns false on invalid destination JSON",
+		okCorrupt === false,
+		String(okCorrupt),
+	);
+	check(
+		"B2: invalid destination is left untouched",
+		readFileSync(dest, "utf8") === corrupt,
+		readFileSync(dest, "utf8"),
+	);
+	const backupsAfter = readdirSync(destDir).filter((f) =>
+		f.startsWith("magic-context.jsonc.bak."),
+	);
+	check(
+		"B2: refused install writes no backup",
+		backupsAfter.length === backupsBefore.length,
+		`before=${backupsBefore.length} after=${backupsAfter.length}`,
+	);
+
+	const notObject = "[]\n";
+	writeFileSync(dest, notObject);
+	const okArray = await runInstall(env);
+	check(
+		"B2: install returns false on non-object destination",
+		okArray === false,
+		String(okArray),
+	);
+	check(
+		"B2: non-object destination is left untouched",
+		readFileSync(dest, "utf8") === notObject,
+		readFileSync(dest, "utf8"),
 	);
 }
 

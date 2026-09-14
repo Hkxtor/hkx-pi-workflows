@@ -965,14 +965,35 @@ async function installPiToolDisplayConfig() {
 }
 
 /**
+ * Top-level keys the package never versions: operator-owned model picks for
+ * Magic Context's hidden agents. The repo template must not carry them (see
+ * scripts/tests/magic-context-install.mjs) and a managed install preserves the
+ * operator value instead of dropping it, so `npm run install-global` cannot
+ * silently undo a historian model pick.
+ *
+ * Keys the template DOES own (`dreamer`, `memory`, ...) stay package-managed;
+ * add a name here only when the template stops versioning that key.
+ */
+const MAGIC_CONTEXT_MACHINE_LOCAL_KEYS = ["historian"];
+
+/**
  * Install the authoritative managed overlay for @cortexkit/pi-magic-context.
  *
  * Unlike rpiv-advisor (seed-if-missing) and pi-tool-display (seed-if-missing),
- * this overlay is the source of truth for Magic Context behavior: it is copied
- * on every install so re-running `npm run install-global` keeps the operator on
- * the package-managed settings. A previous destination is backed up before
- * write (timestamped `.bak.*` sibling, same scheme as mergeMcpConfig) so
- * operator-edited values remain recoverable.
+ * this overlay is the source of truth for Magic Context behavior: it is backed
+ * up before write (timestamped `.bak.*` sibling, same scheme as mergeMcpConfig)
+ * and then written on every install, so re-running `npm run install-global`
+ * keeps the operator on the package-managed settings. Two operator surfaces
+ * survive that overwrite:
+ *
+ * - keys listed in MAGIC_CONTEXT_MACHINE_LOCAL_KEYS, carried over verbatim;
+ * - every other drifted value, through the backup sibling.
+ *
+ * Preserved keys are written after the template keys (template order is kept),
+ * so the merged object is deterministic rather than operator-order dependent.
+ *
+ * A destination that cannot be read as a JSON object fails closed (mirrors
+ * mergeMcpConfig): a corrupt operator file is never replaced silently.
  *
  * Path: ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc (or ~/.config/...).
  * Never symlinked: a runtime config symlinked at the repo would let plugin
@@ -994,21 +1015,26 @@ async function installMagicContextConfig() {
 		return false;
 	}
 
-	let body;
+	let templateRaw;
 	try {
-		body = await fs.readFile(src, "utf-8");
+		templateRaw = await fs.readFile(src, "utf-8");
 	} catch (err) {
 		console.error(`Failed to read magic-context template: ${err.message}`);
 		return false;
 	}
 	// Validate JSON before writing so we never ship a broken overlay. The
 	// template is plain JSON; a future JSONC comment would need a stripper.
+	let templateObj;
 	try {
-		JSON.parse(body);
+		templateObj = JSON.parse(templateRaw);
 	} catch (err) {
 		console.error(
 			`magic-context template is invalid JSON (${src}): ${err.message}`,
 		);
+		return false;
+	}
+	if (!isPlainObject(templateObj)) {
+		console.error(`magic-context template must be a JSON object: ${src}`);
 		return false;
 	}
 
@@ -1016,9 +1042,38 @@ async function installMagicContextConfig() {
 	await ensureDir(destDir);
 	const dest = path.join(destDir, "magic-context.jsonc");
 
-	// Back up an existing destination before the authoritative overwrite, so
-	// operator-edited values are recoverable. Mirrors mergeMcpConfig backup.
-	if (await pathExists(dest)) {
+	const destExists = await pathExists(dest);
+	const preservedKeys = [];
+	if (destExists) {
+		let destObj;
+		try {
+			destObj = JSON.parse(await fs.readFile(dest, "utf-8"));
+		} catch (err) {
+			// Hard-fail: never replace an operator file we cannot read.
+			console.error(
+				`Destination magic-context config is invalid JSON (${dest}): ${err.message}. ` +
+					"Fix or remove it before re-running install-global (refusing to drop operator settings).",
+			);
+			return false;
+		}
+		if (!isPlainObject(destObj)) {
+			console.error(
+				`Destination magic-context config must be a JSON object: ${dest}`,
+			);
+			return false;
+		}
+		for (const key of MAGIC_CONTEXT_MACHINE_LOCAL_KEYS) {
+			if (!Object.hasOwn(destObj, key)) continue;
+			templateObj[key] = destObj[key];
+			preservedKeys.push(key);
+		}
+	}
+	const body = `${JSON.stringify(templateObj, null, 2)}\n`;
+
+	// Back up the existing destination before the authoritative write, so
+	// operator-edited values are recoverable. Mirrors the mergeMcpConfig
+	// backup, and runs only after the destination scan above has succeeded.
+	if (destExists) {
 		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 		const backupPath = `${dest}.bak.${stamp}`;
 		try {
@@ -1033,7 +1088,7 @@ async function installMagicContextConfig() {
 	}
 
 	try {
-		await fs.writeFile(dest, body.endsWith("\n") ? body : `${body}\n`, {
+		await fs.writeFile(dest, body, {
 			encoding: "utf-8",
 			mode: 0o600,
 		});
@@ -1043,6 +1098,11 @@ async function installMagicContextConfig() {
 	} catch (err) {
 		console.error(`Failed to write magic-context config (${dest}): ${err.message}`);
 		return false;
+	}
+	if (preservedKeys.length > 0) {
+		console.log(
+			`Preserved operator-owned magic-context keys: ${preservedKeys.join(", ")}`,
+		);
 	}
 	console.log(`Installed managed magic-context config: ${dest}`);
 	return true;

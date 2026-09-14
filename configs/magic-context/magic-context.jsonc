@@ -4,6 +4,9 @@
   "language": "zh",
   "cache_ttl": "5m",
   "execute_threshold_percentage": 65,
+  "execute_threshold_tokens": {
+    "default": 200000
+  },
   "history_budget_percentage": 0.18,
   "compaction": {
     "enabled": true
@@ -20,9 +23,6 @@
   },
   "todowrite": {
     "enabled": false
-  },
-  "sidekick": {
-    "disable": true
   },
   "embedding": {
     "provider": "off"

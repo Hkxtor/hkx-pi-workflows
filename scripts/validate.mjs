@@ -714,11 +714,48 @@ async function main() {
 			const assert = (cond, msg) => {
 				if (!cond) errors.push(`${mcPath}: ${msg}`);
 			};
+			const numberInRange = (value, min, max) =>
+				typeof value === "number" &&
+				Number.isInteger(value) &&
+				value >= min &&
+				value <= max;
 			assert(mc.enabled === true, "enabled must be true (managed overlay)");
 			assert(mc.auto_update === true, "auto_update must be true");
 			assert(mc.language === "zh", 'language must be "zh"');
 			assert(mc.cache_ttl === "5m", 'cache_ttl must be "5m"');
 			assert(mc.execute_threshold_percentage === 65, "execute_threshold_percentage must be 65");
+			// execute_threshold_tokens pins the compaction/historian trigger to an
+			// absolute token count instead of a window-relative percentage, so the
+			// trigger point does not drift across models with different context
+			// windows. Upstream accepts a per-model map only (never a bare number),
+			// clamps at 90% x context_limit, and allows 5_000..2_000_000.
+			assert(
+				mc.execute_threshold_tokens &&
+					typeof mc.execute_threshold_tokens === "object" &&
+					!Array.isArray(mc.execute_threshold_tokens),
+				"execute_threshold_tokens must be a per-model object (no bare number)",
+			);
+			if (
+				mc.execute_threshold_tokens &&
+				typeof mc.execute_threshold_tokens === "object" &&
+				!Array.isArray(mc.execute_threshold_tokens)
+			) {
+				const tokenEntries = Object.entries(mc.execute_threshold_tokens);
+				assert(
+					tokenEntries.length > 0,
+					"execute_threshold_tokens must not be empty",
+				);
+				for (const [key, value] of tokenEntries) {
+					assert(
+						numberInRange(value, 5_000, 2_000_000),
+						`execute_threshold_tokens.${key} must be an integer in 5000..2000000`,
+					);
+				}
+				assert(
+					numberInRange(mc.execute_threshold_tokens.default, 5_000, 2_000_000),
+					"execute_threshold_tokens.default must be an integer in 5000..2000000 (fallback for unmatched models)",
+				);
+			}
 			assert(mc.history_budget_percentage === 0.18, "history_budget_percentage must be 0.18");
 			// protected_tags is DEPRECATED and ignored upstream (v0.42.x); the
 			// managed overlay must not pin it. protected_tokens is a token floor
@@ -730,7 +767,6 @@ async function main() {
 			assert(mc.smart_drops === false, "smart_drops must be false");
 			assert(mc.caveman_text_compression?.enabled === false, "caveman_text_compression.enabled must be false");
 			assert(mc.dreamer?.disable === true, "dreamer.disable must be true");
-			assert(mc.sidekick?.disable === true, "sidekick.disable must be true");
 			assert(mc.memory?.enabled === false, "memory.enabled must be false");
 			assert(mc.todowrite?.enabled === false, "todowrite.enabled must be false");
 			assert(mc.embedding?.provider === "off", 'embedding.provider must be "off"');
