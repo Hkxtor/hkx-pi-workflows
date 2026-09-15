@@ -337,7 +337,7 @@ Six first-party extensions are shipped intentionally:
 
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands have no in-session exemption
-- `hkx-hookify.ts` — operator Hookify rules (`warn` notify / `block` tool_call); loads `.pi/hookify.*.local.md` + `~/.pi/agent/hookify/`; `HKX_HOOKIFY=off`
+- `hkx-hookify.ts` — operator Hookify rules (`warn` notify / `block` tool_call); loads `.pi/hookify.*.local.md` + `~/.pi/agent/hookify/`; `HKX_HOOKIFY=off`. Event `bash` means the **shell surface**, which is `powershell` on win32 where pi replaces the native `bash` tool
 - `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves scoped permission/configured-output artifact asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 - `hkx-custom-header.ts` — custom startup header (logo + keybinding hints); `/hkx-custom-header`, `HKX_CUSTOM_HEADER=off`; adapted from amosblomqvist/pi-config
@@ -438,9 +438,10 @@ Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 - commands: `hookify`, `hookify-list`, `hookify-configure`, `hookify-help`
 - skill: `hookify-rules`
 - agent: `conversation-analyzer` (`hkx.conversation-analyzer`)
-- extension: `hkx-hookify.ts`
+- extension: `hkx-hookify.ts` (event `bash` = shell surface: `bash` + `powershell`)
 - tests: `scripts/tests/hookify-rules.mjs`
 - rules on disk: project `.pi/hookify.{name}.local.md`; optional global `~/.pi/agent/hookify/`
+- companion helper: `scripts/shell-command-preflight.mjs` (direct `node` invocation, not an npm script) reports whether a command resolves in `tree-sitter-bash`; an unresolved parse makes pi-permission-system floor the whole command to an `<unparsed-bash-subtree>` prompt, so the highest-value default rule blocks PowerShell control flow (`if (...) { }`, `foreach/while/for/switch (...) { }`, `do { } while (...)`, `function Name { }`)
 - complements GateGuard (destructive-bash gate) and instinct (cross-session learning); does not replace either
 
 ## Optional knowledge surface: Instinct Evolve

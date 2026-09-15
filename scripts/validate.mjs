@@ -74,6 +74,8 @@ const requiredFiles = [
 	"scripts/tests/subagent-artifact-auto-reply.mjs",
 	// Hookify rule parse/match/evaluate suite.
 	"scripts/tests/hookify-rules.mjs",
+	// Shell command parse preflight (win32 fail-closed floor guard) suite.
+	"scripts/tests/shell-command-preflight.mjs",
 	// Extensions (Path A + B).
 	"extensions/hkx-gateguard.ts",
 	"extensions/hkx-hookify.ts",
@@ -87,6 +89,9 @@ const requiredFiles = [
 	"scripts/lib/mcp-resolver.mjs",
 	// Plan Canvas CLI (CommonJS under type:module package).
 	"scripts/plan-canvas.cjs",
+	// Shell command parse preflight (direct `node scripts/...` maintenance
+	// helper; deliberately not an npm script per AGENTS.md).
+	"scripts/shell-command-preflight.mjs",
 	"scripts/lib/loopback-guard.cjs",
 	"scripts/lib/plan-canvas/server.cjs",
 	"scripts/lib/plan-canvas/sessions.cjs",

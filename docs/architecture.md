@@ -140,7 +140,7 @@ Use an extension when the behavior must happen at runtime, for example:
 Current extensions:
 
 - `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands remain blocked while enabled
-- `hkx-hookify.ts` — operator Hookify pattern rules (warn/block); `.pi/hookify.*.local.md`; `HKX_HOOKIFY=off`
+- `hkx-hookify.ts` — operator Hookify pattern rules (warn/block); `.pi/hookify.*.local.md`; `HKX_HOOKIFY=off`; event `bash` is the shell surface (`bash` or `powershell` on win32)
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to scoped permission/configured-output artifact asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
@@ -313,6 +313,7 @@ Package scripts fall into two buckets:
 2. **Maintenance-only helpers**
    - direct `node scripts/...` tools used by maintainers
    - currently: `scripts/convert-agents-to-pi.mjs` for bulk-importing older agent definitions
+   - currently: `scripts/shell-command-preflight.mjs` to check whether a shell command resolves in `tree-sitter-bash` (an unresolved parse makes pi-permission-system floor the whole command to an `<unparsed-bash-subtree>` prompt)
    - not part of install/runtime and intentionally not exposed as npm scripts
 
 Prefer authoring new package surfaces in the current pi-native shape. Use conversion helpers only when importing older definitions. Keep Path A and Path B documentation in sync whenever install behavior changes.

@@ -288,6 +288,7 @@ pi install git:git@github.com:Hkxtor/hkx-pi-workflows
 | 助手 | 用途 |
 | --- | --- |
 | `node scripts/convert-agents-to-pi.mjs` | 将旧 agent 定义批量导入当前 pi-subagents 格式。新 agent 请直接按当前 pi-native 格式编写。 |
+| `node scripts/shell-command-preflight.mjs --command "<cmd>"` | 运行前先检查命令能否被 `tree-sitter-bash` 解析。退出码 `0` 干净、`2` 解析未决、`1` 用法或解析器依赖错误。解析未决会让 pi-permission-system 把整条命令降级为 `<unparsed-bash-subtree>` 弹窗，因此这个助手既能解释、也能预防这种意外确认。 |
 
 ## 校验
 

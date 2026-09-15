@@ -287,6 +287,7 @@ These are **not** part of the normal install/runtime path and are not exposed as
 | Helper | Purpose |
 | --- | --- |
 | `node scripts/convert-agents-to-pi.mjs` | Bulk-import older agent definitions into the current pi-subagents format. Prefer writing new agents as pi-native from the start. |
+| `node scripts/shell-command-preflight.mjs --command "<cmd>"` | Check whether a shell command resolves in `tree-sitter-bash` before running it. Exit `0` clean, `2` unresolved, `1` usage/parser-setup error. An unresolved parse makes pi-permission-system floor the whole command to an `<unparsed-bash-subtree>` prompt, so this explains and prevents an unexpected ask. |
 
 ## Validation
 
