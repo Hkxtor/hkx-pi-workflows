@@ -1,0 +1,57 @@
+{
+  "defaultPlatforms": ["native"],
+  "events": {
+    "workflow_end": {
+      "enabled": false,
+      "platforms": []
+    },
+    "ralph_loop_end": {
+      "enabled": false,
+      "platforms": []
+    },
+    "mcp_server_error": {
+      "enabled": false,
+      "platforms": []
+    },
+    "agent_end": {
+      "enabled": true,
+      "platforms": []
+    },
+    "agent_settled": {
+      "enabled": true,
+      "platforms": []
+    },
+    "memory_consolidated": {
+      "enabled": false,
+      "platforms": []
+    },
+    "session_shutdown": {
+      "enabled": false,
+      "platforms": []
+    },
+    "ask_user_prompt": {
+      "enabled": true,
+      "platforms": []
+    },
+    "permission_request": {
+      "enabled": true,
+      "platforms": []
+    }
+  },
+  "native": {
+    "enabled": true,
+    "suppressWhenFocused": true
+  },
+  "gotify": {
+    "enabled": false
+  },
+  "telegram": {
+    "enabled": false
+  },
+  "recap": {
+    "enabled": false
+  },
+  "silenceAfterInput": {
+    "enabled": false
+  }
+}

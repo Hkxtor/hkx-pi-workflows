@@ -14,7 +14,7 @@
 - **skills** — 工作流与语言/领域指导
 - **rules** — 轻量仓库/会话提醒（仅完整安装路径）
 - **extensions** — 低噪声质量、门禁与 TUI 外观扩展
-- **外部扩展配置** — 受管覆盖层（如 `pi-permission-system` 与 `pi-lsp` 路由；仅完整安装）
+- **外部扩展配置** — 受管覆盖层（如 `pi-permission-system`、`pi-lsp` 路由、`pi-unipi-notify`；仅完整安装）
 - **全局 agent 设置** — `configs/agent-settings.json` → 合并进 `~/.pi/agent/settings.json`（仅完整安装；不强制主题）
 - **受管快捷键** — `configs/keybindings.json` → 将受管动作合并进 `~/.pi/agent/keybindings.json`（仅完整安装；保留无关快捷键）
 - **全局上下文文件** — 安装源：`~/.pi/agent/AGENTS.md`、`~/.pi/agent/APPEND_SYSTEM.md`（仅完整安装）
@@ -47,7 +47,7 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 
 **agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
 
-**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、`configs/keybindings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor、pi-tool-display 与 magic-context 配置覆盖层。需要这些请用路径 B。
+**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、`configs/keybindings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor、pi-tool-display、pi-unipi-notify 与 magic-context 配置覆盖层。需要这些请用路径 B。
 
 后续更新：
 
@@ -65,7 +65,7 @@ pi install git:git@github.com:Hkxtor/hkx-pi-workflows@main
 npm run install-global
 ```
 
-这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，合并受管 settings 与 keybindings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管 pi-lsp、扩展配置覆盖层，以及 rpiv-advisor / pi-tool-display 配置种子与 magic-context 权威覆盖层。
+这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，合并受管 settings 与 keybindings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管 pi-lsp、扩展配置覆盖层，以及 rpiv-advisor / pi-tool-display / pi-unipi-notify 配置种子与 magic-context 权威覆盖层。
 
 当你需要 rules、MCP 默认值、全局 AGENTS / APPEND_SYSTEM、受管快捷键，以及受管依赖包清单时，请用路径 B，而不是只装包原生资源。若 Pi 会话已经打开，安装后执行 `/reload` 使新快捷键生效。
 
@@ -106,6 +106,7 @@ pi -e .
 | permission 配置覆盖层 | 否 | 是 |
 | rpiv-advisor 配置种子 | 否 | 是（仅当缺失） |
 | pi-tool-display 配置种子 | 否 | 是（仅当缺失） |
+| pi-unipi-notify 配置种子 | 否 | 是（仅当缺失；复制为 `0600`） |
 | magic-context 配置覆盖层 | 否 | 是（权威；先备份旧文件；`historian` 缺失时写入模板默认、已存在时保留操作者值） |
 | GLOBAL_AGENTS / APPEND_SYSTEM | 否 | 是 |
 | MCP 默认值 / 模板 | 否 | 是 |
@@ -127,6 +128,7 @@ pi -e .
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
 | rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
 | pi-tool-display 配置种子 | 包更新后：`configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json`，**仅当目标不存在**（`/tool-display` 设置 UI 会在运行时改写该文件） |
+| pi-unipi-notify 配置种子 | 包更新后：`configs/pi-unipi-notify/config.json` → `~/.unipi/config/notify/config.json`，**仅当目标不存在**（`/unipi:notify-settings` 面板与 `/unipi:notify-event` 会在运行时改写该文件；因此只复制、绝不软链，并以 `0600` 写入 —— 启用 gotify/telegram 后凭据会存在此文件）。只开原生桌面通知：4 个生命周期事件开启，其余 5 个事件与 gotify/telegram/recap 关闭；`ntfy` 独立存放在自己的 `ntfy.json` |
 | magic-context 配置覆盖层 | 包更新后：`configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc`（或 `~/.config/cortexkit/...`）。权威受管覆盖层：每次安装都会写入（从不软链）；写入前先备份旧目标，`historian` 为 seed-if-missing（目标缺失时写入模板默认，已存在时保留操作者值）。Magic Context 接管压缩；pi 原生 `compaction` 在 `configs/agent-settings.json` 中被禁用；受管 `execute_threshold_tokens`（绝对 token 数 historian 触发阈值）。 |
 | 全局 AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |

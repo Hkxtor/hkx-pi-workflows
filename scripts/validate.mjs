@@ -38,6 +38,7 @@ const requiredFiles = [
 	"configs/pi-lsp/pi-lsp.json",
 	"configs/rpiv-advisor/advisor.json",
 	"configs/pi-tool-display/config.json",
+	"configs/pi-unipi-notify/config.json",
 	"configs/magic-context/magic-context.jsonc",
 	"configs/agent-settings.json",
 	"configs/keybindings.json",
@@ -67,6 +68,8 @@ const requiredFiles = [
 	"scripts/tests/install-apply-packaging.mjs",
 	// rpiv-advisor XDG seed (Path B; never overwrite operator modelKey).
 	"scripts/tests/rpiv-advisor-seed.mjs",
+	// pi-unipi-notify seed (Path B; never overwrite runtime panel edits).
+	"scripts/tests/pi-unipi-notify-seed.mjs",
 	// magic-context authoritative managed overlay (Path B; backup + overwrite).
 	"scripts/tests/magic-context-install.mjs",
 	// GateGuard destructive-command + independent artifact auto-reply suites.
@@ -676,6 +679,111 @@ async function main() {
 		}
 	}
 
+	// Portable @pi-unipi/notify seed (the extension's settings overlay rewrites
+	// it at runtime). Validate the exact operator-pinned contract: native desktop
+	// notifications only, exactly four enabled events, every other event pinned
+	// off so an upstream default flip cannot silently enable one.
+	const unipiNotifyConfigPath = path.join(
+		root,
+		"configs",
+		"pi-unipi-notify",
+		"config.json",
+	);
+	try {
+		const unipiNotifyConfig = JSON.parse(
+			await fs.readFile(unipiNotifyConfigPath, "utf8"),
+		);
+		const unipiPath = "configs/pi-unipi-notify/config.json";
+		if (
+			!unipiNotifyConfig ||
+			typeof unipiNotifyConfig !== "object" ||
+			Array.isArray(unipiNotifyConfig)
+		) {
+			errors.push(`${unipiPath}: must be a JSON object`);
+		} else {
+			const assert = (cond, msg) => {
+				if (!cond) errors.push(`${unipiPath}: ${msg}`);
+			};
+			assert(
+				JSON.stringify(unipiNotifyConfig.defaultPlatforms) ===
+					JSON.stringify(["native"]),
+				'defaultPlatforms must be ["native"] (native desktop notifications only)',
+			);
+			assert(
+				unipiNotifyConfig.native?.enabled === true,
+				"native.enabled must be true",
+			);
+			assert(
+				unipiNotifyConfig.native?.suppressWhenFocused === true,
+				"native.suppressWhenFocused must be true",
+			);
+			const enabledEvents = [
+				"agent_end",
+				"agent_settled",
+				"ask_user_prompt",
+				"permission_request",
+			];
+			const disabledEvents = [
+				"workflow_end",
+				"ralph_loop_end",
+				"mcp_server_error",
+				"memory_consolidated",
+				"session_shutdown",
+			];
+			const events = unipiNotifyConfig.events;
+			if (!events || typeof events !== "object" || Array.isArray(events)) {
+				errors.push(`${unipiPath}: events must be a JSON object`);
+			} else {
+				const expectedKeys = [...enabledEvents, ...disabledEvents].sort();
+				assert(
+					JSON.stringify(Object.keys(events).sort()) ===
+						JSON.stringify(expectedKeys),
+					`events must pin exactly the ${expectedKeys.length} known keys; an omitted key inherits the upstream default`,
+				);
+				for (const name of enabledEvents) {
+					assert(
+						events[name]?.enabled === true,
+						`events.${name}.enabled must be true`,
+					);
+				}
+				for (const name of disabledEvents) {
+					assert(
+						events[name]?.enabled === false,
+						`events.${name}.enabled must be false`,
+					);
+				}
+				for (const [name, cfg] of Object.entries(events)) {
+					assert(
+						Array.isArray(cfg?.platforms) && cfg.platforms.length === 0,
+						`events.${name}.platforms must be [] so every event inherits the native-only default`,
+					);
+				}
+			}
+			assert(
+				unipiNotifyConfig.gotify?.enabled === false,
+				"gotify.enabled must be false",
+			);
+			assert(
+				unipiNotifyConfig.telegram?.enabled === false,
+				"telegram.enabled must be false",
+			);
+			assert(
+				unipiNotifyConfig.recap?.enabled === false,
+				"recap.enabled must be false",
+			);
+			assert(
+				!Object.hasOwn(unipiNotifyConfig, "ntfy"),
+				"ntfy is not part of config.json (it lives in the separate ntfy.json); do not version it here",
+			);
+		}
+	} catch (err) {
+		if (err && err.code !== "ENOENT") {
+			errors.push(
+				`configs/pi-unipi-notify/config.json: invalid JSON: ${err.message}`,
+			);
+		}
+	}
+
 	// Authoritative managed overlay for @cortexkit/pi-magic-context.
 	// Magic Context owns compaction; pi native compaction is disabled in
 	// configs/agent-settings.json. Validate the full requested contract
@@ -854,6 +962,17 @@ async function main() {
 			const hasMagicContext = packagesList.some((p) =>
 				typeof p === "string" ? p.includes("@cortexkit/pi-magic-context") : false,
 			);
+			// Complementary install ownership for the notify seed: the overlay
+			// targets a third-party extension, so the managed package list must
+			// install it. Validated together for the same reason as Magic Context.
+			const hasUnipiNotify = packagesList.some((p) =>
+				typeof p === "string" ? p.includes("pi-unipi/notify") : false,
+			);
+			if (!hasUnipiNotify) {
+				errors.push(
+					'configs/agent-settings.json: packages must include "npm:@pi-unipi/notify" so the one-click install manages the notify extension',
+				);
+			}
 			if (!hasMagicContext) {
 				errors.push(
 					'configs/agent-settings.json: packages must include "npm:@cortexkit/pi-magic-context" so the one-click install manages Magic Context',

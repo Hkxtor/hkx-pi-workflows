@@ -18,6 +18,7 @@
     "npm:@narumitw/pi-lsp",
     "npm:pi-simplify",
     "npm:pi-tool-display",
+    "npm:@pi-unipi/notify",
     "npm:@cortexkit/pi-magic-context"
   ],
   "quietStartup": true,

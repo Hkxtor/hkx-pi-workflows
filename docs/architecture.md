@@ -178,6 +178,11 @@ Current overlays:
   - source: `configs/pi-tool-display/config.json`
   - install target: `~/.pi/agent/extensions/pi-tool-display/config.json`
   - install behavior: **seed if missing only** — the extension's `/tool-display` settings UI rewrites the file at runtime, so a symlink or overwrite would clobber operator choices
+- `pi-unipi-notify` (@pi-unipi/notify)
+  - source: `configs/pi-unipi-notify/config.json`
+  - install target: `~/.unipi/config/notify/config.json` (the path `@pi-unipi/core` resolves from `NOTIFY_DIRS.CONFIG`)
+  - install behavior: **seed if missing only** — the extension's `/unipi:notify-settings` overlay and `/unipi:notify-event` command rewrite the file at runtime, so a symlink or overwrite would clobber operator choices. The seed is copied (never symlinked) with mode `0600`, because gotify/telegram credentials land in that file once those platforms are enabled
+  - pinned intent: native desktop notifications only — `defaultPlatforms: ["native"]`, `native.suppressWhenFocused: true`, four enabled events (`agent_end`, `agent_settled`, `ask_user_prompt`, `permission_request`), and the remaining five events plus gotify/telegram/recap explicitly off. All nine upstream event keys are enumerated because `loadConfig()` merges the file over the upstream defaults, so an omitted key inherits them (three of the nine default to on). `ntfy` is not part of this schema: it lives in the separate `~/.unipi/config/notify/ntfy.json` and stays off unless the operator configures it
 - `magic-context` (@cortexkit/pi-magic-context)
   - source: `configs/magic-context/magic-context.jsonc`
   - install target: `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/magic-context.jsonc`)
@@ -280,7 +285,7 @@ Declared in `package.json`:
 - Pi loads `extensions` / `skills` / `prompts` from the `pi` block.
 - `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
 - Agents/chains require **pi-subagents** to already be installed.
-- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings/keybindings overlays, or pi-lsp / permission / tool-display / magic-context config overlays.
+- Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings/keybindings overlays, or pi-lsp / permission / tool-display / notify / magic-context config overlays.
 
 #### Path B — global operator layout
 
@@ -298,6 +303,7 @@ Important mappings:
 - then: `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (creates dir if missing; on win32 the overlay is copied — not symlinked — and seeded with `shellTools.powershell = { commandArgument: "command" }` per-tool only-if-missing, so the permission system gates the Windows `powershell` shell tool through the same stack as native `bash`)
 - then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
 - then: `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` if missing (never overwrite; `/tool-display` UI rewrites it at runtime)
+- then: `configs/pi-unipi-notify/config.json` → seed `~/.unipi/config/notify/config.json` if missing (never overwrite; the `/unipi:notify-settings` overlay and `/unipi:notify-event` rewrite it at runtime; copied `0600`, never symlinked)
 - then: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (authoritative managed overlay: backup previous destination, then write on every install; `historian` seed-if-missing (template default when absent, operator value preserved); managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger); never symlink)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
 - `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md`

@@ -53,6 +53,13 @@
  *                            -> ~/.pi/agent/extensions/pi-tool-display/config.json
  *                              (after package update; seed-if-missing only: the
  *                               extension's /tool-display settings UI rewrites it)
+ * - configs/pi-unipi-notify/config.json
+ *                            -> ~/.unipi/config/notify/config.json
+ *                              (after package update; seed-if-missing only: the
+ *                               extension's /unipi:notify-settings overlay and
+ *                               /unipi:notify-event command rewrite it, and the
+ *                               file later holds gotify/telegram credentials,
+ *                               so it is copied 0600 and never symlinked)
  * - configs/magic-context/magic-context.jsonc
  *                            -> ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc
  *                              (or ~/.config/cortexkit/magic-context.jsonc)
@@ -965,6 +972,61 @@ async function installPiToolDisplayConfig() {
 }
 
 /**
+ * Seed the portable @pi-unipi/notify config template when the operator has no
+ * local file yet.
+ *
+ * Never overwrite ~/.unipi/config/notify/config.json — the extension's
+ * /unipi:notify-settings overlay and the /unipi:notify-event command rewrite it
+ * at runtime, so a symlink or overwrite would clobber operator choices. Same
+ * seed-if-missing contract as the pi-tool-display overlay.
+ *
+ * Path: ~/.unipi/config/notify/config.json (@pi-unipi/core NOTIFY_DIRS.CONFIG
+ * with `~` expanded to homedir). Resolved per call, so the HOME-isolated smoke
+ * suite exercises the real code path.
+ *
+ * 0600 is deliberate: gotify/telegram credentials land in this file once the
+ * operator enables those platforms. This overlay governs config.json only;
+ * ntfy lives in the sibling ntfy.json and stays off unless the operator sets it
+ * up through /unipi:notify-set-ntfy.
+ */
+async function installPiUnipiNotifyConfig() {
+	const src = path.join(repoRoot, "configs", "pi-unipi-notify", "config.json");
+	if (!(await pathExists(src))) {
+		console.warn("Skip pi-unipi-notify config: source missing at", src);
+		return false;
+	}
+
+	const destDir = path.join(os.homedir(), ".unipi", "config", "notify");
+	const dest = path.join(destDir, "config.json");
+	if (await pathExists(dest)) {
+		console.log(
+			`Keep existing pi-unipi-notify config (not overwriting): ${dest}`,
+		);
+		return true;
+	}
+
+	await ensureDir(destDir);
+	const body = await fs.readFile(src, "utf-8");
+	// Validate JSON before writing so we never seed a broken template.
+	try {
+		JSON.parse(body);
+	} catch (err) {
+		console.error(
+			`pi-unipi-notify template is invalid JSON (${src}): ${err.message}`,
+		);
+		return false;
+	}
+	await fs.writeFile(dest, body.endsWith("\n") ? body : `${body}\n`, {
+		encoding: "utf-8",
+		mode: 0o600,
+	});
+	// writeFile mode is umask-sensitive on some platforms; force 0600.
+	await fs.chmod(dest, 0o600);
+	console.log(`Seeded pi-unipi-notify config: ${dest}`);
+	return true;
+}
+
+/**
  * Top-level keys seeded only when the destination lacks them. The template
  * carries a working default (so a cold install gets a usable historian) while
  * an existing operator value wins verbatim, so `npm run install-global` cannot
@@ -1392,6 +1454,10 @@ async function main() {
 	const toolDisplayConfigOk = await installPiToolDisplayConfig();
 	if (!toolDisplayConfigOk) failed.push("pi-tool-display config");
 
+	// Seed pi-unipi-notify config (its settings overlay rewrites it at runtime).
+	const unipiNotifyConfigOk = await installPiUnipiNotifyConfig();
+	if (!unipiNotifyConfigOk) failed.push("pi-unipi-notify config");
+
 	// Authoritative managed overlay for @cortexkit/pi-magic-context.
 	// Magic Context owns compaction; pi native compaction is disabled in
 	// configs/agent-settings.json. Copy on every install (backup first).
@@ -1426,6 +1492,9 @@ async function main() {
 		"pi-tool-display: configs/pi-tool-display/config.json → seed ~/.pi/agent/extensions/pi-tool-display/config.json (if missing)",
 	);
 	console.log(
+		"pi-unipi-notify: configs/pi-unipi-notify/config.json → seed ~/.unipi/config/notify/config.json (if missing; 0600)",
+	);
+	console.log(
 		"magic-context: configs/magic-context/magic-context.jsonc → ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc (authoritative; backup previous)",
 	);
 }
@@ -1444,4 +1513,4 @@ if (isMain) {
 	});
 }
 
-export { installMagicContextConfig };
+export { installMagicContextConfig, installPiUnipiNotifyConfig };
