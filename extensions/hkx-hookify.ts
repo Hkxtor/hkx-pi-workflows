@@ -9,6 +9,12 @@
  * - project: `.pi/hookify.{name}.local.md` (under cwd)
  * - global:  `~/.pi/agent/hookify/hookify.{name}.md`
  *
+ * A rule with `event: bash` matches the shell surface, which is not always the
+ * tool named `bash`: on win32 pi replaces the native `bash` tool with
+ * `powershell` (the shell available there), so both names are gated as shell
+ * invocations. The same alias is recorded for pi-permission-system via
+ * `shellTools.powershell` in scripts/install.mjs.
+ *
  * Disable per-session: `HKX_HOOKIFY=off` (also 0/false/disabled).
  *
  * Origin: ECC hookify, rewritten for Pi extensions.
@@ -129,6 +135,17 @@ const FILE_MUTATING_TOOLS = new Set<ToolName>([
 	"write",
 	"ast_grep_replace",
 ]);
+
+/**
+ * Tool names carrying shell-command semantics, matching the `event: bash`
+ * rule surface.
+ *
+ * `powershell` is the same shell surface under a different name: pi exposes
+ * `powershell` instead of the native `bash` tool on win32, so keying the bash
+ * event off `toolName === "bash"` alone left every hookify bash rule silently
+ * inert on Windows. Sharing one set keeps the two names from drifting apart.
+ */
+const SHELL_TOOLS = new Set<ToolName>(["bash", "powershell"]);
 
 const PROJECT_RULE_RE = /^hookify\.(.+)\.local\.md$/i;
 const GLOBAL_RULE_RE = /^hookify\.(.+)\.md$/i;
@@ -608,7 +625,7 @@ export function matchContextFromToolCall(
 	toolName: string,
 	input: Record<string, unknown>,
 ): MatchContext | null {
-	if (toolName === "bash") {
+	if (SHELL_TOOLS.has(toolName)) {
 		const command = typeof input.command === "string" ? input.command : "";
 		return { event: "bash", fields: { command } };
 	}

@@ -25,6 +25,28 @@ function check(name, cond, detail) {
 const extPath = path.join(root, "extensions/hkx-hookify.ts");
 check("extension file exists", fs.existsSync(extPath));
 
+/**
+ * Canonical guard pattern for PowerShell control-flow blocks, which
+ * tree-sitter-bash cannot parse and therefore routes through
+ * pi-permission-system's fail-closed `<unparsed-bash-subtree>` prompt.
+ *
+ * Measured failing shapes: `if (...) { }`, `foreach (...) { }`,
+ * `while (...) { }`, `for (...) { }`, `switch (...) { }`, `do { } while (...)`,
+ * `function Name { }`. Measured non-failing neighbours that must NOT match:
+ * `if [ ]; then; fi`, `if (( x > 0 )); then`, `for..do..done`,
+ * `while..do..done`, `case..esac`, `name() { }`, awk/sed brace programs, and
+ * any `if (...)` that sits inside quotes.
+ */
+const PS_CONTROL_FLOW_PATTERN =
+	"(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{)";
+
+/** Local (gitignored) Hookify rule installed for this working copy. */
+const LOCAL_PS_RULE = path.join(
+	root,
+	".pi",
+	"hookify.block-unparseable-powershell-control-flow.local.md",
+);
+
 async function loadModule() {
 	try {
 		const href = pathToFileURL(extPath).href;
@@ -486,6 +508,146 @@ x
 			check("event mismatch no hit", r.matched.length === 0);
 		}
 	}
+
+	// T8: the Windows shell tool (`powershell`) is a shell surface, so an
+	// `event: bash` rule must gate it exactly as it gates native `bash`.
+	// Before this was supported, a hookify rule silently never fired on win32
+	// because pi replaces the native bash tool with `powershell`.
+	{
+		const raw = parseRuleFile(
+			`---
+name: block-ps-shell
+enabled: true
+event: bash
+action: block
+pattern: "rm\\\\s+-rf"
+---
+powershell shell gate
+`,
+			"ps.md",
+		);
+		check("T8 parse ok", raw.ok === true, JSON.stringify(raw));
+		if (raw.ok) {
+			const viaPowerShell = evaluateToolCall(
+				[raw.rule],
+				"powershell",
+				{ command: "rm -rf /tmp/project-build" },
+				{ enabled: true },
+			);
+			check(
+				"T8 powershell treated as bash surface",
+				viaPowerShell.blocked === true,
+				JSON.stringify(viaPowerShell),
+			);
+			check(
+				"T8 powershell rule matched",
+				viaPowerShell.matched.includes("block-ps-shell"),
+				viaPowerShell.matched.join(","),
+			);
+
+			// A non-shell tool carrying a `command`-like input must stay
+			// untouched, so the alias cannot broaden the bash surface.
+			const viaRead = evaluateToolCall(
+				[raw.rule],
+				"read",
+				{ command: "rm -rf /tmp/project-build" },
+				{ enabled: true },
+			);
+			check(
+				"T8 non-shell tool not gated as bash",
+				viaRead.matched.length === 0,
+				viaRead.matched.join(","),
+			);
+		}
+	}
+
+	// T9: the canonical PowerShell control-flow pattern is the guard that keeps
+	// a parse-breaking command out of the fail-closed permission prompt.
+	{
+		const mustMatch = [
+			`if ($LASTEXITCODE -ne 0) { echo "none" }`,
+			`cd D:\\repo\necho x\ngit grep -n "a" -- . ; if ($LASTEXITCODE -ne 0) { echo "none" }`,
+			`foreach ($x in $y) { echo $x }`,
+			`while ($true) { echo hi }`,
+			`do { echo hi } while ($x -lt 3)`,
+			`function Get-Thing { echo hi }`,
+			`switch ($x) { 1 { echo one } }`,
+			`for ($i = 0; $i -lt 3; $i++) { echo $i }`,
+			`Get-ChildItem | ForEach-Object { if ($_ -gt 2) { $_ } }`,
+			`if (Test-Path (Join-Path $a $b)) { echo yes }`,
+		];
+		const mustNotMatch = [
+			`if [ "$x" != "0" ]; then echo hi; fi`,
+			`if (( x > 0 )); then echo hi; fi`,
+			`for f in *.txt; do echo "$f"; done`,
+			`while read -r l; do echo "$l"; done`,
+			`case "$x" in a) echo a;; esac`,
+			`greet() { echo hi; }`,
+			`git grep -n "a" -- . || echo "none"`,
+			`cd /repo && npm test`,
+			`( cd /repo && npm test )`,
+			`echo $(( 1 + 2 ))`,
+			`awk 'if ($1 > 2) { print $1 }' file.txt`,
+			`sed 's/x/{y}/g' f.txt`,
+			`node -e "if (process.env.X) { console.log(1) }"`,
+			`Get-Content a.jsonc | Select-Object -Skip 18 -First 16`,
+		];
+		const re = new RegExp(PS_CONTROL_FLOW_PATTERN);
+		for (const s of mustMatch) {
+			check(
+				`T9 matches PS control flow ${JSON.stringify(s.slice(0, 40))}`,
+				re.test(s) === true,
+			);
+		}
+		for (const s of mustNotMatch) {
+			check(
+				`T9 ignores valid shell ${JSON.stringify(s.slice(0, 40))}`,
+				re.test(s) === false,
+			);
+		}
+	}
+
+	// T10: the local rule on disk (if present) must carry the canonical
+	// pattern, so the guard cannot silently drift from what was measured.
+	// `.pi/` is gitignored, so a fresh clone legitimately has no rule here.
+	{
+		if (!fs.existsSync(LOCAL_PS_RULE)) {
+			console.log(
+				"note: no local hookify rule at .pi/ — skipping artifact drift check",
+			);
+		} else {
+			const loaded = loadRulesFromPaths([LOCAL_PS_RULE]);
+			check(
+				"T10 local rule parses",
+				loaded.errors.length === 0 && loaded.rules.length === 1,
+				JSON.stringify(loaded.errors),
+			);
+			const rule = loaded.rules[0];
+			if (rule) {
+				check(
+					"T10 local rule is a bash block rule",
+					rule.event === "bash" && rule.action === "block",
+					`event=${rule.event} action=${rule.action}`,
+				);
+				check(
+					"T10 local rule pattern matches canonical",
+					rule.pattern === PS_CONTROL_FLOW_PATTERN,
+					JSON.stringify(rule.pattern),
+				);
+				const viaPowerShell = evaluateToolCall(
+					[rule],
+					"powershell",
+					{ command: `if ($LASTEXITCODE -ne 0) { echo "none" }` },
+					{ enabled: true },
+				);
+				check(
+					"T10 local rule blocks the measured footgun",
+					viaPowerShell.blocked === true,
+					JSON.stringify(viaPowerShell),
+				);
+			}
+		}
+	}
 }
 
 async function runViaChild() {
@@ -668,6 +830,19 @@ sudo rm blocked
 \`, "b.md");
 const multi = evaluateToolCall([w.rule, b.rule], "bash", { command: "sudo rm -rf /" }, { enabled: true });
 check("multi blocked", multi.blocked === true && multi.matched.length === 2);
+
+// T8: Windows replaces the native bash tool with powershell, so an
+// event: bash rule must gate the powershell tool too.
+const ps = parseRuleFile(\`---
+name: block-ps-shell
+event: bash
+action: block
+pattern: "rm -rf"
+---
+ps shell gate
+\`, "ps.md");
+check("T8 powershell gated as bash", evaluateToolCall([ps.rule], "powershell", { command: "rm -rf /tmp/x" }, { enabled: true }).blocked === true);
+check("T8 read not gated as bash", evaluateToolCall([ps.rule], "read", { command: "rm -rf /tmp/x" }, { enabled: true }).matched.length === 0);
 
 console.log(JSON.stringify({ pass, fail }));
 if (fail.length) process.exit(1);
