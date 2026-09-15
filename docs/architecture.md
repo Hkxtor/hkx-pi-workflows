@@ -163,6 +163,8 @@ Current overlays:
   - install target: `~/.pi/agent/pi-lsp.json`
   - install order: after `pi update --extensions`
   - install behavior: write/link the explicit primary-language route map, which replaces pi-lsp's upstream default catalog
+  - operator escape hatch: pi-lsp also reads the trusted workspace's `.pi/pi-lsp.json`, which takes precedence over the installed user file. Use it for machine-specific `command[0]` values so this package's route map stays machine-independent. A custom config replaces the whole server map, so copy every route you want to keep.
+  - Windows/npm servers: a server installed through npm must not be referenced by its bare name. `src/command.ts` in `@narumitw/pi-lsp` resolves `command[0]` by trying the extensionless name first and skips the executability check on win32, so npm's extensionless shim (a `#!/bin/sh` script) wins over the real `.cmd` and Windows fails it with `spawn … ENOENT`. Node separately refuses to spawn a `.cmd`/`.bat` shim without `shell: true` (`EINVAL`), so the `.cmd` name is not a fix either. Point `command[0]` at the packaged binary in the project file above — for biome that is `<npm prefix>/node_modules/@biomejs/biome/node_modules/@biomejs/cli-win32-x64/biome.exe`.
 - `pi-permission-system`
   - source: `configs/pi-permission-system/config.json`
   - install target: `~/.pi/agent/extensions/pi-permission-system/config.json`

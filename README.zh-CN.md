@@ -71,6 +71,8 @@ npm run install-global
 
 `pi-lsp` 只配置路由，不会下载语言服务器二进制。请按需另行安装并加入 `PATH`：`biome`、`ty`、`ruff`、`rust-analyzer` 与 `gopls`。
 
+在 Windows 上，对 npm 安装的服务器而言仅加入 `PATH` 不够：pi-lsp 解析 `command[0]` 时会先试无扩展名文件，而 npm 的无扩展名垫片是 `#!/bin/sh` 脚本，Windows 无法执行（`spawn … ENOENT`）；`.cmd` 垫片在没有 `shell: true` 时又会被 Node 拒绝（`EINVAL`）。请把 `command[0]` 指向包内的 `.exe`，写在已 gitignore 的项目级文件 `<workspace>/.pi/pi-lsp.json` 中，而不要写进本仓库的路由表 —— 详见 [docs/architecture.md](docs/architecture.md)。
+
 ### 或从当前 checkout 试跑（开发）
 
 ```bash

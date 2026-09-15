@@ -71,6 +71,8 @@ Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, manag
 
 `pi-lsp` configures routes only; it does not download language-server binaries. Install the configured `biome`, `ty`, `ruff`, `rust-analyzer`, and `gopls` commands separately and expose them on `PATH` as needed.
 
+On Windows, `PATH` alone is not enough for an npm-installed server. pi-lsp resolves `command[0]` by trying the extensionless name first, and npm's extensionless shim is a `#!/bin/sh` script Windows cannot execute (`spawn … ENOENT`); Node additionally refuses a `.cmd` shim without `shell: true` (`EINVAL`). Point `command[0]` at the packaged `.exe` in the gitignored project file `<workspace>/.pi/pi-lsp.json` rather than in this repo's route map — see [docs/architecture.md](docs/architecture.md).
+
 ### Or load from the current checkout (dev / try)
 
 ```bash
