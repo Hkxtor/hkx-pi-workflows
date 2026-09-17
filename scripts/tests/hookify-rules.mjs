@@ -34,13 +34,17 @@ check("extension file exists", fs.existsSync(extPath));
  * `while (...) { }`, `for (...) { }`, `switch (...) { }`, `do { } while (...)`,
  * `function Name { }`, script-block cmdlets (`ForEach-Object { }`,
  * `Where-Object { }`, `% { }`, `? { }`), `$var.Method(...)` calls, `[Type]::`
- * literals, and the `-join` operator. Measured non-failing neighbours that
- * must NOT match: `if [ ]; then; fi`, `if (( x > 0 )); then`, `for..do..done`,
- * `while..do..done`, `case..esac`, `name() { }`, awk/sed brace programs, and
- * any `if (...)` that sits inside quotes.
+ * literals, and the `-join` operator. Two of those alternations are anchored on
+ * PowerShell's own syntax rather than position, so they must stay off prose
+ * that merely quotes a shape: a `::` member access needs a member name after
+ * it, and a method call must not carry a `...` placeholder. Measured
+ * non-failing neighbours that must NOT match: `if [ ]; then; fi`,
+ * `if (( x > 0 )); then`, `for..do..done`, `while..do..done`, `case..esac`,
+ * `name() { }`, awk/sed brace programs, any `if (...)` that sits inside
+ * quotes, and quoted prose writing a shape as a placeholder.
  */
 const PS_CONTROL_FLOW_PATTERN =
-	"(?:(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{|(?:[Ff]or[Ee]ach-[Oo]bject|[Ww]here-[Oo]bject|%|\\?)\\s*(?:-[\\w:]+\\s+)*\\{))|(?:\\$\\w+(?:\\.\\w+)+\\s*\\()|(?:\\[[A-Za-z][\\w.]*\\]::)|(?:\\$\\w+\\s+-join\\b|\\)\\s*-join\\b)";
+	"(?:(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{|(?:[Ff]or[Ee]ach-[Oo]bject|[Ww]here-[Oo]bject|%|\\?)\\s*(?:-[\\w:]+\\s+)*\\{))|(?:\\$\\w+(?:\\.\\w+)+\\s*\\((?!\\.\\.\\.))|(?:\\[[A-Za-z][\\w.]*\\]::[A-Za-z_])|(?:\\$\\w+\\s+-join\\b|\\)\\s*-join\\b)";
 
 /** Local (gitignored) Hookify rule installed for this working copy. */
 const LOCAL_PS_RULE = path.join(
@@ -587,6 +591,7 @@ powershell shell gate
 			`ls | ? { $_.Name }`,
 			`$m = [Math]::Min(3, 4)`,
 			`$s = $fff.EndsWith('x')`,
+			`$max = [int]::MaxValue`,
 			`(Get-ChildItem $fff -Name) -join ', '`,
 			`$arr -join ','`,
 		];
@@ -615,6 +620,10 @@ powershell shell gate
 			`awk 'END { print $1 }' file.txt`,
 			`if [ -f /x ]; then y; fi`,
 			`( cd /repo && npm test )`,
+			// Quoted prose that writes a shape as a placeholder is not a command.
+			`git commit -F msg.txt`,
+			`git commit -m "script-block cmdlets: ForEach-Object { ... }, $var.Method(...), [Type]:: literals"`,
+			`echo "avoid $obj.Method(...) and [Type]:: in one-liners"`,
 		];
 		const re = new RegExp(PS_CONTROL_FLOW_PATTERN);
 		for (const s of mustMatch) {
