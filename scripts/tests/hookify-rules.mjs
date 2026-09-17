@@ -26,19 +26,21 @@ const extPath = path.join(root, "extensions/hkx-hookify.ts");
 check("extension file exists", fs.existsSync(extPath));
 
 /**
- * Canonical guard pattern for PowerShell control-flow blocks, which
- * tree-sitter-bash cannot parse and therefore routes through
- * pi-permission-system's fail-closed `<unparsed-bash-subtree>` prompt.
+ * Canonical guard pattern for PowerShell constructs tree-sitter-bash cannot
+ * parse, which therefore route through pi-permission-system's fail-closed
+ * `<unparsed-bash-subtree>` prompt that no config rule can suppress.
  *
  * Measured failing shapes: `if (...) { }`, `foreach (...) { }`,
  * `while (...) { }`, `for (...) { }`, `switch (...) { }`, `do { } while (...)`,
- * `function Name { }`. Measured non-failing neighbours that must NOT match:
- * `if [ ]; then; fi`, `if (( x > 0 )); then`, `for..do..done`,
+ * `function Name { }`, script-block cmdlets (`ForEach-Object { }`,
+ * `Where-Object { }`, `% { }`, `? { }`), `$var.Method(...)` calls, `[Type]::`
+ * literals, and the `-join` operator. Measured non-failing neighbours that
+ * must NOT match: `if [ ]; then; fi`, `if (( x > 0 )); then`, `for..do..done`,
  * `while..do..done`, `case..esac`, `name() { }`, awk/sed brace programs, and
  * any `if (...)` that sits inside quotes.
  */
 const PS_CONTROL_FLOW_PATTERN =
-	"(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{)";
+	"(?:(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{|(?:[Ff]or[Ee]ach-[Oo]bject|[Ww]here-[Oo]bject|%|\\?)\\s*(?:-[\\w:]+\\s+)*\\{))|(?:\\$\\w+(?:\\.\\w+)+\\s*\\()|(?:\\[[A-Za-z][\\w.]*\\]::)|(?:\\$\\w+\\s+-join\\b|\\)\\s*-join\\b)";
 
 /** Local (gitignored) Hookify rule installed for this working copy. */
 const LOCAL_PS_RULE = path.join(
@@ -575,6 +577,18 @@ powershell shell gate
 			`for ($i = 0; $i -lt 3; $i++) { echo $i }`,
 			`Get-ChildItem | ForEach-Object { if ($_ -gt 2) { $_ } }`,
 			`if (Test-Path (Join-Path $a $b)) { echo yes }`,
+			// Real-world <unparsed-bash-subtree> floors observed in session:
+			// script-block cmdlets (ForEach-Object / Where-Object / % / ?),
+			// $var.Method() calls, [Type]:: literals, and the -join operator.
+			`Get-Content a.json | ConvertFrom-Json | ConvertTo-Json -Depth 3 | Out-String -Width 200 | ForEach-Object { $_.Substring(0, [Math]::Min(3000, $_.Length)) }`,
+			`Select-String -Path "x" -Pattern "y" | Select-Object -First 8 | ForEach-Object { (Split-Path $_.Path -Leaf) + ':' }`,
+			`Get-ChildItem | Where-Object { $_.Length -gt 2 }`,
+			`ls | % { $_.Name }`,
+			`ls | ? { $_.Name }`,
+			`$m = [Math]::Min(3, 4)`,
+			`$s = $fff.EndsWith('x')`,
+			`(Get-ChildItem $fff -Name) -join ', '`,
+			`$arr -join ','`,
 		];
 		const mustNotMatch = [
 			`if [ "$x" != "0" ]; then echo hi; fi`,
@@ -591,6 +605,16 @@ powershell shell gate
 			`sed 's/x/{y}/g' f.txt`,
 			`node -e "if (process.env.X) { console.log(1) }"`,
 			`Get-Content a.jsonc | Select-Object -Skip 18 -First 16`,
+			// Block-free simplified PowerShell syntax parses fine and must not match.
+			`Get-ChildItem | Where-Object Name -eq 'foo'`,
+			`Get-Content a.json | ForEach-Object -MemberName Trim`,
+			`Get-ChildItem | Sort-Object Length -Descending`,
+			// Bash-shaped neighbours for the new alternations.
+			`date +%Y-%m-%d`,
+			`echo $(( 1 + 2 ))`,
+			`awk 'END { print $1 }' file.txt`,
+			`if [ -f /x ]; then y; fi`,
+			`( cd /repo && npm test )`,
 		];
 		const re = new RegExp(PS_CONTROL_FLOW_PATTERN);
 		for (const s of mustMatch) {

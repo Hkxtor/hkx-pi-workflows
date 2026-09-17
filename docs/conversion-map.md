@@ -446,7 +446,7 @@ Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 - extension: `hkx-hookify.ts` (event `bash` = shell surface: `bash` + `powershell`)
 - tests: `scripts/tests/hookify-rules.mjs`
 - rules on disk: project `.pi/hookify.{name}.local.md`; optional global `~/.pi/agent/hookify/`
-- companion helper: `scripts/shell-command-preflight.mjs` (direct `node` invocation, not an npm script) reports whether a command resolves in `tree-sitter-bash`; an unresolved parse makes pi-permission-system floor the whole command to an `<unparsed-bash-subtree>` prompt, so the highest-value default rule blocks PowerShell control flow (`if (...) { }`, `foreach/while/for/switch (...) { }`, `do { } while (...)`, `function Name { }`)
+- companion helper: `scripts/shell-command-preflight.mjs` (direct `node` invocation, not an npm script) reports whether a command resolves in `tree-sitter-bash`; an unresolved parse makes pi-permission-system floor the whole command to an `<unparsed-bash-subtree>` prompt that no config rule can suppress, so the highest-value default rule blocks the measured PowerShell shapes: control flow (`if (...) { }`, `foreach/while/for/switch (...) { }`, `do { } while (...)`, `function Name { }`), script-block cmdlets (`ForEach-Object { }`, `Where-Object { }`, `% { }`, `? { }`), `$var.Method(...)` calls, `[Type]::` literals, and the `-join` operator — the rule's message steers the model to block-free simplified syntax (`Where-Object Name -eq 'x'`, `ForEach-Object -MemberName Trim`) or the non-shell file tools
 - complements GateGuard (destructive-bash gate) and instinct (cross-session learning); does not replace either
 
 ## Optional knowledge surface: Instinct Evolve
