@@ -140,7 +140,7 @@ Use an extension when the behavior must happen at runtime, for example:
 Current extensions:
 
 - `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands remain blocked while enabled
-- `hkx-hookify.ts` — operator Hookify pattern rules (warn/block); `.pi/hookify.*.local.md`; `HKX_HOOKIFY=off`; event `bash` is the shell surface (`bash` or `powershell` on win32)
+- `hkx-hookify.ts` — operator Hookify pattern rules (warn/block); loads project `.pi/hookify.*.local.md` plus global `~/.pi/agent/hookify/hookify.*.md`; Path B installs the package-managed PowerShell parse-floor guard from `configs/hkx-hookify/`; `HKX_HOOKIFY=off`; event `bash` is the shell surface (`bash` or `powershell` on win32)
 - `hkx-language-quality.ts` — post-mutation validation notifications
 - `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to scoped permission/configured-output artifact asks so review chains do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
@@ -151,6 +151,12 @@ Header chrome is first-party via `extensions/hkx-custom-header.ts`; the footer u
 Out of scope for this package: custom brand themes, third-party footer extensions, OMP powerline presets, welcome dual-column gradient intro. Operators keep the pi default theme (or any theme they choose in `/settings`).
 
 Extensions should stay explicit, local, and low-noise. They should not silently replace ordinary workflow logic that belongs in commands, skills, or agents.
+
+### Managed Hookify rule overlay
+
+Path B installs `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` to `~/.pi/agent/hookify/`. The package owns the rule's matching behavior and message, while `/hookify-configure` owns its `enabled` flag. Reinstall refreshes managed content, preserves `enabled`, backs up a changed destination, never symlinks the runtime-editable file, and leaves unrelated global Hookify rules untouched. An existing symlink or malformed destination fails closed without modification. Path A cannot install this global overlay.
+
+This fixes rule scope and version drift. It does not change extension handler order: if `pi-permission-system` loads before `hkx-hookify`, its interactive permission prompt can still appear before Hookify handles the same `tool_call`.
 
 ### External package config overlays
 

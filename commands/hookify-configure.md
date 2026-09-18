@@ -27,6 +27,7 @@ Input: `$ARGUMENTS`
 - Never delete rule files from this command (toggle only).
 - Never rewrite message body or pattern unless user explicitly requests an edit (prefer `/hookify` for new rules).
 - If a file fails to parse, report error and skip it.
+- For the Path B managed PowerShell guard, `npm run install-global` preserves this `enabled` choice while refreshing package-owned pattern/body content.
 
 ## Notes
 

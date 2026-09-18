@@ -75,6 +75,13 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Gate extensions should stay explicit, low-noise, and actionable.
 - Appearance extensions (`hkx-working-indicator`, `hkx-custom-header`) default on with env + slash toggles; they must not write settings or files. Footer uses pi's native statusline; header chrome is first-party via `extensions/hkx-custom-header.ts`.
 
+### Managed Hookify rules
+
+- `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` is the Path B source for `~/.pi/agent/hookify/hookify.block-unparseable-powershell-control-flow.md`.
+- `npm run install-global` copies it on every install, backs up changed destinations, refreshes package-owned pattern/body content, preserves the operator-owned `enabled` flag, and never removes unrelated global rules.
+- Never symlink managed Hookify rules: `/hookify-configure` edits their frontmatter at runtime and must not mutate the checkout. The installer fails closed if the destination is already a symlink or has malformed frontmatter.
+- Path A does not install global Hookify rules.
+
 ### External extension configs
 
 - Managed under `configs/<extension-name>/` when this package owns only a config overlay, not the extension package.
@@ -92,7 +99,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Install deep-merges managed keys into `~/.pi/agent/settings.json` (does not wipe machine-local keys).
 - Managed scope: `packages` (authoritative list), plus portable defaults such as `compaction` and `quietStartup`. Do **not** manage operator `theme`.
 - Do **not** version machine-local keys here: `shellPath`, `defaultProvider`, `defaultModel`, `defaultThinkingLevel`, `lastChangelogVersion`.
-- After writing settings, `npm run install-global` runs `pi update --extensions`, which updates the listed packages that pi has already materialized. That command does not install a package which settings declare but the npm store lacks (`pi update --extensions` is documented as "Update installed packages only") — `pi install npm:<pkg>` is the explicit path for a newly declared package, and cold installs rely on pi's own startup handling. Then it installs managed extension config overlays (permission + rpiv-advisor seed + pi-tool-display seed + pi-unipi-notify seed + magic-context authoritative overlay).
+- After writing settings, `npm run install-global` runs `pi update --extensions`, which updates the listed packages that pi has already materialized. That command does not install a package which settings declare but the npm store lacks (`pi update --extensions` is documented as "Update installed packages only") — `pi install npm:<pkg>` is the explicit path for a newly declared package, and cold installs rely on pi's own startup handling. Then it installs the managed global Hookify rule and managed extension config overlays (permission + rpiv-advisor seed + pi-tool-display seed + pi-unipi-notify seed + magic-context authoritative overlay).
 
 ### Global keybindings
 

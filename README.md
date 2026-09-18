@@ -12,6 +12,7 @@ It provides a compact core set of:
 - **skills** — workflow and language guidance
 - **rules** — lightweight repo/session reminders (full install only)
 - **extensions** — low-noise quality, gatekeeping, and TUI appearance helpers
+- **managed Hookify guard** — a global PowerShell parse-floor rule installed by the full operator path
 - **external extension configs** — managed overlays (e.g. `pi-permission-system`, `pi-lsp` routes, `pi-unipi-notify`; full install only)
 - **global agent settings** — `configs/agent-settings.json` → merge into `~/.pi/agent/settings.json` (full install only; does not force a theme)
 - **managed keybindings** — `configs/keybindings.json` → merge managed actions into `~/.pi/agent/keybindings.json` (full install only; preserves unrelated bindings)
@@ -47,7 +48,7 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 
 **Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
-**Not loaded by Path A:** `rules/`, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, `configs/keybindings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor, pi-tool-display, pi-unipi-notify, and magic-context config overlays. Use Path B for those.
+**Not loaded by Path A:** `rules/`, the managed global Hookify guard, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, `configs/keybindings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor, pi-tool-display, pi-unipi-notify, and magic-context config overlays. Use Path B for those.
 
 Update later with:
 
@@ -65,9 +66,11 @@ From a clone of this repo:
 npm run install-global
 ```
 
-This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, merges managed keybindings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs managed pi-lsp, extension config overlays, and rpiv-advisor / pi-tool-display / pi-unipi-notify config seeds plus the magic-context authoritative overlay.
+This is the **complete** operator path. It syncs surfaces into `~/.pi/agent/`, deep-merges managed settings, merges managed keybindings, runs `pi update --extensions` for packages listed in `configs/agent-settings.json`, and installs the managed global Hookify guard, managed pi-lsp and extension config overlays, rpiv-advisor / pi-tool-display / pi-unipi-notify config seeds, plus the magic-context authoritative overlay.
 
 Use Path B when you want rules, MCP defaults, global AGENTS/APPEND_SYSTEM, managed keybindings, and managed dependency packages — not only the package-native resources. In an already-open Pi session, run `/reload` after installation so the new keybindings take effect.
+
+The managed Hookify guard is copied globally and updated without resetting its `enabled` flag. This fixes rule availability and drift; it does not reorder extension handlers, so a previously loaded `pi-permission-system` handler may still show its prompt before Hookify blocks the same call.
 
 `pi-lsp` configures routes only; it does not download language-server binaries. Install the configured `biome`, `ty`, `ruff`, `rust-analyzer`, and `gopls` commands separately and expose them on `PATH` as needed.
 
@@ -99,6 +102,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | agents | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/agents/hkx/` |
 | chains | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/chains/` |
 | rules | no | yes → `~/.pi/agent/rules/` |
+| managed global Hookify guard | no | yes → `~/.pi/agent/hookify/` (refresh content, preserve `enabled`, backup changes) |
 | agent settings merge | no | yes (packages + portable defaults; does **not** set `theme`) |
 | managed keybindings merge | no | yes → `~/.pi/agent/keybindings.json` (managed actions replace their prior values; unrelated actions are preserved) |
 | managed `packages` update | no (only this package entry) | yes (`pi update --extensions`) |
@@ -120,6 +124,7 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | commands | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
+| managed Hookify guard | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` → `~/.pi/agent/hookify/` (package-managed content; preserves operator `enabled`; backs up changed destination; never removes unrelated rules) |
 | extensions | `~/.pi/agent/extensions/` |
 | agent settings | `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json` (`packages`, portable defaults; preserves machine-local keys; does **not** set `theme`; on Windows installs also seeds PowerShell 7 `shellPath`, a pi-native `defaultTools` list, and per-agent `subagents.agentOverrides` tool lists derived from the installed hkx agents — each **only if missing**) |
 | keybindings | `configs/keybindings.json` → merge into `~/.pi/agent/keybindings.json` (11 managed actions; preserves unrelated operator actions; frees `Ctrl+Shift+G` for `pi-until-done`) |

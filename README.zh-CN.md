@@ -14,6 +14,7 @@
 - **skills** — 工作流与语言/领域指导
 - **rules** — 轻量仓库/会话提醒（仅完整安装路径）
 - **extensions** — 低噪声质量、门禁与 TUI 外观扩展
+- **受管 Hookify 规则** — 由完整安装路径写入全局目录的 PowerShell 解析下限防护规则
 - **外部扩展配置** — 受管覆盖层（如 `pi-permission-system`、`pi-lsp` 路由、`pi-unipi-notify`；仅完整安装）
 - **全局 agent 设置** — `configs/agent-settings.json` → 合并进 `~/.pi/agent/settings.json`（仅完整安装；不强制主题）
 - **受管快捷键** — `configs/keybindings.json` → 将受管动作合并进 `~/.pi/agent/keybindings.json`（仅完整安装；保留无关快捷键）
@@ -47,7 +48,7 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 
 **agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
 
-**路径 A 不会安装：** `rules/`、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、`configs/keybindings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor、pi-tool-display、pi-unipi-notify 与 magic-context 配置覆盖层。需要这些请用路径 B。
+**路径 A 不会安装：** `rules/`、受管全局 Hookify 规则、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、`configs/keybindings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor、pi-tool-display、pi-unipi-notify 与 magic-context 配置覆盖层。需要这些请用路径 B。
 
 后续更新：
 
@@ -65,9 +66,11 @@ pi install git:git@github.com:Hkxtor/hkx-pi-workflows@main
 npm run install-global
 ```
 
-这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，合并受管 settings 与 keybindings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管 pi-lsp、扩展配置覆盖层，以及 rpiv-advisor / pi-tool-display / pi-unipi-notify 配置种子与 magic-context 权威覆盖层。
+这是**完整**操作者路径：把各 surface 同步到 `~/.pi/agent/`，合并受管 settings 与 keybindings，对 `configs/agent-settings.json` 中列出的包执行 `pi update --extensions`，并安装受管全局 Hookify 规则、受管 pi-lsp 与扩展配置覆盖层、rpiv-advisor / pi-tool-display / pi-unipi-notify 配置种子，以及 magic-context 权威覆盖层。
 
 当你需要 rules、MCP 默认值、全局 AGENTS / APPEND_SYSTEM、受管快捷键，以及受管依赖包清单时，请用路径 B，而不是只装包原生资源。若 Pi 会话已经打开，安装后执行 `/reload` 使新快捷键生效。
+
+受管 Hookify 规则会复制到全局目录并持续更新，同时保留它的 `enabled` 状态。这能修复规则缺失与漂移，但不会重排扩展处理器；若 `pi-permission-system` 已先加载，它仍可能先显示权限提示，随后 Hookify 才阻止同一次调用。
 
 `pi-lsp` 只配置路由，不会下载语言服务器二进制。请按需另行安装并加入 `PATH`：`biome`、`ty`、`ruff`、`rust-analyzer` 与 `gopls`。
 
@@ -99,6 +102,7 @@ pi -e .
 | agents | 是（经 pi-subagents 包发现） | 是 → `~/.pi/agent/agents/hkx/` |
 | chains | 是（经 pi-subagents 包发现） | 是 → `~/.pi/agent/chains/` |
 | rules | 否 | 是 → `~/.pi/agent/rules/` |
+| 受管全局 Hookify 规则 | 否 | 是 → `~/.pi/agent/hookify/`（刷新受管内容、保留 `enabled`、变更前备份） |
 | agent settings 合并 | 否 | 是（packages + 可移植默认值；**不**设置 `theme`） |
 | 受管快捷键合并 | 否 | 是 → `~/.pi/agent/keybindings.json`（受管动作更新为项目值；保留其他动作） |
 | 受管 `packages` 更新 | 否（仅本包条目） | 是（`pi update --extensions`） |
@@ -120,6 +124,7 @@ pi -e .
 | commands | `~/.pi/agent/commands/` 与 `~/.pi/agent/prompts/` |
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
+| 受管 Hookify 规则 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` → `~/.pi/agent/hookify/`（包管理内容；保留操作者 `enabled`；变更前备份；不删除其他规则） |
 | extensions | `~/.pi/agent/extensions/` |
 | agent settings | `configs/agent-settings.json` → 深合并进 `~/.pi/agent/settings.json`（`packages`、可移植默认值；保留机器本地键；**不**设置 `theme`） |
 | keybindings | `configs/keybindings.json` → 合并进 `~/.pi/agent/keybindings.json`（11 个受管动作；保留其他操作者动作；释放 `Ctrl+Shift+G` 给 `pi-until-done`） |

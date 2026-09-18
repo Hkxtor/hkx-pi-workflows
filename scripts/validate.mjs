@@ -35,6 +35,7 @@ const requiredFiles = [
 	"docs/skill-routing.md",
 	"docs/language-hooks.md",
 	"configs/pi-permission-system/config.json",
+	"configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md",
 	"configs/pi-lsp/pi-lsp.json",
 	"configs/rpiv-advisor/advisor.json",
 	"configs/pi-tool-display/config.json",
@@ -75,8 +76,9 @@ const requiredFiles = [
 	// GateGuard destructive-command + independent artifact auto-reply suites.
 	"scripts/tests/gateguard-selfmatch.mjs",
 	"scripts/tests/subagent-artifact-auto-reply.mjs",
-	// Hookify rule parse/match/evaluate suite.
+	// Hookify rule parse/match/evaluate + Path B managed install suites.
 	"scripts/tests/hookify-rules.mjs",
+	"scripts/tests/hookify-install.mjs",
 	// Shell command parse preflight (win32 fail-closed floor guard) suite.
 	"scripts/tests/shell-command-preflight.mjs",
 	// Extensions (Path A + B).

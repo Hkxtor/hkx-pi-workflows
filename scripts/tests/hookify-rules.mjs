@@ -46,11 +46,12 @@ check("extension file exists", fs.existsSync(extPath));
 const PS_CONTROL_FLOW_PATTERN =
 	"(?:(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{|(?:[Ff]or[Ee]ach-[Oo]bject|[Ww]here-[Oo]bject|%|\\?)\\s*(?:-[\\w:]+\\s+)*\\{))|(?:\\$\\w+(?:\\.\\w+)+\\s*\\((?!\\.\\.\\.))|(?:\\[[A-Za-z][\\w.]*\\]::[A-Za-z_])|(?:\\$\\w+\\s+-join\\b|\\)\\s*-join\\b)";
 
-/** Local (gitignored) Hookify rule installed for this working copy. */
-const LOCAL_PS_RULE = path.join(
+/** Versioned Path B source for the package-managed global Hookify rule. */
+const MANAGED_PS_RULE = path.join(
 	root,
-	".pi",
-	"hookify.block-unparseable-powershell-control-flow.local.md",
+	"configs",
+	"hkx-hookify",
+	"hookify.block-unparseable-powershell-control-flow.md",
 );
 
 async function loadModule() {
@@ -640,45 +641,39 @@ powershell shell gate
 		}
 	}
 
-	// T10: the local rule on disk (if present) must carry the canonical
-	// pattern, so the guard cannot silently drift from what was measured.
-	// `.pi/` is gitignored, so a fresh clone legitimately has no rule here.
+	// T10: the versioned Path B rule must carry the canonical pattern so the
+	// installed global guard cannot silently drift from what was measured.
 	{
-		if (!fs.existsSync(LOCAL_PS_RULE)) {
-			console.log(
-				"note: no local hookify rule at .pi/ — skipping artifact drift check",
-			);
-		} else {
-			const loaded = loadRulesFromPaths([LOCAL_PS_RULE]);
+		check("T10 managed rule exists", fs.existsSync(MANAGED_PS_RULE), MANAGED_PS_RULE);
+		const loaded = loadRulesFromPaths([MANAGED_PS_RULE]);
+		check(
+			"T10 managed rule parses",
+			loaded.errors.length === 0 && loaded.rules.length === 1,
+			JSON.stringify(loaded.errors),
+		);
+		const rule = loaded.rules[0];
+		if (rule) {
 			check(
-				"T10 local rule parses",
-				loaded.errors.length === 0 && loaded.rules.length === 1,
-				JSON.stringify(loaded.errors),
+				"T10 managed rule is a bash block rule",
+				rule.event === "bash" && rule.action === "block",
+				`event=${rule.event} action=${rule.action}`,
 			);
-			const rule = loaded.rules[0];
-			if (rule) {
-				check(
-					"T10 local rule is a bash block rule",
-					rule.event === "bash" && rule.action === "block",
-					`event=${rule.event} action=${rule.action}`,
-				);
-				check(
-					"T10 local rule pattern matches canonical",
-					rule.pattern === PS_CONTROL_FLOW_PATTERN,
-					JSON.stringify(rule.pattern),
-				);
-				const viaPowerShell = evaluateToolCall(
-					[rule],
-					"powershell",
-					{ command: `if ($LASTEXITCODE -ne 0) { echo "none" }` },
-					{ enabled: true },
-				);
-				check(
-					"T10 local rule blocks the measured footgun",
-					viaPowerShell.blocked === true,
-					JSON.stringify(viaPowerShell),
-				);
-			}
+			check(
+				"T10 managed rule pattern matches canonical",
+				rule.pattern === PS_CONTROL_FLOW_PATTERN,
+				JSON.stringify(rule.pattern),
+			);
+			const viaPowerShell = evaluateToolCall(
+				[rule],
+				"powershell",
+				{ command: `if ($LASTEXITCODE -ne 0) { echo "none" }` },
+				{ enabled: true },
+			);
+			check(
+				"T10 managed rule blocks the measured footgun",
+				viaPowerShell.blocked === true,
+				JSON.stringify(viaPowerShell),
+			);
 		}
 	}
 }

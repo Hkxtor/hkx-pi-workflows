@@ -20,7 +20,7 @@ Note: your local checkout directory name may differ from the package/runtime nam
 | Path | How | Loads |
 | --- | --- | --- |
 | **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents/chains when pi-subagents is installed |
-| **B** | `npm run install-global` | Path A surfaces **plus** rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings/keybindings merge, managed packages update, pi-lsp and permission overlays, rpiv-advisor seed |
+| **B** | `npm run install-global` | Path A surfaces **plus** rules, the managed global Hookify guard, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings/keybindings merge, managed packages update, pi-lsp and permission overlays, rpiv-advisor seed |
 
 Manifest shape (authoritative):
 
@@ -37,7 +37,8 @@ Manifest shape (authoritative):
 | commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 101 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
-| extensions | 5 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| extensions | 6 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
@@ -345,6 +346,12 @@ Six first-party extensions are shipped intentionally:
 
 The footer uses pi's native statusline (no third-party chrome package is managed). These first-party files are pi TypeScript extensions, not external shell hook packs.
 
+## Managed global Hookify guard
+
+Path B installs `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` to `~/.pi/agent/hookify/`. The package refreshes the rule's pattern/body on reinstall, preserves the operator-owned `enabled` flag, backs up changed destinations, and leaves unrelated global rules untouched. Path A does not install this overlay.
+
+This corrects global scope and rule drift; it does not reorder runtime `tool_call` handlers. When `pi-permission-system` loads first, its prompt may still precede Hookify's block.
+
 ## External package config overlays
 
 This package can version-control operator config for third-party Pi packages without vendoring their source.
@@ -444,8 +451,9 @@ Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 - skill: `hookify-rules`
 - agent: `conversation-analyzer` (`hkx.conversation-analyzer`)
 - extension: `hkx-hookify.ts` (event `bash` = shell surface: `bash` + `powershell`)
-- tests: `scripts/tests/hookify-rules.mjs`
-- rules on disk: project `.pi/hookify.{name}.local.md`; optional global `~/.pi/agent/hookify/`
+- tests: `scripts/tests/hookify-rules.mjs`, `scripts/tests/hookify-install.mjs`
+- rules on disk: project `.pi/hookify.{name}.local.md`; global `~/.pi/agent/hookify/`
+- Path B managed default: `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` → global rule directory; managed content is refreshed with backup while the operator's `enabled` value survives
 - companion helper: `scripts/shell-command-preflight.mjs` (direct `node` invocation, not an npm script) reports whether a command resolves in `tree-sitter-bash`; an unresolved parse makes pi-permission-system floor the whole command to an `<unparsed-bash-subtree>` prompt that no config rule can suppress, so the highest-value default rule blocks the measured PowerShell shapes: control flow (`if (...) { }`, `foreach/while/for/switch (...) { }`, `do { } while (...)`, `function Name { }`), script-block cmdlets (`ForEach-Object { }`, `Where-Object { }`, `% { }`, `? { }`), `$var.Method(...)` calls, `[Type]::` literals, and the `-join` operator — the rule's message steers the model to block-free simplified syntax (`Where-Object Name -eq 'x'`, `ForEach-Object -MemberName Trim`) or the non-shell file tools
 - complements GateGuard (destructive-bash gate) and instinct (cross-session learning); does not replace either
 

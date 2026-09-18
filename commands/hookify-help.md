@@ -25,6 +25,8 @@ Skill: `hookify-rules` · Agent: `hkx.conversation-analyzer` · Extension: `exte
 | Project | `.pi/hookify.{name}.local.md` |
 | Global | `~/.pi/agent/hookify/hookify.{name}.md` |
 
+Path B installs the package-managed PowerShell parse-floor guard globally from `configs/hkx-hookify/`. Reinstall refreshes its managed content, preserves the current `enabled` value, backs up changed content, and does not remove other global rules. Path A does not install this overlay.
+
 ## Rule format
 
 ```markdown

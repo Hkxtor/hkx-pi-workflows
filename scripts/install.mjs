@@ -45,6 +45,10 @@
  * - configs/pi-permission-system/config.json
  *                            -> ~/.pi/agent/extensions/pi-permission-system/config.json
  *                              (after package update; creates the extension dir if missing)
+ * - configs/hkx-hookify/hookify.*.md
+ *                            -> ~/.pi/agent/hookify/hookify.*.md
+ *                              (managed pattern/body; preserves operator `enabled`;
+ *                               backs up before refresh; never removes other rules)
  * - configs/rpiv-advisor/advisor.json
  *                            -> ~/.config/rpiv-advisor/advisor.json
  *                              (or $XDG_CONFIG_HOME/rpiv-advisor/advisor.json)
@@ -855,6 +859,154 @@ async function installPermissionSystemConfig(options) {
 }
 
 /**
+ * Read the operator-owned `enabled` state from a Hookify rule. Complete
+ * frontmatter is required so install never replaces an unreadable operator
+ * file. `enabled` itself is optional for existing rules because Hookify's
+ * runtime default is true; managed source rules must declare it explicitly.
+ */
+function parseHookifyEnabled(raw, label, { requireExplicit = false } = {}) {
+	const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(raw);
+	if (!frontmatter) {
+		throw new Error(`${label}: missing complete frontmatter`);
+	}
+	const enabledEntries = [
+		...frontmatter[1].matchAll(/^enabled:\s*(true|false)\s*$/gm),
+	];
+	if (enabledEntries.length > 1) {
+		throw new Error(`${label}: duplicate enabled fields`);
+	}
+	if (enabledEntries.length === 0) {
+		if (requireExplicit) {
+			throw new Error(`${label}: missing explicit enabled field`);
+		}
+		return true;
+	}
+	return enabledEntries[0][1] === "true";
+}
+
+function setHookifyEnabled(raw, enabled) {
+	return raw.replace(
+		/^(enabled:\s*)(?:true|false)\s*$/m,
+		`$1${enabled ? "true" : "false"}`,
+	);
+}
+
+/**
+ * Install package-managed global Hookify rules for Path B.
+ *
+ * Pattern, event, action, and message body are refreshed from the versioned
+ * source on every install. The operator-owned `enabled` value survives so
+ * `/hookify-configure` choices are not reset. Existing rules are backed up
+ * before refresh; unrelated files in ~/.pi/agent/hookify are never removed.
+ * Rules are copied, never symlinked, because the runtime configure command
+ * edits them in place and must not mutate the checkout.
+ */
+async function installHookifyRules(options = {}) {
+	const sourceDir =
+		options.sourceDir ?? path.join(repoRoot, "configs", "hkx-hookify");
+	const agentDir = options.agentDir ?? piHome;
+	let entries;
+	try {
+		entries = await fs.readdir(sourceDir, { withFileTypes: true });
+	} catch (err) {
+		console.error(`Hookify rule source is unavailable (${sourceDir}): ${err.message}`);
+		return false;
+	}
+	const ruleFiles = entries
+		.filter(
+			(entry) =>
+				entry.isFile() &&
+				entry.name.startsWith("hookify.") &&
+				entry.name.endsWith(".md"),
+		)
+		.map((entry) => entry.name)
+		.sort();
+	if (ruleFiles.length === 0) {
+		console.error(`Hookify rule source contains no hookify.*.md files: ${sourceDir}`);
+		return false;
+	}
+
+	const destDir = path.join(agentDir, "hookify");
+	await ensureDir(destDir);
+	let ok = true;
+	for (const fileName of ruleFiles) {
+		const src = path.join(sourceDir, fileName);
+		const dest = path.join(destDir, fileName);
+		let sourceRaw;
+		try {
+			sourceRaw = await fs.readFile(src, "utf-8");
+			parseHookifyEnabled(sourceRaw, src, { requireExplicit: true });
+		} catch (err) {
+			console.error(`Managed Hookify rule is invalid (${src}): ${err.message}`);
+			ok = false;
+			continue;
+		}
+
+		let destExists = false;
+		try {
+			const destStats = await fs.lstat(dest);
+			destExists = true;
+			if (destStats.isSymbolicLink()) {
+				console.error(
+					`Existing Hookify rule is a symlink; leaving it unchanged (${dest})`,
+				);
+				ok = false;
+				continue;
+			}
+		} catch (err) {
+			if (err?.code !== "ENOENT") {
+				console.error(`Failed to inspect Hookify rule (${dest}): ${err.message}`);
+				ok = false;
+				continue;
+			}
+		}
+
+		let managedRaw = sourceRaw;
+		if (destExists) {
+			let existingRaw;
+			try {
+				existingRaw = await fs.readFile(dest, "utf-8");
+				const enabled = parseHookifyEnabled(existingRaw, dest);
+				managedRaw = setHookifyEnabled(sourceRaw, enabled);
+			} catch (err) {
+				console.error(
+					`Existing Hookify rule is invalid; leaving it unchanged (${dest}): ${err.message}`,
+				);
+				ok = false;
+				continue;
+			}
+			if (existingRaw === managedRaw) {
+				console.log(`Hookify rule already current: ${dest}`);
+				continue;
+			}
+			const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+			const backupPath = `${dest}.bak.${stamp}`;
+			try {
+				await fs.copyFile(dest, backupPath);
+				console.log(`Backed up Hookify rule: ${backupPath}`);
+			} catch (err) {
+				console.error(`Failed to back up Hookify rule (${dest}): ${err.message}`);
+				ok = false;
+				continue;
+			}
+		}
+
+		try {
+			await fs.writeFile(
+				dest,
+				managedRaw.endsWith("\n") ? managedRaw : `${managedRaw}\n`,
+				"utf-8",
+			);
+			console.log(`Installed managed Hookify rule: ${dest}`);
+		} catch (err) {
+			console.error(`Failed to install Hookify rule (${dest}): ${err.message}`);
+			ok = false;
+		}
+	}
+	return ok;
+}
+
+/**
  * Install the managed primary-language routes for @narumitw/pi-lsp.
  * Custom pi-lsp maps replace the upstream catalog, so this source stays
  * explicit and is linked/copied on every full operator installation.
@@ -1446,6 +1598,11 @@ async function main() {
 	const permissionConfigOk = await installPermissionSystemConfig();
 	if (!permissionConfigOk) failed.push("pi-permission-system config");
 
+	// Install package-managed global Hookify guards while preserving the
+	// operator-owned enabled flag and every unrelated global rule.
+	const hookifyRulesOk = await installHookifyRules();
+	if (!hookifyRulesOk) failed.push("managed Hookify rules");
+
 	// XDG seed for rpiv-advisor (guidance/effort only; never clobber modelKey).
 	const advisorConfigOk = await installRpivAdvisorConfig();
 	if (!advisorConfigOk) failed.push("rpiv-advisor config");
@@ -1486,6 +1643,9 @@ async function main() {
 	console.log("Packages: pi update --extensions (from settings packages)");
 	console.log("pi-lsp: configs/pi-lsp/pi-lsp.json → ~/.pi/agent/pi-lsp.json");
 	console.log(
+		"Hookify: configs/hkx-hookify/hookify.*.md → ~/.pi/agent/hookify/ (managed content; preserve enabled)",
+	);
+	console.log(
 		"rpiv-advisor: configs/rpiv-advisor/advisor.json → seed ~/.config/rpiv-advisor/advisor.json (if missing)",
 	);
 	console.log(
@@ -1513,4 +1673,8 @@ if (isMain) {
 	});
 }
 
-export { installMagicContextConfig, installPiUnipiNotifyConfig };
+export {
+	installHookifyRules,
+	installMagicContextConfig,
+	installPiUnipiNotifyConfig,
+};

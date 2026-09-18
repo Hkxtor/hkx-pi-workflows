@@ -29,7 +29,7 @@ Operator-authored **behavior guardrails**. Rules are Markdown files with YAML fr
 | Scope | Path | Git |
 | --- | --- | --- |
 | Project | `.pi/hookify.{name}.local.md` | ignored (`.pi/` in gitignore) |
-| Global (optional) | `~/.pi/agent/hookify/hookify.{name}.md` | outside repo |
+| Global | `~/.pi/agent/hookify/hookify.{name}.md` | outside repo; Path B installs the managed PowerShell guard |
 
 ## File format
 
@@ -118,22 +118,17 @@ the **whole** command is floored to a prompt tagged `<unparsed-bash-subtree>`, s
 already-allowed command still stops to ask — and the prompt names unrelated leading
 lines (e.g. a leading `cd`) because the error span starts there.
 
-PowerShell control flow has no bash grammar. Blocking it is the one guardrail worth
-enabling locally; copy this into `.pi/hookify.block-unparseable-powershell-control-flow.local.md`
-(project rules are gitignored — see Rule locations above):
+PowerShell control flow has no bash grammar. Path B (`npm run install-global`)
+installs the canonical guard globally from
+`configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` to
+`~/.pi/agent/hookify/`. Reinstall refreshes package-owned pattern/body content,
+preserves the operator-owned `enabled` flag, backs up a changed destination,
+and leaves unrelated rules untouched. Path A does not install this overlay;
+Path A-only users may copy the versioned source to the global path manually.
 
-```markdown
----
-name: block-unparseable-powershell-control-flow
-enabled: true
-event: bash
-action: block
-pattern: "(?:^|[\\r\\n;&|{}]\\s*)(?:(?:if|foreach|while|for|switch)\\s*\\([^\\r\\n]*\\)\\s*\\{|do\\s*\\{|function\\s+[\\w-]+\\s*\\{)"
----
-This command contains a PowerShell control-flow block. Rewrite it as `||` / `&&`
-chains or separate tool calls, or check it first with
-`node scripts/shell-command-preflight.mjs --command "<command>"`.
-```
+Global installation fixes scope and rule drift, not extension handler order. If
+`pi-permission-system` loads first, its permission prompt may still open before
+Hookify handles and blocks the same `tool_call`.
 
 Verified failing shapes: `if (...) { }`, `foreach/while/for/switch (...) { }`,
 `do { } while (...)`, `function Name { }`. Verified **non**-failing neighbours the

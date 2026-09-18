@@ -100,7 +100,8 @@ Operator-authored behavior guardrails (ECC Hookify → Pi).
 
 Current behavior:
 
-- Loads project rules from `.pi/hookify.*.local.md` and optional global rules from `~/.pi/agent/hookify/`.
+- Loads project rules from `.pi/hookify.*.local.md` and global rules from `~/.pi/agent/hookify/`.
+- Path B installs the package-managed PowerShell parse-floor guard globally from `configs/hkx-hookify/`; reinstall refreshes its content, preserves `enabled`, and backs up a changed destination.
 - On `tool_call`: matches `bash` / `file` (edit, write, ast_grep_replace) rules; `warn` → `ui.notify` and allow; `block` → `{ block: true, reason }`.
 - On `before_agent_start`: soft `prompt` rules (notify + system/message inject; cannot hard-block submit).
 - On `agent_end`: soft `stop` rules (notify only).

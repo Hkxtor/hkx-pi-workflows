@@ -1,6 +1,6 @@
 ---
 name: hookify-list
-description: List configured Hookify rules (project .pi/ and optional global ~/.pi/agent/hookify/).
+description: List configured Hookify rules (project .pi/ and global ~/.pi/agent/hookify/).
 ---
 
 # /hookify-list — List Hookify rules
@@ -10,7 +10,7 @@ Find and display all Hookify rules in a table.
 ## Steps
 
 1. Scan **project** rules: `.pi/hookify.*.local.md` under the workspace cwd.
-2. Scan **global** rules (if present): `~/.pi/agent/hookify/hookify.*.md` (and `*.local.md` if any).
+2. Scan **global** rules (if present): `~/.pi/agent/hookify/hookify.*.md` (and `*.local.md` if any). Path B installs the managed PowerShell parse-floor guard here.
 3. Read each file's frontmatter: `name`, `enabled`, `event`, `action`, `pattern` (or note `conditions`).
 4. Display:
 
