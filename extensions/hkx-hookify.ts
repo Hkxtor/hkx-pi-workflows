@@ -42,9 +42,15 @@ type BeforeAgentStartEvent = {
 	systemPrompt?: string;
 };
 
+type BeforeAgentStartMessage = {
+	customType: "hkx-hookify";
+	content: string;
+	display: false;
+};
+
 type BeforeAgentStartResult = {
 	systemPrompt?: string;
-	message?: string;
+	message?: BeforeAgentStartMessage;
 };
 
 type ExtensionContext = {
@@ -934,7 +940,11 @@ const extension: ExtensionFactory = (pi) => {
 			const base = typeof e.systemPrompt === "string" ? e.systemPrompt : "";
 			out.systemPrompt = `${base}\n\n${injection}`;
 		} else {
-			out.message = injection;
+			out.message = {
+				customType: "hkx-hookify",
+				content: injection,
+				display: false,
+			};
 		}
 		return out;
 	});
