@@ -42,7 +42,7 @@ Manifest shape (authoritative):
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
 | rpiv-advisor config seed | 1 | `configs/rpiv-advisor/advisor.json` | no | seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite; no versioned `modelKey`) |
-| pi-unipi-notify config seed | 1 | `configs/pi-unipi-notify/config.json` | no | seed `~/.unipi/config/notify/config.json` if missing (never overwrite; copied `0600`, never symlinked; the `/unipi:notify-settings` overlay and `/unipi:notify-event` rewrite it at runtime). Pins native desktop notifications only: the four lifecycle events on, the other five events plus gotify/telegram/recap off; `ntfy` is a separate `ntfy.json` |
+| pi-unipi-notify config seed | 1 | `configs/pi-unipi-notify/config.json` | no | seed `~/.unipi/config/notify/config.json` if missing (never overwrite; copied `0600`, never symlinked; the `/unipi:notify-settings` overlay and `/unipi:notify-event` rewrite it at runtime). Pins native desktop notifications only: the four lifecycle events on, the other five events plus gotify/telegram/recap off, and unanswered-prompt re-notification explicitly off; `ntfy` is a separate `ntfy.json` |
 | magic-context config overlay | 1 | `configs/magic-context/magic-context.jsonc` | no | authoritative write to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/...`); backup previous destination; `historian` seed-if-missing (template default when absent, operator value preserved); never symlink. Magic Context owns compaction; pi native compaction is disabled in `configs/agent-settings.json`; managed `execute_threshold_tokens` (absolute-token historian trigger) |
 | agent settings | 1 | `configs/agent-settings.json` | no | deep-merge into `~/.pi/agent/settings.json` (`packages` + portable defaults); then `pi update --extensions` |
 | managed keybindings | 1 | `configs/keybindings.json` | no | merge 11 managed actions into `~/.pi/agent/keybindings.json`; preserve unrelated actions |
@@ -260,6 +260,7 @@ The `agents/` directory is now a **pi-subagents native** surface.
 
 - frontmatter `package: hkx`
 - runtime names: `hkx.<name>`
+- explicit acceptance role: `acceptanceRole: read-only` for inspection/planning agents and `acceptanceRole: writer` for mutation agents
 - search surface: `ffgrep` / `fffind` (preferred) with native `grep` / `find` as co-resident fallback
 - code intelligence surface: `lsp_diagnostics` and `lsp_fix` for configured routes; targeted `ffgrep` and `read` for navigation and structure
 - reviewers are read-only by default
@@ -374,7 +375,7 @@ Current overlays:
 - `configs/pi-unipi-notify/config.json`
   - seeded by `npm run install-global` to `~/.unipi/config/notify/config.json` **only when missing**
   - the extension's `/unipi:notify-settings` overlay and `/unipi:notify-event` command rewrite the file at runtime; never overwrite operator choices. Copied rather than symlinked and seeded `0600`, because gotify/telegram credentials land in that file once those platforms are enabled
-  - pinned intent: native desktop notifications only — `defaultPlatforms: ["native"]`, `native.suppressWhenFocused: true`, four enabled events (`agent_end`, `agent_settled`, `ask_user_prompt`, `permission_request`), and the remaining five events plus gotify/telegram/recap explicitly off. All nine upstream event keys are enumerated because `loadConfig()` merges the file over the upstream defaults, so an omitted key inherits them (three of the nine default to on). `ntfy` is absent from this schema — it lives in the separate `~/.unipi/config/notify/ntfy.json` and stays off unless the operator configures it
+  - pinned intent: native desktop notifications only — `defaultPlatforms: ["native"]`, `native.suppressWhenFocused: true`, four enabled events (`agent_end`, `agent_settled`, `ask_user_prompt`, `permission_request`), the remaining five events plus gotify/telegram/recap explicitly off, and `renotify` explicitly disabled (`intervalMs: 120000`, `maxRepeats: 3`). All nine upstream event keys and the full re-notification block are pinned because `loadConfig()` merges the file over the upstream defaults, so an omitted value inherits upstream behavior (three event defaults and re-notification default to on). `ntfy` is absent from this schema — it lives in the separate `~/.unipi/config/notify/ntfy.json` and stays off unless the operator configures it
 - `configs/magic-context/magic-context.jsonc`
   - installed by `npm run install-global` to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`) as an **authoritative managed overlay**; managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger)
   - written on every install (never symlinked); the previous destination is backed up (timestamped `.bak.*` sibling) before the write

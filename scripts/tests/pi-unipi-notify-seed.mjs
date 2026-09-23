@@ -55,7 +55,8 @@ check(
 // only their JSON types. Every one of the nine upstream event keys is pinned
 // explicitly: loadConfig() merges {...defaults.events, ...file.events}, so an
 // omitted key silently inherits the upstream default — and workflow_end,
-// ralph_loop_end and mcp_server_error default to ON.
+// ralph_loop_end and mcp_server_error default to ON. Re-notification is also
+// pinned off so a new upstream default cannot add repeated desktop alerts.
 // ---------------------------------------------------------------------------
 const templateRaw = readFileSync(srcTemplate, "utf8");
 const templateObj = JSON.parse(templateRaw);
@@ -87,6 +88,13 @@ check(
 	"template native.suppressWhenFocused === true",
 	templateObj.native?.suppressWhenFocused === true,
 	JSON.stringify(templateObj.native),
+);
+check(
+	"template disables repeat notifications",
+	templateObj.renotify?.enabled === false &&
+		templateObj.renotify?.intervalMs === 120000 &&
+		templateObj.renotify?.maxRepeats === 3,
+	JSON.stringify(templateObj.renotify),
 );
 check(
 	"template pins exactly the nine upstream event keys",
@@ -148,6 +156,7 @@ check(
 			"telegram",
 			"recap",
 			"silenceAfterInput",
+			"renotify",
 		]),
 	JSON.stringify(Object.keys(templateObj)),
 );

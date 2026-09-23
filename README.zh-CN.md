@@ -133,7 +133,7 @@ pi -e .
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |
 | rpiv-advisor 配置种子 | 包更新后：`configs/rpiv-advisor/advisor.json` → `~/.config/rpiv-advisor/advisor.json`，**仅当目标不存在**（不覆盖 `/advisor` 选型；不版本化 `modelKey`） |
 | pi-tool-display 配置种子 | 包更新后：`configs/pi-tool-display/config.json` → `~/.pi/agent/extensions/pi-tool-display/config.json`，**仅当目标不存在**（`/tool-display` 设置 UI 会在运行时改写该文件） |
-| pi-unipi-notify 配置种子 | 包更新后：`configs/pi-unipi-notify/config.json` → `~/.unipi/config/notify/config.json`，**仅当目标不存在**（`/unipi:notify-settings` 面板与 `/unipi:notify-event` 会在运行时改写该文件；因此只复制、绝不软链，并以 `0600` 写入 —— 启用 gotify/telegram 后凭据会存在此文件）。只开原生桌面通知：4 个生命周期事件开启，其余 5 个事件与 gotify/telegram/recap 关闭；`ntfy` 独立存放在自己的 `ntfy.json` |
+| pi-unipi-notify 配置种子 | 包更新后：`configs/pi-unipi-notify/config.json` → `~/.unipi/config/notify/config.json`，**仅当目标不存在**（`/unipi:notify-settings` 面板与 `/unipi:notify-event` 会在运行时改写该文件；因此只复制、绝不软链，并以 `0600` 写入 —— 启用 gotify/telegram 后凭据会存在此文件）。只开原生桌面通知：4 个生命周期事件开启，其余 5 个事件与 gotify/telegram/recap 关闭，并显式关闭未答复提示的重复通知；`ntfy` 独立存放在自己的 `ntfy.json` |
 | magic-context 配置覆盖层 | 包更新后：`configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc`（或 `~/.config/cortexkit/...`）。权威受管覆盖层：每次安装都会写入（从不软链）；写入前先备份旧目标，`historian` 为 seed-if-missing（目标缺失时写入模板默认，已存在时保留操作者值）。Magic Context 接管压缩；pi 原生 `compaction` 在 `configs/agent-settings.json` 中被禁用；受管 `execute_threshold_tokens`（绝对 token 数 historian 触发阈值）。 |
 | 全局 AGENTS | `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md` |
 | append system | `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md` |

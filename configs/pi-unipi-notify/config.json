@@ -53,5 +53,10 @@
   },
   "silenceAfterInput": {
     "enabled": false
+  },
+  "renotify": {
+    "enabled": false,
+    "intervalMs": 120000,
+    "maxRepeats": 3
   }
 }
