@@ -19,7 +19,13 @@
  */
 
 import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
-import { VERSION, keyHint, rawKeyHint } from "@earendil-works/pi-coding-agent";
+import {
+	VERSION,
+	keyHint,
+	keyText,
+	rawKeyHint,
+} from "@earendil-works/pi-coding-agent";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 
 // Blue → purple horizontal gradient endpoints.
 const GRADIENT_FROM = { r: 0x3b, g: 0x82, b: 0xf6 }; // #3b82f6 blue
@@ -81,30 +87,30 @@ function buildHeader(theme: Theme): string[] {
 	];
 
 	// ── Keybinding hints ─────────────────────────────────
-	// rawKeyHint("key", "description") for app-level shortcuts;
-	// keyHint("editorAction", "description") for editor shortcuts.
+	// Use configured, namespaced actions whenever Pi owns the shortcut. Keep
+	// raw hints only for literal input syntax or compound key descriptions.
 	const hints = [
-		rawKeyHint("escape", "to interrupt"),
-		rawKeyHint("ctrl+c", "to clear"),
-		rawKeyHint("ctrl+c twice", "to exit"),
-		rawKeyHint("ctrl+d", "to exit (empty)"),
-		rawKeyHint("ctrl+z", "to suspend"),
-		keyHint("deleteToLineEnd", "to delete to end"),
-		rawKeyHint("shift+tab", "to cycle thinking level"),
-		rawKeyHint("ctrl+p/shift+ctrl+p", "to cycle models"),
-		rawKeyHint("ctrl+l", "to select model"),
-		rawKeyHint("ctrl+o", "to expand tools"),
-		rawKeyHint("ctrl+t", "to expand thinking"),
-		rawKeyHint("ctrl+g", "for external editor"),
+		keyHint("app.interrupt", "to interrupt"),
+		keyHint("app.clear", "to clear"),
+		rawKeyHint(`${keyText("app.clear")} twice`, "to exit"),
+		keyHint("app.exit", "to exit (empty)"),
+		keyHint("app.suspend", "to suspend"),
+		keyHint("tui.editor.deleteToLineEnd", "to delete to end"),
+		keyHint("app.thinking.cycle", "to cycle thinking level"),
+		rawKeyHint(
+			`${keyText("app.model.cycleForward")}/${keyText("app.model.cycleBackward")}`,
+			"to cycle models",
+		),
+		keyHint("app.model.select", "to select model"),
+		keyHint("app.tools.expand", "to expand tools"),
+		keyHint("app.thinking.toggle", "to expand thinking"),
+		keyHint("app.editor.external", "for external editor"),
 		rawKeyHint("/", "for commands"),
 		rawKeyHint("!", "to run bash"),
 		rawKeyHint("!!", "to run bash (no context)"),
-		rawKeyHint("alt+enter", "to queue follow-up"),
-		rawKeyHint("alt+up", "to edit all queued messages"),
-		rawKeyHint(
-			process.platform === "win32" ? "alt+v" : "ctrl+v",
-			"to paste image",
-		),
+		keyHint("app.message.followUp", "to queue follow-up"),
+		keyHint("app.message.dequeue", "to edit all queued messages"),
+		keyHint("app.clipboard.pasteImage", "to paste image"),
 		rawKeyHint("drop files", "to attach"),
 	];
 
@@ -122,8 +128,7 @@ let enabled = isEnabled();
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", async (_event, ctx) => {
 		if (!isEnabled()) return;
-		if (!ctx.hasUI) return;
-		if (ctx.mode && ctx.mode !== "tui") return;
+		if (ctx.mode !== "tui") return;
 		enabled = true;
 		applyHeader(ctx);
 	});
@@ -132,7 +137,7 @@ export default function (pi: ExtensionAPI) {
 	// re-apply after the startup lifecycle completes.
 	pi.on("resources_discover", async (_event, ctx) => {
 		if (!enabled || !isEnabled()) return;
-		if (!ctx.hasUI) return;
+		if (ctx.mode !== "tui") return;
 		applyHeader(ctx);
 	});
 
@@ -143,15 +148,17 @@ export default function (pi: ExtensionAPI) {
 		if (recovered) return;
 		recovered = true;
 		if (!enabled || !isEnabled()) return;
-		if (!ctx.hasUI) return;
+		if (ctx.mode !== "tui") return;
 		applyHeader(ctx);
 	});
 
 	pi.registerCommand("hkx-custom-header", {
 		description: "Toggle HKX custom startup header",
 		handler: async (_args, ctx) => {
-			if (!ctx.hasUI) {
-				ctx.ui.notify("Custom header requires interactive TUI", "warning");
+			if (ctx.mode !== "tui") {
+				if (ctx.hasUI) {
+					ctx.ui.notify("Custom header requires interactive TUI", "warning");
+				}
 				return;
 			}
 			enabled = !enabled;
@@ -177,8 +184,8 @@ function applyHeader(ctx: {
 	};
 }): void {
 	ctx.ui.setHeader((_tui, theme) => ({
-		render(_width: number): string[] {
-			return buildHeader(theme);
+		render(width: number): string[] {
+			return buildHeader(theme).map((line) => truncateToWidth(line, width));
 		},
 		invalidate() {},
 	}));
