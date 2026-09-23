@@ -41,6 +41,18 @@ pattern: "force[- ]push"
 Prefer non-force push workflows.
 `,
 	);
+	fs.writeFileSync(
+		path.join(projectPiDir, "hookify.warn-stop.local.md"),
+		`---
+name: warn-final-settle
+enabled: true
+event: stop
+action: warn
+pattern: ".*"
+---
+Final settlement reached.
+`,
+	);
 
 	const childSource = `
 import extension from ${JSON.stringify(pathToFileURL(extPath).href)};
@@ -52,29 +64,41 @@ extension({
   },
 });
 
-const handler = handlers.get("before_agent_start");
-if (typeof handler !== "function") {
+const promptHandler = handlers.get("before_agent_start");
+if (typeof promptHandler !== "function") {
   throw new Error("before_agent_start handler was not registered");
+}
+const settledHandler = handlers.get("agent_settled");
+if (typeof settledHandler !== "function") {
+  throw new Error("agent_settled handler was not registered");
+}
+if (handlers.has("agent_end")) {
+  throw new Error("stop rules must not run at the non-final agent_end boundary");
 }
 
 const notifications = [];
-const result = await handler(
+const ctx = {
+  cwd: process.env.HKX_TEST_PROJECT_DIR,
+  ui: {
+    notify(message, level) {
+      notifications.push({ message, level });
+    },
+  },
+};
+const result = await promptHandler(
   {
     type: "before_agent_start",
     prompt: "please force push my branch",
     systemPrompt: "BASE SYSTEM PROMPT",
   },
-  {
-    cwd: process.env.HKX_TEST_PROJECT_DIR,
-    ui: {
-      notify(message, level) {
-        notifications.push({ message, level });
-      },
-    },
-  },
+  ctx,
 );
+const promptNotifications = [...notifications];
+notifications.length = 0;
+const stopResult = await settledHandler({ type: "agent_settled" }, ctx);
+const stopNotifications = [...notifications];
 
-console.log(JSON.stringify({ result, notifications }));
+console.log(JSON.stringify({ result, promptNotifications, stopResult, stopNotifications }));
 `;
 
 	const child = spawnSync(
@@ -143,12 +167,26 @@ console.log(JSON.stringify({ result, notifications }));
 			);
 			check(
 				"warning handler still emits one UI notification",
-				data.notifications?.length === 1 &&
-					data.notifications[0]?.level === "warning" &&
-					data.notifications[0]?.message?.includes(
+				data.promptNotifications?.length === 1 &&
+					data.promptNotifications[0]?.level === "warning" &&
+					data.promptNotifications[0]?.message?.includes(
 						"Prefer non-force push workflows.",
 					),
-				JSON.stringify(data.notifications),
+				JSON.stringify(data.promptNotifications),
+			);
+			check(
+				"settled handler returns no continuation request",
+				data.stopResult === undefined,
+				JSON.stringify(data.stopResult),
+			);
+			check(
+				"stop rule notifies exactly once at final settlement",
+				data.stopNotifications?.length === 1 &&
+					data.stopNotifications[0]?.level === "info" &&
+					data.stopNotifications[0]?.message?.includes(
+						"Final settlement reached.",
+					),
+				JSON.stringify(data.stopNotifications),
 			);
 		}
 	}

@@ -104,7 +104,7 @@ Current behavior:
 - Path B installs the package-managed PowerShell parse-floor guard globally from `configs/hkx-hookify/`; reinstall refreshes its content, preserves `enabled`, and backs up a changed destination.
 - On `tool_call`: matches `bash` / `file` (edit, write, ast_grep_replace) rules; `warn` → `ui.notify` and allow; `block` → `{ block: true, reason }`.
 - On `before_agent_start`: soft `prompt` rules (notify + system/message inject; cannot hard-block submit).
-- On `agent_end`: soft `stop` rules (notify only).
+- On `agent_settled`: soft `stop` rules (notify only), after retries, auto-compaction recovery, and queued continuations have finished.
 - Reloads when rule path mtimes change; skips invalid files with a one-shot warning.
 - Supports `pattern` or AND `conditions[]` (operators: regex_match, contains, equals, not_contains, starts_with, ends_with).
 

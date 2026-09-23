@@ -2,7 +2,7 @@
  * HKX Hookify — operator-authored behavior guardrails for Pi.
  *
  * Loads Markdown+YAML rule files and enforces them on tool_call /
- * before_agent_start / agent_end. Complements GateGuard's destructive-command
+ * before_agent_start / agent_settled. Complements GateGuard's destructive-command
  * hard gate with user-defined pattern rules.
  *
  * Rule locations:
@@ -62,7 +62,11 @@ type ExtensionContext = {
 
 type ExtensionRuntime = {
 	on(
-		event: "session_start" | "tool_call" | "before_agent_start" | "agent_end",
+		event:
+			| "session_start"
+			| "tool_call"
+			| "before_agent_start"
+			| "agent_settled",
 		handler: (
 			event: unknown,
 			ctx: ExtensionContext,
@@ -949,7 +953,7 @@ const extension: ExtensionFactory = (pi) => {
 		return out;
 	});
 
-	pi.on("agent_end", async (_event, ctx) => {
+	pi.on("agent_settled", async (_event, ctx) => {
 		if (!isEnabled()) return undefined;
 		const rules = refresh(ctx as ExtensionContext);
 		if (rules.length === 0) return undefined;

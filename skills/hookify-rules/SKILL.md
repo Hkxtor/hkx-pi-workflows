@@ -94,7 +94,7 @@ You are adding an API key to a .env file. Ensure it is gitignored.
 | `bash` | `tool_call` on `bash` / `powershell` | yes if `action: block` |
 | `file` | `tool_call` on `edit` / `write` / `ast_grep_replace` | yes if `action: block` |
 | `prompt` | `before_agent_start` | **no** — inject + notify only |
-| `stop` | `agent_end` | **no** — notify only |
+| `stop` | `agent_settled` | **no** — notify only, after automatic retries/continuations |
 | `all` | union of the above | per-phase |
 
 `bash` is the **shell surface**, not literally the tool named `bash`: on win32 pi exposes
