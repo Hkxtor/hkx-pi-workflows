@@ -42,6 +42,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - File basename must match frontmatter `name`.
 - Use `package: hkx` so runtime names are `hkx.<name>`.
+- Declare `acceptanceRole: read-only` for inspection/planning agents and `acceptanceRole: writer` for mutation agents; any agent with `edit` or `write` must be a writer.
 - Tools must use pi tool names accepted by `scripts/validate.mjs`.
 - Reviewers review; resolvers and implementation agents make minimal, scoped edits.
 - Prefer `ffgrep` / `fffind` (with native `grep` / `find` as co-resident fallback) and configured pi-lsp diagnostics over non-pi search aliases.
@@ -63,6 +64,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 ### package.json dual-path contract
 
 - `keywords` must include `pi-package`.
+- Pi core packages imported by shipped extensions must be wildcard (`"*"`) `peerDependencies`, never `dependencies`; reject the unrelated npm package named `pi`.
 - Official pi resources only: `pi.extensions`, `pi.skills`, `pi.prompts`.
 - Do not reintroduce custom brand theme JSON or a `pi.themes` package field.
 - Agents/chains: top-level `pi-subagents.agents` / `pi-subagents.chains` (discovered by pi-subagents from installed packages).
@@ -89,7 +91,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
   - `configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json` (after `pi update --extensions`; creates dir if missing).
   - `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` (or `$XDG_CONFIG_HOME/...`) **only if missing** — never overwrite `/advisor` model picks; do not version `modelKey`.
   - `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` **only if missing** — the extension's `/tool-display` settings UI rewrites that file at runtime; never overwrite operator choices.
-  - `configs/pi-unipi-notify/config.json` → seed `~/.unipi/config/notify/config.json` **only if missing** — the `/unipi:notify-settings` overlay and `/unipi:notify-event` command rewrite that file at runtime, so never overwrite operator choices; copied (never symlinked) with mode `0600` because gotify/telegram credentials land there. The seed pins native desktop notifications only: `defaultPlatforms: ["native"]`, four enabled events (`agent_end`, `agent_settled`, `ask_user_prompt`, `permission_request`), the other five events plus gotify/telegram/recap explicitly off. All nine upstream event keys are enumerated because the extension merges the file over its defaults, so an omitted key would inherit them (three of the nine default to on). `ntfy` is not part of this schema — it lives in the separate `ntfy.json`.
+  - `configs/pi-unipi-notify/config.json` → seed `~/.unipi/config/notify/config.json` **only if missing** — the `/unipi:notify-settings` overlay and `/unipi:notify-event` command rewrite that file at runtime, so never overwrite operator choices; copied (never symlinked) with mode `0600` because gotify/telegram credentials land there. The seed pins native desktop notifications only: `defaultPlatforms: ["native"]`, four enabled events (`agent_end`, `agent_settled`, `ask_user_prompt`, `permission_request`), the other five events plus gotify/telegram/recap explicitly off, and `renotify` explicitly disabled (`intervalMs: 120000`, `maxRepeats: 3`) so an upstream default cannot add repeated alerts. All nine upstream event keys are enumerated because the extension merges the file over its defaults, so an omitted key would inherit them (three of the nine default to on). `ntfy` is not part of this schema — it lives in the separate `ntfy.json`.
   - `configs/magic-context/magic-context.jsonc` → authoritative managed overlay written to `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/...`) on every install. The previous destination is backed up (timestamped `.bak.*` sibling) before the write; never symlinked (a runtime config symlinked at the repo would let plugin edits mutate the checkout). `historian` is seed-if-missing (mirrors the rpiv-advisor / pi-tool-display precedent): the template carries a working default that a cold install writes, while an existing operator pick is carried over verbatim, so `npm run install-global` cannot silently undo it; an unreadable or non-object destination fails closed. Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`. Behavior defaults such as `execute_threshold_tokens` (absolute-token historian trigger; per-model map) are managed here so the trigger point does not drift across model context windows.
 - Do not vendor third-party extension source into this package unless it becomes a first-party pi extension.
 

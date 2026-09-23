@@ -73,8 +73,9 @@ const requiredFiles = [
 	"scripts/tests/pi-unipi-notify-seed.mjs",
 	// magic-context authoritative managed overlay (Path B; backup + overwrite).
 	"scripts/tests/magic-context-install.mjs",
-	// GateGuard destructive-command + independent artifact auto-reply suites.
+	// GateGuard, custom-header compatibility, and artifact auto-reply suites.
 	"scripts/tests/gateguard-selfmatch.mjs",
+	"scripts/tests/custom-header-compat.mjs",
 	"scripts/tests/subagent-artifact-auto-reply.mjs",
 	// Hookify rule parse/match/evaluate + Path B managed install suites.
 	"scripts/tests/hookify-rules.mjs",
@@ -122,6 +123,14 @@ const allowedPiTools = new Set([
 	"contact_supervisor",
 	"lsp_diagnostics",
 	"lsp_fix",
+]);
+
+const piCorePackages = new Set([
+	"@earendil-works/pi-ai",
+	"@earendil-works/pi-agent-core",
+	"@earendil-works/pi-coding-agent",
+	"@earendil-works/pi-tui",
+	"typebox",
 ]);
 
 const errors = [];
@@ -406,6 +415,58 @@ async function main() {
 		errors.push(
 			"package.json pi.themes is not shipped by this package (custom themes removed)",
 		);
+	}
+
+	// Pi bundles its core packages. Extensions that import them must declare
+	// wildcard peers, never runtime dependencies. Also reject the unrelated npm
+	// package named `pi`, which is not the Pi Coding Agent host.
+	const dependencies =
+		pkg.dependencies && typeof pkg.dependencies === "object"
+			? pkg.dependencies
+			: {};
+	const peerDependencies =
+		pkg.peerDependencies && typeof pkg.peerDependencies === "object"
+			? pkg.peerDependencies
+			: {};
+	if (Object.hasOwn(dependencies, "pi")) {
+		errors.push(
+			'package.json dependencies.pi is the unrelated npm "pi" package; use @earendil-works/pi-coding-agent as a wildcard peer instead',
+		);
+	}
+	for (const packageName of piCorePackages) {
+		if (Object.hasOwn(dependencies, packageName)) {
+			errors.push(
+				`package.json dependencies must not bundle Pi core package ${packageName}; declare it in peerDependencies with "*"`,
+			);
+		}
+	}
+	const importedPiCorePackages = new Set();
+	for (const extensionPath of Array.isArray(pi.extensions) ? pi.extensions : []) {
+		if (typeof extensionPath !== "string" || extensionPath.startsWith("!")) {
+			continue;
+		}
+		let source;
+		try {
+			source = await fs.readFile(path.resolve(root, extensionPath), "utf8");
+		} catch {
+			continue;
+		}
+		for (const match of source.matchAll(
+			/["'](@earendil-works\/pi-(?:ai|agent-core|coding-agent|tui)(?:\/[^"']*)?|typebox)["']/g,
+		)) {
+			const specifier = match[1];
+			const packageName = specifier.startsWith("@")
+				? specifier.split("/").slice(0, 2).join("/")
+				: specifier.split("/")[0];
+			importedPiCorePackages.add(packageName);
+		}
+	}
+	for (const packageName of importedPiCorePackages) {
+		if (peerDependencies[packageName] !== "*") {
+			errors.push(
+				`package.json peerDependencies.${packageName} must be "*" because a shipped extension imports it`,
+			);
+		}
 	}
 
 	// Path B must not force a custom theme via managed settings
@@ -719,6 +780,24 @@ async function main() {
 				unipiNotifyConfig.native?.suppressWhenFocused === true,
 				"native.suppressWhenFocused must be true",
 			);
+			assert(
+				unipiNotifyConfig.renotify?.enabled === false,
+				"renotify.enabled must be false (low-noise managed default)",
+			);
+			assert(
+				unipiNotifyConfig.renotify?.intervalMs === 120000,
+				"renotify.intervalMs must be 120000",
+			);
+			assert(
+				unipiNotifyConfig.renotify?.maxRepeats === 3,
+				"renotify.maxRepeats must be 3",
+			);
+			assert(
+				JSON.stringify(
+					Object.keys(unipiNotifyConfig.renotify ?? {}).sort(),
+				) === JSON.stringify(["enabled", "intervalMs", "maxRepeats"]),
+				"renotify must pin exactly enabled, intervalMs, and maxRepeats",
+			);
 			const enabledEvents = [
 				"agent_end",
 				"agent_settled",
@@ -1022,6 +1101,7 @@ async function main() {
 			...requireFrontmatter(relativePath, text, [
 				"name",
 				"description",
+				"acceptanceRole",
 				"tools",
 			]),
 		);
@@ -1047,8 +1127,30 @@ async function main() {
 			errors.push(`${relativePath}: package should be hkx (got ${pkgName})`);
 		}
 
+		const acceptanceRole = frontmatterField(
+			frontmatter,
+			"acceptanceRole",
+		)?.value;
+		if (
+			acceptanceRole &&
+			acceptanceRole !== "read-only" &&
+			acceptanceRole !== "writer"
+		) {
+			errors.push(
+				`${relativePath}: acceptanceRole must be read-only or writer`,
+			);
+		}
+
 		const toolsRaw = frontmatterField(frontmatter, "tools")?.value;
 		const tools = parseToolsList(toolsRaw);
+		if (
+			(tools.includes("edit") || tools.includes("write")) &&
+			acceptanceRole !== "writer"
+		) {
+			errors.push(
+				`${relativePath}: agents with edit/write tools must declare acceptanceRole: writer`,
+			);
+		}
 		for (const tool of tools) {
 			if (!allowedPiTools.has(tool)) {
 				errors.push(`${relativePath}: unknown tool ${JSON.stringify(tool)}`);
