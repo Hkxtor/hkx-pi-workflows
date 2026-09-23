@@ -1,6 +1,7 @@
 ---
 name: database-reviewer
 package: hkx
+acceptanceRole: writer
 description: PostgreSQL reviewer for schema changes, migrations, query performance, locking, and data safety. Reports or implements narrowly scoped fixes depending on the task.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
 thinking: high

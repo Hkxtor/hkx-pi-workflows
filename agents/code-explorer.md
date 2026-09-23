@@ -1,6 +1,7 @@
 ---
 name: code-explorer
 package: hkx
+acceptanceRole: read-only
 description: Deeply analyzes existing codebase features by tracing execution paths, mapping architecture layers, and documenting dependencies to inform new development.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
 thinking: medium

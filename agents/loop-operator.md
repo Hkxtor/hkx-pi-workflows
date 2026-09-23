@@ -1,6 +1,7 @@
 ---
 name: loop-operator
 package: hkx
+acceptanceRole: writer
 description: Operates bounded autonomous loops with checkpoints, stall detection, and recovery rules. Keeps long-running agent work observable and reversible.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, todo, contact_supervisor
 thinking: high

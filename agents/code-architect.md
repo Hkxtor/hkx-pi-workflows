@@ -1,6 +1,7 @@
 ---
 name: code-architect
 package: hkx
+acceptanceRole: read-only
 description: Designs feature architectures by analyzing existing codebase patterns and conventions, then providing implementation blueprints with concrete files, interfaces, data flow, and build order.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
 thinking: high

@@ -1,6 +1,7 @@
 ---
 name: typescript-reviewer
 package: hkx
+acceptanceRole: read-only
 description: Expert TypeScript/JavaScript code reviewer specializing in type safety, async correctness, Node/web security, and idiomatic patterns. Use for all TypeScript and JavaScript code changes. MUST BE USED for TypeScript/JavaScript projects.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
 thinking: high

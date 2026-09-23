@@ -1,6 +1,7 @@
 ---
 name: docs-lookup
 package: hkx
+acceptanceRole: read-only
 description: Documentation lookup specialist for libraries, frameworks, SDKs, and APIs. Uses current official docs or configured docs search surfaces and returns concise, source-aware guidance.
 tools: read, ffgrep, fffind, grep, find, ls, bash, web_search, intercom
 thinking: medium

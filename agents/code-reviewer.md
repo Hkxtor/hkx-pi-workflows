@@ -1,6 +1,7 @@
 ---
 name: code-reviewer
 package: hkx
+acceptanceRole: read-only
 description: General code review specialist for correctness, maintainability, security, performance, and test quality. Reports findings only; does not mutate files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
 thinking: high

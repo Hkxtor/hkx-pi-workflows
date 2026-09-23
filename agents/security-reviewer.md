@@ -1,6 +1,7 @@
 ---
 name: security-reviewer
 package: hkx
+acceptanceRole: read-only
 description: Security review specialist for code that handles user input, auth, API endpoints, data access, secrets, dependencies, or sensitive workflows. Reports vulnerabilities only; does not mutate files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
 thinking: high

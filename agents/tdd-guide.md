@@ -1,6 +1,7 @@
 ---
 name: tdd-guide
 package: hkx
+acceptanceRole: writer
 description: Test-driven implementation specialist. Drives changes through red-green-refactor, adds meaningful coverage, and keeps diffs narrowly scoped to the requested behavior.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
 thinking: high

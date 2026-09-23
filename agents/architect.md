@@ -1,6 +1,7 @@
 ---
 name: architect
 package: hkx
+acceptanceRole: read-only
 description: Architecture specialist for system design, boundary decisions, and refactor structure. Produces tradeoff-driven design proposals without editing files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
 thinking: high
