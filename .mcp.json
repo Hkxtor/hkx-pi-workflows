@@ -1,13 +1,8 @@
 {
-  "settings": {
-    "directTools": false
-  },
   "mcpServers": {
     "context7": {
       "url": "https://mcp.context7.com/mcp",
-      "protocolVersion": "auto",
-      "lifecycle": "lazy",
-      "directTools": true
+      "exposure": "direct"
     }
   }
 }

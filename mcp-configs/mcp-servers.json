@@ -86,8 +86,7 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ],
-      "lifecycle": "eager",
-      "directTools": true,
+      "exposure": "direct",
       "description": "Explicit stepwise reasoning via direct MCP tools"
     },
     "mcp-server-time": {
@@ -98,8 +97,7 @@
         "mcp-server-time",
         "--local-timezone=Asia/Shanghai"
       ],
-      "lifecycle": "eager",
-      "directTools": true,
+      "exposure": "direct",
       "description": "Current time and timezone conversion tools, defaulting to Asia/Shanghai"
     },
     "shrimp-task-manager": {
@@ -108,8 +106,7 @@
         "-y",
         "mcp-shrimp-task-manager"
       ],
-      "lifecycle": "eager",
-      "directTools": true,
+      "exposure": "direct",
       "env": {
         "DATA_DIR": "${MCP_DATA_DIR}",
         "ENABLE_GUI": "false",
@@ -174,16 +171,12 @@
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp",
-      "protocolVersion": "auto",
-      "lifecycle": "eager",
-      "directTools": true,
+      "exposure": "direct",
       "description": "Live documentation lookup through Context7's remote MCP endpoint"
     },
     "mcp-deepwiki": {
       "url": "https://mcp.deepwiki.com/mcp",
-      "protocolVersion": "auto",
-      "lifecycle": "eager",
-      "directTools": true,
+      "exposure": "direct",
       "description": "Ask questions and retrieve structure/content from public repository wikis"
     },
     "magic": {
@@ -209,7 +202,6 @@
         "-y",
         "@playwright/mcp@latest"
       ],
-      "lifecycle": "lazy",
       "description": "Browser automation and testing via Playwright"
     },
     "chrome-devtools-mcp": {
@@ -218,7 +210,6 @@
         "-y",
         "chrome-devtools-mcp@latest"
       ],
-      "lifecycle": "lazy",
       "description": "Inspect and automate a locally running Chrome instance through DevTools"
     },
     "fal-ai": {
@@ -338,10 +329,10 @@
     }
   },
   "_comments": {
-    "usage": "Apply a named template from mcp-configs/templates/ or copy the servers you need into a pi mcp.json file",
-    "env_vars": "Templates use ${VAR} references resolved from the process environment at runtime; do not put real tokens in this file",
+    "usage": "Apply a named template from mcp-configs/templates/ or copy only Pi-supported server fields into mcp.json",
+    "env_vars": "The profile helper resolves ${VAR} references when writing mcp.json; do not put real tokens in this catalog",
     "templates": "Optional additive templates currently cover memory, reasoning, research, and task-management under mcp-configs/templates/",
-    "disabling": "Disable bundled MCPs with disabledServers in ~/.pi/agent/mcp.json, or override them by defining the same server name in .pi/mcp.json or ~/.pi/agent/mcp.json",
-    "context_warning": "Keep under 10 MCPs enabled to preserve context window"
+    "disabling": "Use enabled: false for a server in ~/.pi/agent/mcp.json or .pi/mcp.json; project entries replace same-named global entries",
+    "context_warning": "Use codemode (default) or deferred exposure for large tool sets to limit context overhead"
   }
 }

@@ -54,14 +54,13 @@ export function hasUnresolvedRef(value) {
 }
 
 /**
- * Runtime MCP server fields supported by this package's adapter integration.
- * Catalog-only metadata (requiresEnv, future catalog keys) is NOT in this
- * allowlist and will not be carried into persisted config (MF-5).
+ * Native MCP fields supported by this package's defaults and profiles.
+ * Catalog-only metadata (requiresEnv, description) and adapter-only options
+ * are not carried into newly persisted mcp.json entries (MF-5).
  *
  * Secret-bearing or interpolation-capable fields stay limited to the channels
- * scanned below (env, headers, args, command, and url). Runtime behavior flags
- * are safe to preserve verbatim so Path B does not silently drop direct-tool,
- * lifecycle, or protocol-negotiation intent from package defaults/profiles.
+ * scanned below (env, headers, args, command, and url). Native exposure and
+ * enablement fields are preserved so defaults and profiles keep their intent.
  */
 export const MCP_SCHEMA_KEYS = [
 	"command",
@@ -70,20 +69,10 @@ export const MCP_SCHEMA_KEYS = [
 	"headers",
 	"type",
 	"url",
-	"description",
-	"lifecycle",
-	"idleTimeout",
-	"requestTimeoutMs",
-	"exposeResources",
-	"directTools",
-	"toolPrefix",
-	"includeTools",
-	"excludeTools",
-	"approveTools",
-	"debug",
-	"trace",
-	"protocolVersion",
-	"disabled",
+	"timeout",
+	"enabled",
+	"exposure",
+	"toolExposure",
 ];
 
 export function persistableMcpServer(resolved) {

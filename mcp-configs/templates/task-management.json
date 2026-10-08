@@ -1,11 +1,9 @@
 {
-  "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
   "mcpServers": {
     "shrimp-task-manager": {
       "command": "npx",
       "args": ["-y", "mcp-shrimp-task-manager"],
-      "lifecycle": "eager",
-      "directTools": true,
+      "exposure": "direct",
       "env": {
         "DATA_DIR": "${MCP_DATA_DIR}",
         "ENABLE_GUI": "false",

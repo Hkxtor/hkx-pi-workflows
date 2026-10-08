@@ -143,19 +143,23 @@ pi -e .
 
 ## MCP 默认值与可选 profile
 
-路径 B 会以加法方式合并受版本控制的 `.mcp.json`。默认 surface 刻意保持最小：
-proxy-first（`settings.directTools: false`），且只有一个默认 server：
+Pi 0.99.1 已内置 MCP；路径 B 不再依赖 `pi-mcp-adapter`，而是把版本库的
+`.mcp.json` 加法合并进 Pi 的全局 `~/.pi/agent/mcp.json`。唯一默认 server
+是公开的 HTTP `context7`，使用 `exposure: "direct"`。内置 MCP 在会话启动时
+连接，不支持适配器的 `lifecycle: "lazy"`。其他 server 按需通过可信项目的
+`.pi/mcp.json` 或 `npm run mcp:apply-profile` 加入；额外 server 的内置默认
+暴露方式是 `codemode`，不会把大量工具定义直接放进模型上下文。
 
-- `context7` 使用公开的远程 HTTP MCP endpoint，采用 lazy 连接
-  （`lifecycle: "lazy"`），是默认 surface 中唯一直接暴露 tools 的 server。
-
-其他能力（GitHub、Exa、浏览器自动化、推理辅助、任务管理）一律不进默认值，
-按需通过项目配置或 `npm run mcp:apply-profile` 启用。
-
-下次执行 `install-global` 时，安装器只会迁移旧版本包曾写入的精确 stdio
-Context7 默认值；用户自定义的 stdio 条目会被保留，而不会生成无效的混合
-transport。由于合并是加法，`~/.pi/agent/mcp.json` 中已存在的 server 会被保留
-——如需本地的最小 surface，可用 `/mcp` 禁用或移除遗留条目。
+安装器只迁移旧包精确匹配的 stdio Context7 和已知的 HTTP Context7
+适配器默认字段到内置格式，同时保留用户的 headers 及明确选择的暴露/停用
+设置。`~/.pi/agent/mcp.json` 中的其他 server 与凭据会被保留，但**不会**
+自动转换。请检查其 `directTools`、`lifecycle`、`protocolVersion`、`disabled`
+等适配器字段，按需换成内置的 `exposure`、`enabled: false`。内置 Pi 不会自动
+导入 `mcp-adapter.json`、项目 `.mcp.json` 等适配器配置；按需将 server 迁至
+Pi 的全局 `mcp.json` 或可信项目的 `.pi/mcp.json`，再运行 `pi mcp list`
+及 `/reload`。路径 A 不安装这些默认值，也不移除已安装的适配器；若项目或
+其他 settings 来源仍声明适配器，需单独取消。加法合并不会删除其他 server，
+需要最小配置可用 `/mcp` 禁用遗留条目。
 
 Shrimp Task Manager 因其持久化数据目录由机器所有，故不作为默认 server；选择
 目录后再显式应用：

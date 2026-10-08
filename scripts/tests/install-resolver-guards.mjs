@@ -435,17 +435,18 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 }
 
 // ---------------------------------------------------------------------------
-// Case J: install merges runtime server options rather than stripping them as
-// catalog metadata. The default MCP surface relies on these options to start
-// selected servers eagerly and expose only their intended direct tools.
+// Case J: install preserves native runtime options while stripping catalog
+// and adapter metadata. The default relies on explicit direct exposure.
 // ---------------------------------------------------------------------------
 {
 	const { threw, out } = await run({
 		mcpServers: {
 			runtimeOptions: {
 				url: "https://example.com/mcp",
-				protocolVersion: "auto",
-				lifecycle: "eager",
+				exposure: "direct",
+				toolExposure: { "delete_*": "hidden" },
+				enabled: true,
+				timeout: 30,
 				directTools: true,
 			},
 		},
@@ -453,11 +454,13 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 	const server = out?.mcpServers?.runtimeOptions;
 	const ok =
 		threw === false &&
-		server?.protocolVersion === "auto" &&
-		server?.lifecycle === "eager" &&
-		server?.directTools === true;
+		server?.exposure === "direct" &&
+		server?.toolExposure?.["delete_*"] === "hidden" &&
+		server?.enabled === true &&
+		server?.timeout === 30 &&
+		server?.directTools === undefined;
 	check(
-		"J: install preserves protocolVersion, lifecycle, and directTools",
+		"J: install preserves native exposure, tool policy, and timeout",
 		ok,
 		`threw=${threw} server=${JSON.stringify(server)}`,
 	);
@@ -473,9 +476,7 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 			mcpServers: {
 				context7: {
 					url: "https://mcp.context7.com/mcp",
-					protocolVersion: "auto",
-					lifecycle: "eager",
-					directTools: true,
+					exposure: "direct",
 				},
 			},
 		},
@@ -496,9 +497,10 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 		server?.command === undefined &&
 		server?.args === undefined &&
 		server?.headers?.["x-operator-header"] === "keep" &&
-		server?.protocolVersion === "auto" &&
-		server?.lifecycle === "eager" &&
-		server?.directTools === true;
+		server?.exposure === "direct" &&
+		server?.protocolVersion === undefined &&
+		server?.lifecycle === undefined &&
+		server?.directTools === undefined;
 	check(
 		"K: package-owned legacy Context7 migrates to HTTP without mixed transport",
 		ok,
@@ -516,7 +518,7 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 			mcpServers: {
 				context7: {
 					url: "https://mcp.context7.com/mcp",
-					protocolVersion: "auto",
+					exposure: "direct",
 				},
 			},
 		},
@@ -534,11 +536,144 @@ function scanForPlaceholders(obj, pathPrefix = "") {
 		threw === false &&
 		server?.command === "npx" &&
 		server?.args?.[1] === "@company/custom-context7" &&
-		server?.url === undefined;
+		server?.url === undefined &&
+		server?.exposure === undefined;
 	check(
 		"L: custom stdio Context7 is retained without mixed transport",
 		ok,
 		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case M: migrate only the old package-owned HTTP Context7 flags, retaining
+// operator headers and avoiding unknown adapter fields in native config.
+// ---------------------------------------------------------------------------
+{
+	const { threw, out } = await run(
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", exposure: "direct" } } },
+		{
+			settings: { directTools: false, operatorFlag: "keep" },
+			mcpServers: {
+				context7: {
+					url: "https://mcp.context7.com/mcp",
+					protocolVersion: "auto",
+					lifecycle: "lazy",
+					directTools: true,
+					headers: { "x-operator-header": "keep" },
+				},
+			},
+		},
+	);
+	const server = out?.mcpServers?.context7;
+	check(
+		"M: legacy package HTTP Context7 becomes native without losing headers",
+		!threw && server?.exposure === "direct" &&
+			out?.settings?.directTools === undefined && out?.settings?.operatorFlag === "keep" &&
+			server?.headers?.["x-operator-header"] === "keep" &&
+			!["protocolVersion", "lifecycle", "directTools"].some((key) => Object.hasOwn(server, key)),
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case N: user opted out of directTools or disabled the old default; translate
+// both choices to native fields rather than forcing the package's direct mode.
+// ---------------------------------------------------------------------------
+{
+	const { threw, out } = await run(
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", exposure: "direct" } } },
+		{
+			mcpServers: {
+				context7: {
+					url: "https://mcp.context7.com/mcp",
+					protocolVersion: "auto",
+					lifecycle: "lazy",
+					directTools: false,
+					disabled: true,
+				},
+			},
+		},
+	);
+	const server = out?.mcpServers?.context7;
+	check(
+		"N: old opt-outs map to codemode and enabled:false",
+		!threw && server?.exposure === "codemode" && server?.enabled === false &&
+			server?.disabled === undefined && server?.directTools === undefined,
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Case O: an explicit native exposure beats old adapter settings; do not
+// rewrite operator-owned configuration for a different Context7 endpoint.
+// ---------------------------------------------------------------------------
+{
+	const { threw, out } = await run(
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", exposure: "direct" } } },
+		{
+			mcpServers: {
+				context7: {
+					url: "https://docs.example.com/mcp",
+					exposure: "hidden",
+					protocolVersion: "auto",
+					lifecycle: "lazy",
+					directTools: true,
+				},
+			},
+		},
+	);
+	const server = out?.mcpServers?.context7;
+	check(
+		"O: custom endpoint and explicit native exposure stay operator-owned",
+		!threw && server?.url === "https://docs.example.com/mcp" &&
+			server?.exposure === "hidden" && server?.directTools === true,
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// A custom HTTP Context7 without explicit exposure must not inherit the
+// package's direct exposure, which would expand its tool declarations.
+{
+	const { threw, out } = await run(
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", exposure: "direct" } } },
+		{ mcpServers: { context7: { url: "https://docs.example.com/mcp", headers: { Authorization: "test-token" } } } },
+	);
+	const server = out?.mcpServers?.context7;
+	check(
+		"Q: custom HTTP Context7 keeps native default exposure and credentials",
+		!threw && server?.url === "https://docs.example.com/mcp" &&
+			server?.exposure === undefined && server?.headers?.Authorization === "test-token",
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// A manually configured canonical Context7 URL with no old package flags
+// must also keep codemode as its implicit native exposure.
+{
+	const { threw, out } = await run(
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", exposure: "direct" } } },
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", headers: { "x-custom": "keep" } } } },
+	);
+	const server = out?.mcpServers?.context7;
+	check(
+		"R: operator-owned canonical Context7 without adapter flags stays implicit",
+		!threw && server?.exposure === undefined && server?.headers?.["x-custom"] === "keep",
+		`threw=${threw} server=${JSON.stringify(server)}`,
+	);
+}
+
+// A malformed operator entry should still be replaced by the valid default,
+// as the pre-migration mergeServerConfig path did.
+{
+	const { threw, out } = await run(
+		{ mcpServers: { context7: { url: "https://mcp.context7.com/mcp", exposure: "direct" } } },
+		{ mcpServers: { context7: null } },
+	);
+	check(
+		"P: null Context7 entry is replaced by the native package default",
+		!threw && out?.mcpServers?.context7?.exposure === "direct",
+		`threw=${threw} out=${JSON.stringify(out)}`,
 	);
 }
 

@@ -460,19 +460,16 @@ function check(name, cond, detail) {
 		`config still has requiresEnv=${JSON.stringify(r.config.requiresEnv)} (MF-5 metadata leak)`,
 	);
 	check(
-		"T: description kept on persisted config",
-		Object.hasOwn(r.config, "description"),
-		`config lost description=${JSON.stringify(r.config.description)}`,
+		"T: catalog description stripped from native config",
+		!Object.hasOwn(r.config, "description"),
+		`catalog description leaked=${JSON.stringify(r.config.description)}`,
 	);
 }
 
 // ---------------------------------------------------------------------------
-// Case U (MF-5 red/guard + M6): schema keys survive strip — command/args/
-// env/headers/url/type/description/disabled must all be present in the
-// persisted config. The strip must remove catalog metadata, not runtime
-// fields. M6: `disabled` is in MCP_SCHEMA_KEYS but was previously unasserted
-// — a mutation removing it from the allowlist would silently re-enable a
-// disabled server without CI notice.
+// Case U: native MCP keys survive strip — transport, exposure, enabled,
+// timeout and per-tool exposure. Adapter-only fields must not leak into
+// new configs; catalog metadata remains stripped.
 // ---------------------------------------------------------------------------
 {
 	TEST_ENV = { TOKEN: "tok", URL_TOK: "u" };
@@ -485,7 +482,13 @@ function check(name, cond, detail) {
 			type: "http",
 			url: "https://example.com/mcp?k=${URL_TOK}",
 			description: "schema-key guard",
-			disabled: true,
+			enabled: false,
+			exposure: "direct",
+			toolExposure: { "delete_*": "hidden" },
+			timeout: 90,
+			directTools: true,
+			lifecycle: "lazy",
+			protocolVersion: "auto",
 			requiresEnv: ["TOKEN", "URL_TOK"],
 		},
 		{ env: TEST_ENV },
@@ -497,19 +500,25 @@ function check(name, cond, detail) {
 		"headers",
 		"type",
 		"url",
-		"description",
-		"disabled",
+		"enabled",
+		"exposure",
+		"toolExposure",
+		"timeout",
 	];
 	const kept = schemaKeys.filter((k) => Object.hasOwn(r.config, k));
 	check(
-		"U: schema keys (command/args/env/headers/type/url/description/disabled) preserved",
+		"U: native MCP fields preserved",
 		kept.length === schemaKeys.length,
 		`missing=${schemaKeys.filter((k) => !Object.hasOwn(r.config, k)).join(",")}`,
 	);
 	check(
-		"U: disabled:true preserved (M6)",
-		r.config.disabled === true,
-		`disabled=${JSON.stringify(r.config.disabled)}`,
+		"U: enabled:false preserved",
+		r.config.enabled === false,
+		`enabled=${JSON.stringify(r.config.enabled)}`,
+	);
+	check(
+		"U: adapter fields stripped from native MCP server",
+		!["directTools", "lifecycle", "protocolVersion"].some((key) => Object.hasOwn(r.config, key)),
 	);
 	check(
 		"U: requiresEnv stripped even with multiple schema keys",

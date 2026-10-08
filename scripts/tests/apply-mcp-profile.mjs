@@ -182,6 +182,10 @@ function runApply(args, { env = baseEnv() } = {}) {
 			parseErr ? `parse failed: ${parseErr}` : "",
 		);
 		check(
+			"D: new config does not include a third-party MCP schema",
+			out?.$schema === undefined,
+		);
+		check(
 			"D: firecrawl server present with resolved env",
 			out?.mcpServers?.firecrawl?.env?.FIRECRAWL_API_KEY ===
 				"test-only-not-a-real-secret",
@@ -197,7 +201,7 @@ function runApply(args, { env = baseEnv() } = {}) {
 
 // ---------------------------------------------------------------------------
 // Case E: the task-management profile needs a concrete Shrimp data directory.
-// It must refuse an unset MCP_DATA_DIR and preserve direct/eager runtime flags
+// It must refuse an unset MCP_DATA_DIR and persist built-in direct exposure
 // after a valid value is supplied.
 // ---------------------------------------------------------------------------
 {
@@ -235,10 +239,11 @@ function runApply(args, { env = baseEnv() } = {}) {
 		`status=${status} stderr=${JSON.stringify(stderr).slice(0, 240)}`,
 	);
 	check(
-		"F-task: task-management resolves DATA_DIR and preserves direct eager options",
+		"F-task: task-management resolves DATA_DIR and uses built-in direct exposure",
 		shrimp?.env?.DATA_DIR === env.MCP_DATA_DIR &&
-			shrimp?.lifecycle === "eager" &&
-			shrimp?.directTools === true &&
+			shrimp?.exposure === "direct" &&
+			shrimp?.lifecycle === undefined &&
+			shrimp?.directTools === undefined &&
 			!Object.hasOwn(shrimp ?? {}, "requiresEnv"),
 		`shrimp=${JSON.stringify(shrimp)}`,
 	);
@@ -403,6 +408,24 @@ function writeH1Catalog(name, serverEnv, { requiresEnv = [] } = {}) {
 		"G: pre-seeded target not mutated on unresolved refuse",
 		after === before,
 		`target rewritten to ${JSON.stringify(after).slice(0, 120)}`,
+	);
+}
+
+// Adapter-only disabledServers must not be silently written to native mcp.json.
+{
+	const { catalogRoot, profileName } = writeH1Catalog("disabled-legacy", {});
+	const templatePath = path.join(catalogRoot, `${profileName}.json`);
+	const template = JSON.parse(readFileSync(templatePath, "utf8"));
+	template.disabledServers = [profileName];
+	writeFileSync(templatePath, JSON.stringify(template));
+	const target = path.join(tmpDir, "h-mcp.json");
+	const env = baseEnv();
+	env.HKX_MCP_TEMPLATE_ROOT = catalogRoot;
+	const { status, stderr } = runApply(["--target", target, profileName], { env });
+	check(
+		"H: adapter-only disable option refuses without writing native config",
+		status !== 0 && /disabledServers/.test(stderr) && !existsSync(target),
+		`status=${status} stderr=${JSON.stringify(stderr).slice(0, 240)}`,
 	);
 }
 

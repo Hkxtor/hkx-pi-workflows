@@ -406,13 +406,13 @@ Path B versions a compact editor-keybinding overlay:
 
 The MCP layer is deliberately simple:
 
-- root `.mcp.json` = default package MCP surface
-  - `npm run install-global` merges it into `~/.pi/agent/mcp.json`
-  - the default stays proxy-first with a single lazy `context7` direct-tools server;
-    every other integration is opt-in via project config or `mcp:apply-profile`
-  - the installer migrates only the exact package-owned legacy stdio
-    `context7` default to HTTP; the additive merge never removes pre-existing
-    operator servers (use `/mcp` to disable legacy entries)
+- root `.mcp.json` = Path B source for Pi's built-in MCP (no adapter dependency)
+  - `npm run install-global` merges it into `~/.pi/agent/mcp.json`; Path A does not
+  - only HTTP `context7` is on by default, with `exposure: "direct"`; native MCP
+    connects at session startup; all other servers are opt-in
+  - the installer translates only package-owned legacy Context7 defaults;
+    the additive merge preserves other operator servers and credentials
+    (use `/mcp` to disable legacy entries; migrate adapter-only files separately)
 - `mcp-configs/mcp-servers.json` = reference catalog
 - `mcp-configs/templates/*.json` = optional additive templates
   - `task-management` adds Shrimp Task Manager only when `MCP_DATA_DIR` is set

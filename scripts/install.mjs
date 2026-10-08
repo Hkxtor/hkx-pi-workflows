@@ -210,10 +210,39 @@ function migrateContext7ToHttp(destServer, srcServer) {
 			migrated[key] = mergeSecretMaps(migrated[key], value);
 			continue;
 		}
-		// Preserve explicit operator choices such as disabled/directTools.
+		// Preserve operator choices before translating old adapter flags below.
 		migrated[key] = structuredClone(value);
 	}
 	return migrated;
+}
+
+const PACKAGE_CONTEXT7_URL = "https://mcp.context7.com/mcp";
+
+function isPackageContext7HttpDefault(server) {
+	return isPlainObject(server) && server.url === PACKAGE_CONTEXT7_URL &&
+		server.protocolVersion === "auto" &&
+		server.lifecycle === "lazy" &&
+		typeof server.directTools === "boolean";
+}
+
+function migrateContext7NativeOptions(previous, merged, legacyStdio = false) {
+	if (!isPlainObject(previous)) return merged;
+	// Only reinterpret the old package default, never an operator's custom
+	// endpoint. The known legacy stdio default is handled by the caller.
+	if (!legacyStdio && !isPackageContext7HttpDefault(previous)) return merged;
+
+	const next = { ...merged };
+	if (previous.directTools === false && previous.exposure === undefined) {
+		next.exposure = "codemode";
+	}
+	if (previous.disabled === true && previous.enabled === undefined) {
+		next.enabled = false;
+	}
+	if (previous.protocolVersion === "auto") delete next.protocolVersion;
+	if (previous.lifecycle === "lazy") delete next.lifecycle;
+	if (typeof previous.directTools === "boolean") delete next.directTools;
+	if (typeof previous.disabled === "boolean") delete next.disabled;
+	return next;
 }
 
 function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
@@ -258,7 +287,9 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
 
 			if (name === "context7" && hasHttpTransport(scanned) && hasStdioTransport(out[name])) {
 				if (isLegacyContext7Default(out[name])) {
-					out[name] = migrateContext7ToHttp(out[name], scanned);
+					out[name] = migrateContext7NativeOptions(
+						out[name], migrateContext7ToHttp(out[name], scanned), true,
+					);
 					migrated.push(name);
 				} else {
 					// A user-managed stdio Context7 must never gain a conflicting URL.
@@ -267,7 +298,16 @@ function mergeMcpServers(destServers, srcServers, { sourceLabel, env } = {}) {
 					transportConflicts.push(name);
 				}
 			} else {
-				out[name] = mergeServerConfig(out[name], scanned);
+				// Do not broaden exposure on an operator-owned HTTP Context7,
+				// even when it uses the canonical URL but has no old package flags.
+				if (name === "context7" && hasHttpTransport(out[name]) &&
+					!isPackageContext7HttpDefault(out[name])) {
+					out[name] = structuredClone(out[name]);
+				} else {
+					out[name] = name === "context7"
+						? migrateContext7NativeOptions(out[name], mergeServerConfig(out[name], scanned))
+						: mergeServerConfig(out[name], scanned);
+				}
 				preserved.push(name);
 			}
 		}
@@ -348,6 +388,11 @@ async function mergeMcpConfig(srcPath, destPath, { env } = {}) {
 		if (destContent[key] === undefined) {
 			destContent[key] = srcContent[key];
 		}
+	}
+	// Remove only the previous package's proxy default, not other operator keys.
+	if (isPlainObject(destContent.settings) && destContent.settings.directTools === false) {
+		delete destContent.settings.directTools;
+		if (Object.keys(destContent.settings).length === 0) delete destContent.settings;
 	}
 
 	await fs.writeFile(destPath, JSON.stringify(destContent, null, 2), "utf-8");

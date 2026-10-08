@@ -143,23 +143,29 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 
 ## MCP defaults and optional profiles
 
-Path B merges the checked-in `.mcp.json` additively. The default surface is
-deliberately minimal: proxy-first (`settings.directTools: false`) with a single
-default server:
+Pi 0.99.1 includes MCP support; Path B uses it without `pi-mcp-adapter`.
+It merges the checked-in `.mcp.json` additively into Pi's global
+`~/.pi/agent/mcp.json`. The sole default server is the public HTTP `context7`
+endpoint with `exposure: "direct"`. Native MCP connects at session startup;
+it does not honor the adapter's `lifecycle: "lazy"`. Other servers stay
+opt-in via trusted project `.pi/mcp.json` or `npm run mcp:apply-profile`.
+The native default exposure for additional servers is `codemode`, keeping
+large tool lists out of the model's direct tool declarations.
 
-- `context7` uses the public remote HTTP MCP endpoint, connects lazily (`lifecycle: "lazy"`),
-  and is the only default server exposing direct tools.
-
-Everything else (GitHub, Exa, browser automation, reasoning helpers, task
-managers) stays out of the default; add it per project or via
-`npm run mcp:apply-profile` when actually needed.
-
-On the next `install-global`, the installer migrates only the exact stdio
-Context7 default shipped by an earlier package version; it retains a
-user-customized stdio entry rather than creating an invalid mixed transport.
-Because the merge is additive, servers already present in
-`~/.pi/agent/mcp.json` are preserved — disable or remove legacy entries with
-`/mcp` if you want the minimal surface locally.
+The installer migrates only the exact old package-owned stdio Context7
+transport and the known package HTTP Context7 adapter defaults to native
+fields, preserving operator headers and explicit exposure/disable choices.
+Custom servers and credentials in `~/.pi/agent/mcp.json` are preserved, not
+silently translated. Review adapter-only fields such as `directTools`,
+`lifecycle`, `protocolVersion`, and `disabled` on other entries; use native
+`exposure` and `enabled: false` where needed. Adapter-specific config files
+(such as `mcp-adapter.json` and project `.mcp.json`) are **not** automatically
+imported by native Pi. Copy only the servers you need into Pi's global
+`mcp.json` or a trusted project's `.pi/mcp.json`, then run `pi mcp list` and
+`/reload`. Path A does not install these defaults or remove an existing
+adapter; if an adapter is still declared by a project or another settings
+source, remove that declaration separately. The additive merge never removes
+unrelated servers; use `/mcp` to disable legacy entries if desired.
 
 Shrimp Task Manager is deliberately not a default server because its persistent
 data directory is machine-owned. Apply it explicitly after selecting a

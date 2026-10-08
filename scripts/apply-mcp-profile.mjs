@@ -26,11 +26,8 @@ import {
 	PLACEHOLDER_EXACT,
 	PLACEHOLDER_EMBEDDED,
 	persistableMcpServer,
-	MCP_SCHEMA_KEYS,
 } from "./lib/mcp-resolver.mjs";
 
-const schemaUrl =
-	"https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 // HKX_MCP_TEMPLATE_ROOT: test/operator override for template catalog root.
@@ -201,10 +198,7 @@ async function main() {
 	}
 
 	const targetPath = resolveTargetPath(options);
-	const targetConfig = await readJson(targetPath, {
-		$schema: schemaUrl,
-		mcpServers: {},
-	});
+	const targetConfig = await readJson(targetPath, { mcpServers: {} });
 
 	if (
 		!targetConfig ||
@@ -219,9 +213,6 @@ async function main() {
 		Array.isArray(targetConfig.mcpServers)
 	) {
 		targetConfig.mcpServers = {};
-	}
-	if (!targetConfig.$schema) {
-		targetConfig.$schema = schemaUrl;
 	}
 
 	const addedServers = [];
@@ -258,14 +249,10 @@ async function main() {
 			addedServers.push(serverName);
 		}
 
-		if (
-			Array.isArray(template.disabledServers) &&
-			template.disabledServers.length > 0
-		) {
-			const disabled = new Set(targetConfig.disabledServers ?? []);
-			for (const serverName of template.disabledServers)
-				disabled.add(serverName);
-			targetConfig.disabledServers = Array.from(disabled).sort();
+		if (template.disabledServers?.length) {
+			throw new Error(
+				`Profile ${profileName} uses adapter-only disabledServers; use enabled: false on each server instead.`,
+			);
 		}
 	}
 
