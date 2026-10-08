@@ -42,6 +42,11 @@ type BeforeAgentStartEvent = {
 	systemPrompt?: string;
 };
 
+type AgentSettledEvent = {
+	/** Pi 1.1.0+: true when the run ended because it was aborted, for example with Escape. */
+	aborted?: boolean;
+};
+
 type BeforeAgentStartMessage = {
 	customType: "hkx-hookify";
 	content: string;
@@ -953,8 +958,11 @@ const extension: ExtensionFactory = (pi) => {
 		return out;
 	});
 
-	pi.on("agent_settled", async (_event, ctx) => {
+	pi.on("agent_settled", async (event, ctx) => {
 		if (!isEnabled()) return undefined;
+		// A cancelled run is not final settlement: skip soft stop rules so an
+		// aborted turn (for example Escape) does not report a session-end guardrail.
+		if ((event as AgentSettledEvent).aborted === true) return undefined;
 		const rules = refresh(ctx as ExtensionContext);
 		if (rules.length === 0) return undefined;
 		const result = evaluateStop(rules, { enabled: true });

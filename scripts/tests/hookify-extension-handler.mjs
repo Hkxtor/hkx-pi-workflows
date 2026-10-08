@@ -95,10 +95,22 @@ const result = await promptHandler(
 );
 const promptNotifications = [...notifications];
 notifications.length = 0;
-const stopResult = await settledHandler({ type: "agent_settled" }, ctx);
+const stopResult = await settledHandler({ type: "agent_settled", aborted: false }, ctx);
 const stopNotifications = [...notifications];
+notifications.length = 0;
+const abortedStopResult = await settledHandler({ type: "agent_settled", aborted: true }, ctx);
+const abortedStopNotifications = [...notifications];
 
-console.log(JSON.stringify({ result, promptNotifications, stopResult, stopNotifications }));
+console.log(
+  JSON.stringify({
+    result,
+    promptNotifications,
+    stopResult,
+    stopNotifications,
+    abortedStopResult,
+    abortedStopNotifications,
+  }),
+);
 `;
 
 	const child = spawnSync(
@@ -187,6 +199,15 @@ console.log(JSON.stringify({ result, promptNotifications, stopResult, stopNotifi
 						"Final settlement reached.",
 					),
 				JSON.stringify(data.stopNotifications),
+			);
+			check(
+				"aborted settlement skips stop rules",
+				data.abortedStopResult === undefined &&
+					data.abortedStopNotifications?.length === 0,
+				JSON.stringify({
+					abortedStopResult: data.abortedStopResult,
+					abortedStopNotifications: data.abortedStopNotifications,
+				}),
 			);
 		}
 	}
