@@ -21,12 +21,12 @@
   "historian": {
     "pi": {
       "model": {
-        "model": "meme/grok-4.6",
+        "model": "meme/grok-4.7",
         "thinking_level": "medium"
       },
       "fallback_models": [
         {
-          "model": "meme/deepseek-v4-flash"
+          "model": "meme/deepseek-v4.1-flash"
         }
       ]
     }
