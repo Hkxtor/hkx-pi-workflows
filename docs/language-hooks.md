@@ -103,7 +103,7 @@ Current behavior:
 - Loads project rules from `.pi/hookify.*.local.md` and global rules from `~/.pi/agent/hookify/`.
 - Path B installs the package-managed PowerShell parse-floor guard globally from `configs/hkx-hookify/`; reinstall refreshes its content, preserves `enabled`, and backs up a changed destination.
 - On `tool_call`: matches `bash` / `file` (edit, write, ast_grep_replace) rules; `warn` → `ui.notify` and allow; `block` → `{ block: true, reason }`.
-- On `before_agent_start`: soft `prompt` rules (notify + system/message inject; cannot hard-block submit).
+- On `before_agent_start`: soft `prompt` rules (notify + system/message inject; cannot hard-block submit). Evaluated only for user-submitted runs; a Pi 1.2.0 idle `sendMessage(..., { triggerTurn: true })` run reports `messageType: "custom"` with no `prompt`, and is skipped rather than matched against an empty prompt.
 - On `agent_settled`: soft `stop` rules (notify only), after retries, auto-compaction recovery, and queued continuations have finished. A run that was cancelled is not final settlement: when Pi reports `aborted` (for example after Escape), stop rules are skipped.
 - Reloads when rule path mtimes change; skips invalid files with a one-shot warning.
 - Supports `pattern` or AND `conditions[]` (operators: regex_match, contains, equals, not_contains, starts_with, ends_with).

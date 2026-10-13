@@ -5,6 +5,11 @@
  * before_agent_start / agent_settled. Complements GateGuard's destructive-command
  * hard gate with user-defined pattern rules.
  *
+ * `event: prompt` rules are evaluated only for user-submitted runs. Pi 1.2.0
+ * fires `before_agent_start` for idle `sendMessage(..., { triggerTurn: true })`
+ * runs as well (`messageType: "custom"`, no `prompt`), and those runs carry an
+ * extension-injected message rather than user input, so they are skipped.
+ *
  * Rule locations:
  * - project: `.pi/hookify.{name}.local.md` (under cwd)
  * - global:  `~/.pi/agent/hookify/hookify.{name}.md`
@@ -38,7 +43,16 @@ type ToolCallBlockResult = {
 };
 
 type BeforeAgentStartEvent = {
+	/** Pi 1.2.0+: "user" for a submitted/RPC/sendUserMessage run, "custom" for an
+	 * idle `sendMessage(..., { triggerTurn: true })` run. Absent on older Pi. */
+	messageType?: "user" | "custom";
 	prompt?: string;
+	/** Present instead of `prompt` when `messageType` is "custom". */
+	message?: {
+		customType?: string;
+		content?: unknown;
+		display?: boolean;
+	};
 	systemPrompt?: string;
 };
 
@@ -918,6 +932,15 @@ const extension: ExtensionFactory = (pi) => {
 	pi.on("before_agent_start", async (event, ctx) => {
 		if (!isEnabled()) return undefined;
 		const e = event as BeforeAgentStartEvent;
+		// Pi 1.2.0 fires this event for runs started by
+		// `pi.sendMessage(..., { triggerTurn: true })` too, reporting them as
+		// `messageType: "custom"` with no `prompt`. Such a run carries an
+		// extension-injected message, not user input, so `event: prompt`
+		// guardrails must not be evaluated against it: an empty `prompt` would
+		// silently miss real user text and could mis-fire a pattern that matches
+		// the empty string, and the injected reminder is meant for a human
+		// submission. Older Pi (no `messageType`) keeps the legacy behavior.
+		if (e.messageType === "custom") return undefined;
 		const rules = refresh(ctx as ExtensionContext);
 		if (rules.length === 0) return undefined;
 

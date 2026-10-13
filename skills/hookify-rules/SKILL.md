@@ -97,6 +97,12 @@ You are adding an API key to a .env file. Ensure it is gitignored.
 | `stop` | `agent_settled` | **no** — notify only, after automatic retries/continuations |
 | `all` | union of the above | per-phase |
 
+`prompt` rules run only for **user-submitted** runs (typed prompt, RPC prompt,
+`sendUserMessage`). Pi 1.2.0 also fires `before_agent_start` for idle
+`sendMessage(..., { triggerTurn: true })` runs, where the run starts from an
+extension-injected message instead of a user prompt; Hookify skips those, so a
+`prompt` rule never matches the empty prompt of such a run.
+
 `bash` is the **shell surface**, not literally the tool named `bash`: on win32 pi exposes
 `powershell` instead of the native `bash` tool, and both names map to the same
 `event: bash` rules. A rule keyed to `bash` therefore fires on Windows too.

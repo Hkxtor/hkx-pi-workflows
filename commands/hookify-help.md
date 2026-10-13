@@ -48,7 +48,7 @@ Or `conditions:` list with `field` / `operator` / `pattern` (AND).
 | --- | --- | --- |
 | `bash` | Bash tool command string | yes |
 | `file` | edit / write / ast_grep_replace path & content | yes |
-| `prompt` | User prompt at turn start | **no** (inject + notify) |
+| `prompt` | User prompt at turn start (user-submitted runs only) | **no** (inject + notify) |
 | `stop` | Agent run end | **no** (notify only) |
 | `all` | Union | per phase |
 
@@ -56,6 +56,8 @@ Or `conditions:` list with `field` / `operator` / `pattern` (AND).
 
 - **`warn` (default)** — `ui.notify`, tool still runs
 - **`block`** — tool_call returns `{ block: true, reason }` (bash/file only)
+- Guardrails `event: prompt` apply to user-submitted runs only; a run started by
+  `sendMessage(..., { triggerTurn: true })` is skipped.
 
 ## Session switch
 
