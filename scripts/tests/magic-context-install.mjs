@@ -81,13 +81,14 @@ if (templateObj) {
 	const expected = {
 		enabled: true,
 		auto_update: true,
+		fail_closed_blocking: true,
+		allow_home_project: true,
 		language: "zh",
 		cache_ttl: "5m",
 		execute_threshold_percentage: 65,
 		execute_threshold_tokens: { default: 200000 },
 		history_budget_percentage: 0.18,
 		compaction: { enabled: true },
-		smart_drops: false,
 		caveman_text_compression: { enabled: false },
 		dreamer: { disable: true },
 		historian: {
@@ -130,6 +131,13 @@ if (templateObj) {
 	check(
 		"template omits protected_tokens (derive default floor)",
 		!Object.hasOwn(templateObj, "protected_tokens"),
+		JSON.stringify(Object.keys(templateObj)),
+	);
+	// smart_drops is DEPRECATED upstream (v0.49.x) and ignored: content-aware
+	// supersession reclaim is always on. The managed overlay must not pin it.
+	check(
+		"template omits deprecated smart_drops",
+		!Object.hasOwn(templateObj, "smart_drops"),
 		JSON.stringify(Object.keys(templateObj)),
 	);
 }
@@ -206,6 +214,7 @@ function xdgDest(env) {
 		compaction: { enabled: false },
 		dreamer: { disable: false },
 		sidekick: { disable: false },
+		smart_drops: true,
 		memory: { enabled: true },
 		todowrite: { enabled: true },
 		embedding: { provider: "local" },
@@ -264,6 +273,11 @@ function xdgDest(env) {
 		"B: stale sidekick key is dropped",
 		after.sidekick === undefined,
 		JSON.stringify(after.sidekick),
+	);
+	check(
+		"B: stale smart_drops key is dropped",
+		after.smart_drops === undefined,
+		JSON.stringify(after.smart_drops),
 	);
 	// The operator historian pick IS carried into the managed overlay: the
 	// template does not version it, so install preserves it verbatim.

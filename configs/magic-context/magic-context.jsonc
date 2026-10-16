@@ -1,6 +1,8 @@
 {
   "enabled": true,
   "auto_update": true,
+  "fail_closed_blocking": true,
+  "allow_home_project": true,
   "language": "zh",
   "cache_ttl": "5m",
   "execute_threshold_percentage": 65,
@@ -11,7 +13,6 @@
   "compaction": {
     "enabled": true
   },
-  "smart_drops": false,
   "caveman_text_compression": {
     "enabled": false
   },

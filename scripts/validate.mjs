@@ -1007,7 +1007,9 @@ async function main() {
 			assert(!("protected_tags" in mc), 'protected_tags is deprecated and must be absent; use protected_tokens if a token floor is needed');
 			assert(!("protected_tokens" in mc), "protected_tokens must be omitted so Magic Context derives the default token floor");
 			assert(mc.compaction?.enabled === true, "compaction.enabled must be true (Magic Context owns compaction)");
-			assert(mc.smart_drops === false, "smart_drops must be false");
+			assert(!("smart_drops" in mc), "smart_drops is deprecated upstream (ignored; content-aware supersession reclaim is always on) and must be absent");
+			assert(mc.fail_closed_blocking === true, "fail_closed_blocking must be true (loud inoperability gate; never silently degrade to native compaction)");
+			assert(mc.allow_home_project === true, "allow_home_project must be true (home sessions get their own project identity)");
 			assert(mc.caveman_text_compression?.enabled === false, "caveman_text_compression.enabled must be false");
 			assert(mc.dreamer?.disable === true, "dreamer.disable must be true");
 			assert(mc.memory?.enabled === false, "memory.enabled must be false");
