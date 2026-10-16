@@ -34,5 +34,8 @@
   },
   "codemode": {
     "mode": "on"
+  },
+  "rewind": {
+    "silentCheckpoints": true
   }
 }

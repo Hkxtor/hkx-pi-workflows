@@ -1092,6 +1092,18 @@ async function main() {
 					'configs/agent-settings.json: codemode.mode must be "on" (managed default)',
 				);
 			}
+			// Managed rewind default: pi-rewind-hook's entry point is the session
+			// tree and branching (/fork), so checkpoint footer/status noise stays
+			// off. Permissive check: only validates the value when the key is
+			// present; removing it later is allowed.
+			if (
+				agentSettings.rewind !== undefined &&
+				agentSettings.rewind?.silentCheckpoints !== true
+			) {
+				errors.push(
+					"configs/agent-settings.json: rewind.silentCheckpoints must be true (managed default)",
+				);
+			}
 			// Complementary compaction ownership: when @cortexkit/pi-magic-context
 			// is in the managed package list, Magic Context owns compaction and
 			// pi native compaction must be disabled here. The two halves are
