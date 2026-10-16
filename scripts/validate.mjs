@@ -40,6 +40,7 @@ const requiredFiles = [
 	"configs/rpiv-advisor/advisor.json",
 	"configs/pi-tool-display/config.json",
 	"configs/pi-unipi-notify/config.json",
+	"configs/pi-goal/pi-goal.json",
 	"configs/magic-context/magic-context.jsonc",
 	"configs/agent-settings.json",
 	"configs/keybindings.json",
@@ -71,6 +72,8 @@ const requiredFiles = [
 	"scripts/tests/rpiv-advisor-seed.mjs",
 	// pi-unipi-notify seed (Path B; never overwrite runtime panel edits).
 	"scripts/tests/pi-unipi-notify-seed.mjs",
+	// pi-goal seed (Path B; never overwrite /goal settings rewrites).
+	"scripts/tests/pi-goal-seed.mjs",
 	// magic-context authoritative managed overlay (Path B; backup + overwrite).
 	"scripts/tests/magic-context-install.mjs",
 	// GateGuard, custom-header compatibility, and artifact auto-reply suites.
@@ -865,6 +868,52 @@ async function main() {
 		}
 	}
 
+	// Portable @narumitw/pi-goal seed (the /goal settings UI rewrites it at
+	// runtime). Pinned contract: managed-run RPC off, and the documented
+	// continuationLimits so an upstream default flip cannot silently widen
+	// automatic work.
+	const piGoalConfigPath = path.join(
+		root,
+		"configs",
+		"pi-goal",
+		"pi-goal.json",
+	);
+	try {
+		const piGoalConfig = JSON.parse(
+			await fs.readFile(piGoalConfigPath, "utf8"),
+		);
+		const piGoalTemplatePath = "configs/pi-goal/pi-goal.json";
+		if (
+			!piGoalConfig ||
+			typeof piGoalConfig !== "object" ||
+			Array.isArray(piGoalConfig)
+		) {
+			errors.push(`${piGoalTemplatePath}: must be a JSON object`);
+		} else {
+			if (piGoalConfig.rpc?.enabled !== false) {
+				errors.push(
+					`${piGoalTemplatePath}: rpc.enabled must be false (the managed-run RPC has no authentication layer)`,
+				);
+			}
+			if (piGoalConfig.continuationLimits?.automaticTurns !== 25) {
+				errors.push(
+					`${piGoalTemplatePath}: continuationLimits.automaticTurns must be 25 (managed default)`,
+				);
+			}
+			if (piGoalConfig.continuationLimits?.noProgressTurns !== 3) {
+				errors.push(
+					`${piGoalTemplatePath}: continuationLimits.noProgressTurns must be 3 (managed default)`,
+				);
+			}
+		}
+	} catch (err) {
+		if (err && err.code !== "ENOENT") {
+			errors.push(
+				`configs/pi-goal/pi-goal.json: invalid JSON: ${err.message}`,
+			);
+		}
+	}
+
 	// Authoritative managed overlay for @cortexkit/pi-magic-context.
 	// Magic Context owns compaction; pi native compaction is disabled in
 	// configs/agent-settings.json. Validate the full requested contract
@@ -1065,6 +1114,17 @@ async function main() {
 			if (!hasUnipiNotify) {
 				errors.push(
 					'configs/agent-settings.json: packages must include "npm:@pi-unipi/notify" so the one-click install manages the notify extension',
+				);
+			}
+			// Complementary install ownership for the pi-goal seed: same rule as
+			// the notify seed — the overlay targets a third-party extension, so
+			// the managed package list must install it.
+			const hasPiGoal = packagesList.some((p) =>
+				typeof p === "string" ? p.includes("@narumitw/pi-goal") : false,
+			);
+			if (!hasPiGoal) {
+				errors.push(
+					'configs/agent-settings.json: packages must include "npm:@narumitw/pi-goal" so the one-click install manages the goal extension',
 				);
 			}
 			if (!hasMagicContext) {

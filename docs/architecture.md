@@ -189,6 +189,11 @@ Current overlays:
   - install target: `~/.unipi/config/notify/config.json` (the path `@pi-unipi/core` resolves from `NOTIFY_DIRS.CONFIG`)
   - install behavior: **seed if missing only** — the extension's `/unipi:notify-settings` overlay and `/unipi:notify-event` command rewrite the file at runtime, so a symlink or overwrite would clobber operator choices. The seed is copied (never symlinked) with mode `0600`, because gotify/telegram credentials land in that file once those platforms are enabled
   - pinned intent: native desktop notifications only — `defaultPlatforms: ["native"]`, `native.suppressWhenFocused: true`, four enabled events (`agent_end`, `agent_settled`, `ask_user_prompt`, `permission_request`), the remaining five events plus gotify/telegram/recap explicitly off, and `renotify` explicitly disabled (`intervalMs: 120000`, `maxRepeats: 3`). All nine upstream event keys and the full re-notification block are pinned because `loadConfig()` merges the file over the upstream defaults, so an omitted value inherits upstream behavior (three event defaults and re-notification default to on). `ntfy` is not part of this schema: it lives in the separate `~/.unipi/config/notify/ntfy.json` and stays off unless the operator configures it
+- `pi-goal` (@narumitw/pi-goal)
+  - source: `configs/pi-goal/pi-goal.json`
+  - install target: `~/.pi/agent/pi-goal.json`
+  - install behavior: **seed if missing only** — the extension's `/goal` settings UI rewrites the file at runtime, so a symlink or overwrite would clobber operator choices
+  - pinned intent: managed-run RPC explicitly off (`rpc.enabled: false`, the RPC has no authentication layer) and the documented `continuationLimits` defaults (`automaticTurns: 25`, `noProgressTurns: 3`), so an upstream default flip cannot silently widen automatic work
 - `magic-context` (@cortexkit/pi-magic-context)
   - source: `configs/magic-context/magic-context.jsonc`
   - install target: `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (or `~/.config/cortexkit/magic-context.jsonc`)
@@ -310,6 +315,7 @@ Important mappings:
 - then: `configs/rpiv-advisor/advisor.json` → seed `~/.config/rpiv-advisor/advisor.json` if missing (never overwrite)
 - then: `configs/pi-tool-display/config.json` → seed `~/.pi/agent/extensions/pi-tool-display/config.json` if missing (never overwrite; `/tool-display` UI rewrites it at runtime)
 - then: `configs/pi-unipi-notify/config.json` → seed `~/.unipi/config/notify/config.json` if missing (never overwrite; the `/unipi:notify-settings` overlay and `/unipi:notify-event` rewrite it at runtime; copied `0600`, never symlinked)
+- then: `configs/pi-goal/pi-goal.json` → seed `~/.pi/agent/pi-goal.json` if missing (never overwrite; the `/goal` settings UI rewrites it at runtime; pins `rpc.enabled: false` and the documented `continuationLimits` defaults)
 - then: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (authoritative managed overlay: backup previous destination, then write on every install; `historian` seed-if-missing (template default when absent, operator value preserved); managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger); never symlink)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
 - `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md`

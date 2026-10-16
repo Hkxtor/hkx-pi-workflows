@@ -64,6 +64,13 @@
  *                               /unipi:notify-event command rewrite it, and the
  *                               file later holds gotify/telegram credentials,
  *                               so it is copied 0600 and never symlinked)
+ * - configs/pi-goal/pi-goal.json
+ *                            -> ~/.pi/agent/pi-goal.json
+ *                              (after package update; seed-if-missing only: the
+ *                               /goal settings UI rewrites it at runtime; pins
+ *                               rpc.enabled false and the documented default
+ *                               continuationLimits so an upstream default flip
+ *                               cannot silently widen automatic work)
  * - configs/magic-context/magic-context.jsonc
  *                            -> ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc
  *                              (or ~/.config/cortexkit/magic-context.jsonc)
@@ -1226,6 +1233,51 @@ async function installPiUnipiNotifyConfig() {
 }
 
 /**
+ * Seed the portable @narumitw/pi-goal config template when the operator has no
+ * local file yet.
+ * Never overwrite ~/.pi/agent/pi-goal.json — the extension's /goal settings UI
+ * rewrites that file at runtime, so an overwrite would clobber operator
+ * choices. The versioned values are the documented defaults, pinned so an
+ * upstream default change cannot silently widen automatic work:
+ * - rpc.enabled false (the managed-run RPC has no authentication layer)
+ * - continuationLimits.automaticTurns 25 / noProgressTurns 3
+ *
+ * `options.agentDir` / `options.sourcePath` let tests drive the seed against a
+ * temp agent dir without touching the real ~/.pi/agent.
+ */
+async function installPiGoalConfig(options = {}) {
+	const src =
+		options.sourcePath ??
+		path.join(repoRoot, "configs", "pi-goal", "pi-goal.json");
+	if (!(await pathExists(src))) {
+		console.warn("Skip pi-goal config: source missing at", src);
+		return false;
+	}
+
+	const agentDir = options.agentDir ?? piHome;
+	const dest = path.join(agentDir, "pi-goal.json");
+	if (await pathExists(dest)) {
+		console.log(`Keep existing pi-goal config (not overwriting): ${dest}`);
+		return true;
+	}
+
+	await ensureDir(agentDir);
+	const body = await fs.readFile(src, "utf-8");
+	// Validate JSON before writing so we never seed a broken template.
+	try {
+		JSON.parse(body);
+	} catch (err) {
+		console.error(`pi-goal template is invalid JSON (${src}): ${err.message}`);
+		return false;
+	}
+	await fs.writeFile(dest, body.endsWith("\n") ? body : `${body}\n`, {
+		encoding: "utf-8",
+	});
+	console.log(`Seeded pi-goal config: ${dest}`);
+	return true;
+}
+
+/**
  * Top-level keys seeded only when the destination lacks them. The template
  * carries a working default (so a cold install gets a usable historian) while
  * an existing operator value wins verbatim, so `npm run install-global` cannot
@@ -1662,6 +1714,10 @@ async function main() {
 	const unipiNotifyConfigOk = await installPiUnipiNotifyConfig();
 	if (!unipiNotifyConfigOk) failed.push("pi-unipi-notify config");
 
+	// Seed pi-goal config (the /goal settings UI rewrites it at runtime).
+	const piGoalConfigOk = await installPiGoalConfig();
+	if (!piGoalConfigOk) failed.push("pi-goal config");
+
 	// Authoritative managed overlay for @cortexkit/pi-magic-context.
 	// Magic Context owns compaction; pi native compaction is disabled in
 	// configs/agent-settings.json. Copy on every install (backup first).
@@ -1702,6 +1758,9 @@ async function main() {
 		"pi-unipi-notify: configs/pi-unipi-notify/config.json → seed ~/.unipi/config/notify/config.json (if missing; 0600)",
 	);
 	console.log(
+		"pi-goal: configs/pi-goal/pi-goal.json → seed ~/.pi/agent/pi-goal.json (if missing)",
+	);
+	console.log(
 		"magic-context: configs/magic-context/magic-context.jsonc → ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc (authoritative; backup previous)",
 	);
 }
@@ -1723,5 +1782,6 @@ if (isMain) {
 export {
 	installHookifyRules,
 	installMagicContextConfig,
+	installPiGoalConfig,
 	installPiUnipiNotifyConfig,
 };
