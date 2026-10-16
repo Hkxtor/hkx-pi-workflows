@@ -398,7 +398,7 @@ Path B versions a compact editor-keybinding overlay:
 
 - source: `configs/keybindings.json`
 - install: managed actions replace their prior values in `~/.pi/agent/keybindings.json`; unrelated operator actions remain
-- conflict policy: `Ctrl+Shift+G` stays available to `pi-until-done`; transcript reverse search remains on `Shift+Enter`
+- conflict policy: `Ctrl+Shift+G` stays unclaimed by managed bindings; transcript reverse search remains on `Shift+Enter`
 - safety: invalid source or destination JSON fails the keybindings install without rewriting the destination
 - active sessions apply changes after `/reload`
 

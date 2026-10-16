@@ -217,7 +217,7 @@ Portable editor bindings are a Path B managed overlay:
 - managed actions: package values replace prior values for those actions
 - operator actions absent from the source are preserved
 - invalid source or destination JSON is refused rather than overwritten
-- `tui.altScreen.searchPrevious` keeps `Shift+Enter` and releases `Ctrl+Shift+G` for `pi-until-done`
+- `tui.altScreen.searchPrevious` keeps `Shift+Enter` and leaves `Ctrl+Shift+G` unclaimed (free for operator extensions)
 
 ## Context Layering
 

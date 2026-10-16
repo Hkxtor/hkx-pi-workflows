@@ -1,7 +1,7 @@
 {
   "packages": [
     "npm:@gotgenes/pi-permission-system",
-    "npm:pi-rewind",
+    "npm:pi-rewind-hook",
     "npm:pi-wtf",
     "npm:@ff-labs/pi-fff",
     "npm:pi-web-access",
@@ -11,7 +11,7 @@
     "npm:@juicesharp/rpiv-advisor",
     "npm:@juicesharp/rpiv-i18n",
     "npm:@narumitw/pi-plan-mode",
-    "npm:pi-until-done",
+    "npm:@narumitw/pi-goal",
     "npm:context-mode",
     "npm:pi-subagents",
     "npm:@narumitw/pi-lsp",

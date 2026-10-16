@@ -127,7 +127,7 @@ pi -e .
 | 受管 Hookify 规则 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` → `~/.pi/agent/hookify/`（包管理内容；保留操作者 `enabled`；变更前备份；不删除其他规则） |
 | extensions | `~/.pi/agent/extensions/` |
 | agent settings | `configs/agent-settings.json` → 深合并进 `~/.pi/agent/settings.json`（`packages`、可移植默认值；保留机器本地键；**不**设置 `theme`） |
-| keybindings | `configs/keybindings.json` → 合并进 `~/.pi/agent/keybindings.json`（11 个受管动作；保留其他操作者动作；释放 `Ctrl+Shift+G` 给 `pi-until-done`） |
+| keybindings | `configs/keybindings.json` → 合并进 `~/.pi/agent/keybindings.json`（11 个受管动作；保留其他操作者动作；`Ctrl+Shift+G` 不被受管键位占用，留给操作者扩展） |
 | pi packages | settings 合并后：`pi update --extensions` |
 | pi-lsp 路由配置 | 包更新后：`configs/pi-lsp/pi-lsp.json` → `~/.pi/agent/pi-lsp.json`（受管 TypeScript/JavaScript、Python、Rust、Go 路由） |
 | permission 配置覆盖层 | 包更新后：`configs/pi-permission-system/config.json` → `~/.pi/agent/extensions/pi-permission-system/config.json`（目录不存在时会创建） |

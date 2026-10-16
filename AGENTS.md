@@ -107,7 +107,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 - Source: `configs/keybindings.json`.
 - Path B merges managed actions into `~/.pi/agent/keybindings.json`; managed actions use the package value while unrelated operator actions are preserved.
-- Keep `ctrl+shift+g` free for `pi-until-done`; transcript reverse search remains available through `shift+enter`.
+- Keep `ctrl+shift+g` unclaimed by managed bindings; transcript reverse search remains available through `shift+enter`.
 - Reject invalid source or destination JSON rather than replacing an operator file.
 - Path A cannot install this overlay; do not add it to the official `pi` manifest.
 

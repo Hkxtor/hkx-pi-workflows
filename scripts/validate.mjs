@@ -511,7 +511,7 @@ async function main() {
 				}
 				if (bindings.includes("ctrl+shift+g")) {
 					errors.push(
-						`configs/keybindings.json: ${action} must not claim ctrl+shift+g (reserved for pi-until-done)`,
+						`configs/keybindings.json: ${action} must not claim ctrl+shift+g (kept unclaimed for operator extensions)`,
 					);
 				}
 			}
