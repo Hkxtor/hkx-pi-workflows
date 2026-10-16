@@ -747,7 +747,9 @@ async function main() {
 
 	// Portable @pi-unipi/notify seed (the extension's settings overlay rewrites
 	// it at runtime). Validate the exact operator-pinned contract: native desktop
-	// notifications only, exactly four enabled events, every other event pinned
+	// notifications only, exactly three enabled events (`agent_settled`,
+	// `ask_user_prompt`, `permission_request`), `agent_end` pinned off too so
+	// turn-end completion noise stays silent, every other event pinned
 	// off so an upstream default flip cannot silently enable one.
 	const unipiNotifyConfigPath = path.join(
 		root,
@@ -802,12 +804,12 @@ async function main() {
 				"renotify must pin exactly enabled, intervalMs, and maxRepeats",
 			);
 			const enabledEvents = [
-				"agent_end",
 				"agent_settled",
 				"ask_user_prompt",
 				"permission_request",
 			];
 			const disabledEvents = [
+				"agent_end",
 				"workflow_end",
 				"ralph_loop_end",
 				"mcp_server_error",

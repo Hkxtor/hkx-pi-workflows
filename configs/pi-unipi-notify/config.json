@@ -14,7 +14,7 @@
       "platforms": []
     },
     "agent_end": {
-      "enabled": true,
+      "enabled": false,
       "platforms": []
     },
     "agent_settled": {

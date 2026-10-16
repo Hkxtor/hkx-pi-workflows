@@ -61,12 +61,12 @@ check(
 const templateRaw = readFileSync(srcTemplate, "utf8");
 const templateObj = JSON.parse(templateRaw);
 const ENABLED_EVENTS = [
-	"agent_end",
 	"agent_settled",
 	"ask_user_prompt",
 	"permission_request",
 ];
 const DISABLED_EVENTS = [
+	"agent_end",
 	"workflow_end",
 	"ralph_loop_end",
 	"mcp_server_error",
