@@ -455,6 +455,8 @@ const WINDOWS_AGENT_SETTINGS_DEFAULTS = {
 		"grep",
 		"find",
 		"ls",
+		"codemode",
+		"tool_search",
 	],
 };
 

@@ -1019,6 +1019,7 @@ async function main() {
 			// Disallow machine-local keys that should never be versioned here
 			for (const banned of [
 				"shellPath",
+				"defaultTools",
 				"lastChangelogVersion",
 				"defaultProvider",
 				"defaultModel",
@@ -1029,6 +1030,18 @@ async function main() {
 						`configs/agent-settings.json: do not version machine-local key "${banned}"`,
 					);
 				}
+			}
+			// Managed codemode default: the overlay pins mode "on" so large tool
+			// sets stay out of the model's direct tool declarations (deferred
+			// exposure via the codemode tool). Permissive check: only validates
+			// the mode when the key is present; removing it later is allowed.
+			if (
+				agentSettings.codemode !== undefined &&
+				agentSettings.codemode?.mode !== "on"
+			) {
+				errors.push(
+					'configs/agent-settings.json: codemode.mode must be "on" (managed default)',
+				);
 			}
 			// Complementary compaction ownership: when @cortexkit/pi-magic-context
 			// is in the managed package list, Magic Context owns compaction and

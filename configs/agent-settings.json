@@ -31,5 +31,8 @@
   "markdown": {
     "mermaid": "final",
     "codeBlockIndent": "  "
+  },
+  "codemode": {
+    "mode": "on"
   }
 }

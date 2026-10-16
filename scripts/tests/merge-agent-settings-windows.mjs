@@ -35,7 +35,7 @@ const fail = [];
 
 const DEFAULTS = {
 	shellPath: "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-	defaultTools: ["read", "powershell", "edit", "write", "grep", "find", "ls"],
+	defaultTools: ["read", "powershell", "edit", "write", "grep", "find", "ls", "codemode", "tool_search"],
 };
 
 function isPlainObjectLocal(value) {
