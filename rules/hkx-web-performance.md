@@ -1,5 +1,9 @@
 ---
 description: Pi-native web performance guidance for Core Web Vitals, budgets, loading, media, fonts, motion, and verification.
+globs:
+  - "**/*.{tsx,jsx,vue,svelte,astro}"
+  - "**/*.{css,scss,sass,less,html,htm}"
+  - "**/{tailwind,vite,next,postcss,astro,svelte,nuxt}.config.{ts,js,mjs,cjs}"
 ---
 
 # HKX Web Performance

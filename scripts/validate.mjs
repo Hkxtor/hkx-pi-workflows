@@ -85,9 +85,14 @@ const requiredFiles = [
 	"scripts/tests/hookify-install.mjs",
 	// Shell command parse preflight (win32 fail-closed floor guard) suite.
 	"scripts/tests/shell-command-preflight.mjs",
+	// Rules layer: frontmatter/glob/condition parsing + event-level injection and
+	// promotion. Two suites on purpose — the pure layer and the handler contract.
+	"scripts/tests/rules-injection.mjs",
+	"scripts/tests/rules-injection-handler.mjs",
 	// Extensions (Path A + B).
 	"extensions/hkx-gateguard.ts",
 	"extensions/hkx-hookify.ts",
+	"extensions/hkx-rules.ts",
 	"extensions/hkx-subagent-supervisor-auto-reply.ts",
 	"extensions/hkx-language-quality.ts",
 	"extensions/hkx-working-indicator.ts",

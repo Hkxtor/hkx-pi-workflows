@@ -1,5 +1,8 @@
 ---
 description: Prompt-time web UI design-quality guidance for Pi sessions.
+globs:
+  - "**/*.{tsx,jsx,vue,svelte,astro}"
+  - "**/*.{css,scss,sass,less,html,htm}"
 ---
 
 # HKX Web Design Quality
