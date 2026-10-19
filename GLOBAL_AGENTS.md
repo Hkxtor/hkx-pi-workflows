@@ -19,7 +19,7 @@ Prefer local repository evidence and tool output over assumptions. Keep changes 
 ## Default Development Workflow
 
 1. Clarify the requested outcome, constraints, and acceptance criteria.
-2. Search first with `fffind` / `ffgrep` (native `find` / `grep` as fallback), then read only the files and symbols that matter.
+2. Search first — but route it. When the question is exploratory ("where is X implemented", "how does X work", "what calls X", or the target file is not yet known), delegate it instead of searching here — see Delegation Policy. Search in the parent with `fffind` / `ffgrep` (native `find` / `grep` as fallback) only when the target is already known, then read only the files and symbols that matter.
 3. Before editing, understand the surrounding implementation, callers, tests, and local conventions.
 4. Make the smallest coherent change that solves the task.
 5. Validate with the narrowest relevant checks first, then broader checks if the change warrants it.
@@ -29,6 +29,7 @@ Prefer local repository evidence and tool output over assumptions. Keep changes 
 
 ### Discovery and reading
 
+- For exploratory investigation, delegate before searching — see Delegation Policy.
 - Use `fffind` for path discovery; native `find` is available as fallback.
 - Use `ffgrep` for content search; native `grep` is available as fallback.
 - Use `fff-multi-grep` when several literal patterns matter at once.
@@ -83,6 +84,29 @@ When helper agents and chains are installed, use them as accelerators rather tha
 - Use reviewer agents for findings and implementation agents for edits.
 - Keep review steps read-only when possible.
 - Keep a single writer for the active worktree.
+- For exploratory code investigation, prefer delegation over reading broadly in the parent — see Delegation Policy.
+
+## Delegation Policy
+
+One case of delegation is **pre-authorized** — codebase investigation. This section is an "applicable user/project instruction" for the `subagent` tool's operator-authorization gate, so it needs no per-turn instruction from the operator.
+
+**Delegate these questions; do not answer them by searching in the parent.** When the operator asks, or the task requires:
+
+- "where is X implemented" / "which file, which line"
+- "how does X work" / "what is the call chain"
+- "what calls X" / "what does X depend on"
+- a wide search where the target module or file is not yet known
+- mapping architecture or dependencies before new work
+
+…send it to a read-only research agent and keep only the conclusion. Use the installed research specialist (`hkx.code-explorer` where that pack is present; otherwise a builtin such as `researcher` or `context-builder`). Do **not** run `ffgrep` / `fffind` / `read` to assemble that answer here — that context cost is exactly what this policy exists to avoid.
+
+**Answer directly here** — a round trip costs more than the read:
+
+- a known file path, or a location the operator already supplied
+- a single symbol, string, or error-message lookup
+- reading or re-reading a file you are about to edit
+
+Shape the delegation as a self-contained question plus the output you want back (conclusion, key files with line ranges, open questions), and read the conclusion rather than the raw transcript — asking a subagent to paste whole files back defeats the isolation. This authorization covers read-only investigation only: it never authorizes writer agents, review fan-out, or children spawning children.
 
 ## Delegation Completion Contract
 
@@ -90,7 +114,7 @@ Applies to every agent at every depth (parent, child, grandchild):
 
 1. **Your final message IS the deliverable.** Never end a turn with "waiting for background agents" — a spawned task is not a completed task. Ending while children still run orphans their results.
 2. **If you delegate, you own collection.** Wait for results, integrate them, then return. Fire-and-forget delegation is forbidden.
-3. **Decompose only when the work cannot fit in one context.** Do not re-delegate a task already sized for a single agent — depth is an outcome, not a plan.
+3. **Do not decompose for depth.** Split work only when it cannot fit in one context — context isolation is a reason to delegate (see Delegation Policy); depth, ceremony, or the availability of a specialist is not. Do not re-delegate a task already sized for a single agent.
 
 Rationale: parallel fan-out without a completion contract produces zombie tasks whose successful child output never reaches the user.
 
