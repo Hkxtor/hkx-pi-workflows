@@ -36,8 +36,8 @@ Manifest shape (authoritative):
 | chains | 14 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 101 | `skills/` | yes | `~/.pi/agent/skills/` |
-| rules | 17 | `rules/` | no | `~/.pi/agent/rules/` |
-| extensions | 6 | `extensions/` | yes | `~/.pi/agent/extensions/` |
+| rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
+| extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
 | pi-lsp route config | 1 | `configs/pi-lsp/pi-lsp.json` | no | `~/.pi/agent/pi-lsp.json` (after package update; managed primary-language routes) |
 | permission config overlay | 1 | `configs/pi-permission-system/config.json` | no | `~/.pi/agent/extensions/pi-permission-system/config.json` (after package update; creates dir if missing) |
@@ -336,8 +336,9 @@ Operator entry that **routes** to these chains (and orch commands) without dupli
 
 ## Extensions
 
-Six first-party extensions are shipped intentionally:
+Seven first-party extensions are shipped intentionally:
 
+- `hkx-rules.ts` — loads `~/.pi/agent/rules/*.md` and injects them into the system prompt: 8 always-on rules as one section (~2,515 tokens), 4 language packs + 2 web rules + 3 edit guardrails activated on first matching file/tool input and delivered once as a message (prompt cache keeps hitting); `/hkx-rules` reports cost, `HKX_RULES=off` disables. Silent when the rules directory is absent (Path A).
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands have no in-session exemption
 - `hkx-hookify.ts` — operator Hookify rules (`warn` notify / `block` tool_call); loads `.pi/hookify.*.local.md` + `~/.pi/agent/hookify/`; `HKX_HOOKIFY=off`. Event `bash` means the **shell surface**, which is `powershell` on win32 where pi replaces the native `bash` tool

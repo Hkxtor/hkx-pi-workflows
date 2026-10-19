@@ -193,6 +193,23 @@ This package no longer ships custom brand themes. Operators keep the pi default 
 
 Does **not** ship custom themes, third-party footer extensions, or OMP powerline / welcome dual-column intro.
 
+## Rules layer (`hkx-rules`)
+
+This is the one extension that makes `rules/` do something. Pi itself never reads `~/.pi/agent/rules/`; without this extension those files are inert text on disk.
+
+| Behavior | Detail |
+| --- | --- |
+| Always-on rules (8) | Injected as a system-prompt section at the start of every run |
+| Gated by path (6) | 4 language packs (`**/*.py`, `**/*.ts`, …) plus 2 web rules: `hkx-web-design-quality` on component/markup/style files (`**/*.{tsx,jsx,vue,svelte,astro}`, `**/*.{css,scss,sass,less,html,htm}`), and `hkx-web-performance` on those **plus** bundler configs (`**/{tailwind,vite,next,postcss,astro,svelte,nuxt}.config.*`) — a `vite.config.ts` carries bundle budgets but is not a design surface, so it activates the performance rule only |
+| Gated by edit (3 edit guardrails) | Activated only when the edited text matches the rule's `condition` inside its `scope` |
+| Cost | **~2,515 tokens** per session for the always-on section (8 rules); a promotion adds its own body once (~273 tokens for the Python pack + its guardrail, ~888 for both web rules) |
+| Inspect | `/hkx-rules` — switch state, counts, token estimate, per-rule cost, what this session activated |
+| Disable | `HKX_RULES=off` (suppresses injection **and** promotion; never writes files) |
+
+A promotion arrives as a **message**, not a prompt rewrite. Measured: the follow-up request produced by `turn_end → { continue: true }` does not re-enter `before_agent_start`, and the system prompt is byte-identical before and after a promotion — so the prompt cache survives. Each rule activates at most once per session.
+
+**Path A installs the extension but not `rules/`.** With no rules directory, the extension loads nothing and stays silent (an empty section is fine; a warning would be noise for a legitimate state). Path B installs both.
+
 ## Common Workflows
 
 ### Review a diff or PR

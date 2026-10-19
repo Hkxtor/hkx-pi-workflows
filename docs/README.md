@@ -104,7 +104,8 @@ Rule vs extension guidance for language and runtime behavior.
 
 Read this when you need to decide:
 
-- whether guidance belongs in `rules/`
+- whether guidance belongs in `rules/`, and which frontmatter shape (`description` only / `globs` / `condition` + `scope`) fits
+- why rules work at all here (`extensions/hkx-rules.ts` injects them; pi does not read the directory) and what they cost (~2,515 tokens always-on, gated rules free until they fire)
 - whether behavior must react to live tool events in `extensions/`
 - how `hkx-language-quality.ts` and `hkx-gateguard.ts` are intended to behave
 - where TUI appearance (statusline / working indicator) is documented (`architecture.md`, `conversion-map.md`, root README appearance section)

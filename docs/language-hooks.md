@@ -2,7 +2,7 @@
 
 This document explains the two lightweight enforcement layers in `hkx-pi-workflows`:
 
-- **rules** — prompt-time language guidance and reminders
+- **rules** — prompt-time language guidance and reminders, loaded by `extensions/hkx-rules.ts` (pi does not read the rules directory on its own)
 - **extensions** — runtime notifications and gatekeeping
 
 Use this document when deciding whether language-specific behavior belongs in a rule or an extension.
@@ -19,6 +19,26 @@ globs:
 ---
 ```
 
+**Pi never reads `~/.pi/agent/rules/` itself.** `extensions/hkx-rules.ts` is the loader: it parses the frontmatter (CRLF-tolerant) and puts rule bodies into the system prompt. Without that extension, a rule file is inert text.
+
+Three frontmatter shapes exist, and the shape decides *when* the model sees the rule:
+
+| Shape | Fields | Delivery |
+| --- | --- | --- |
+| Always-on | `description` only | Prompt section at the start of every run |
+| Path-gated | `description`, `globs` | Once, when the session first touches a matching file |
+| Edit-gated | `description`, `condition`, `scope` | Once, when the tool target is in `scope` **and** the written text matches `condition` |
+
+The gated shapes are what keep the always-on cost down (~2,515 tokens for the 8 always-on rules; the 9 gated rules cost nothing until they fire). A path-gated rule matches against the path the tool touched, using `**` for any depth and `{a,b}` for alternation. An edit-gated rule is the right shape for "don't write X" constraints, because it can look at the text being written and stay quiet otherwise:
+
+```md
+---
+description: Warn when JavaScript or TypeScript edits add console.log.
+condition: "console\\.log\\("
+scope: "tool:edit(**/*.{ts,tsx,js,jsx,mts,cts}), tool:write(**/*.{ts,tsx,js,jsx,mts,cts})"
+---
+```
+
 Rules are best for:
 
 - coding style
@@ -31,6 +51,8 @@ Choose a rule when the behavior should stay:
 - lightweight
 - prompt-visible
 - advisory rather than runtime-enforced
+
+If the constraint must be **impossible** to violate, a rule is the wrong layer: rules are prompt text, and the model can still disobey. Move it to an extension (`hkx-gateguard.ts` blocks commands outright; `hkx-hookify.ts` can block a tool call). Inspect what rules are actually loaded and what they cost with `/hkx-rules`; disable both injection and promotion with `HKX_RULES=off`.
 
 ## Extensions
 
@@ -156,13 +178,16 @@ Use this rule-of-thumb:
 If a rule is becoming dynamic or stateful, it probably wants an extension.
 If an extension is becoming a long teaching document, it probably wants a skill.
 
+One nuance the rules layer introduces: a rule *can* be conditional now (`globs` / `condition`), so "it depends on which file I'm in" is no longer automatically an extension's job. The distinction that still holds is **enforcement**. A conditional rule decides *when to speak*; an extension decides *whether the action happens at all*.
+
 ## Possible Future Additions
 
 Likely future optional additions:
 
 - a separate opt-in auto-fix extension with explicit settings
 - per-language optional packs for deeper framework-specific behavior
-- project-local rule overlays under `.pi/rules/` for repo-specific standards
+- project-local rule overlays under `.pi/rules/` for repo-specific standards (the current loader reads `~/.pi/agent/rules/` only)
+- a per-session toggle to drop a promoted rule back out (today activation is monotonic by design)
 
 ## Related Docs
 

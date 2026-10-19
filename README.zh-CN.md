@@ -186,6 +186,23 @@ profile 会在写入前解析 `MCP_DATA_DIR`；未设置时会拒绝写入。应
 
 **不**自带自定义主题、第三方 footer 扩展，也不移植 OMP powerline / welcome 双栏 intro。
 
+## 规则层（`hkx-rules`）
+
+这是唯一让 `rules/` 真正生效的扩展。pi 本身从不读取 `~/.pi/agent/rules/`；没有这个扩展，那些文件只是磁盘上的静态文本。
+
+| 行为 | 说明 |
+| --- | --- |
+| 常驻规则（8 条） | 每个 run 开始时作为系统提示的一个 section 注入 |
+| 按路径门控（6 条） | 4 个语言包（`**/*.py`、`**/*.ts` 等）加 2 条 web 规则：`hkx-web-design-quality` 命中组件/标记/样式文件（`**/*.{tsx,jsx,vue,svelte,astro}`、`**/*.{css,scss,sass,less,html,htm}`），`hkx-web-performance` 额外命中打包配置（`**/{tailwind,vite,next,postcss,astro,svelte,nuxt}.config.*`）—— `vite.config.ts` 里有打包预算但不是设计面，所以只激活性能规则 |
+| 按编辑门控（3 条护栏） | 仅当编辑内容命中规则的 `condition` 且落在其 `scope` 内时激活 |
+| 成本 | 常驻段约 **2,515 tokens**/会话（8 条）；一次激活只加自身正文一次（Python 包 + 护栏实测 273 tokens，两条 web 规则合计约 888） |
+| 查看 | `/hkx-rules` —— 开关状态、条数、token 估算、逐条成本、本会话已激活项 |
+| 关闭 | `HKX_RULES=off`（同时抑制注入**和**激活；不写任何文件） |
+
+激活内容以**消息**投递，而不是重写提示。实测：`turn_end → { continue: true }` 产生的后续请求不会重新进入 `before_agent_start`，且激活前后系统提示逐字节相同——所以提示缓存不会失效。每条规则每会话最多激活一次。
+
+**路径 A 只装扩展、不装 `rules/`。** 没有规则目录时扩展什么都不加载，且保持静默（空 section 是合法的；为这种正常状态弹警告只是噪声）。路径 B 两者都装。
+
 ## 常用工作流
 
 ### 评审 diff 或 PR

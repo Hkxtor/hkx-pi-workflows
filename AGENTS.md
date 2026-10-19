@@ -58,7 +58,11 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Keep guidance concise and operator-friendly.
 - Command files live under `commands/`. Keep the `hkx-` prefix only for names that would collide with pi native/extension slash commands (`hkx-plan`, `hkx-plan-*`, `hkx-session-summary`); other commands use bare names.
 - In `package.json`, map commands as `pi.prompts: ["./commands"]` — never invent `pi.commands`.
-- Rules are Path B only; do not put `rules` under the official `pi` manifest.
+- Rules are Path B only for the **files**; do not put `rules` under the official `pi` manifest.
+- Rule files become live only through `extensions/hkx-rules.ts` (pi does not read `~/.pi/agent/rules/`). Keep the two halves in sync: a frontmatter shape the loader does not parse silently degrades to nothing.
+- Rule frontmatter shapes are contractual (`description` only = always-on; `globs` = path-gated; `condition` + `scope` = edit-gated). Adding a new shape means changing the loader, the tests, and `docs/language-hooks.md` together.
+- Keep the always-on set small: every always-on rule is charged to every session (~2,515 tokens for the current 8). Prefer `globs` / `condition` for anything language- or edit-specific.
+- Files under `rules/` may carry CRLF line endings; the loader is tolerant, and `scripts/tests/rules-injection.mjs` guards it. Do not "simplify" the parser to `/^---\n/`.
 - Avoid placeholder text and fake workflows.
 
 ### package.json dual-path contract
@@ -76,6 +80,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Notify-only extensions must not silently mutate project state.
 - Gate extensions should stay explicit, low-noise, and actionable.
 - Appearance extensions (`hkx-working-indicator`, `hkx-custom-header`) default on with env + slash toggles; they must not write settings or files. Footer uses pi's native statusline; header chrome is first-party via `extensions/hkx-custom-header.ts`.
+- `hkx-rules` is the rules loader (`/hkx-rules`, `HKX_RULES`). A missing rules directory is a legitimate state and must stay silent — Path A installs the extension without the rules tree. Promotions are delivered as messages, never by rewriting the system prompt (measured: the `continue` follow-up does not re-enter `before_agent_start`, and rewriting the prompt busts the cache).
 
 ### Managed Hookify rules
 
@@ -117,7 +122,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Day-to-day npm entry points:
   - `npm run install-global` → `scripts/install.mjs` (Path B full operator install)
   - `npm run validate` → `scripts/validate.mjs` (includes dual-path manifest checks + MCP catalog lint)
-  - `npm test` → `scripts/tests/run.mjs` (versioned smoke: merge contract + env-resolver)
+  - `npm test` → `scripts/tests/run.mjs` (versioned smoke: merge contract + env-resolver; runner auto-discovers `scripts/tests/*.mjs`)
   - `npm run mcp:apply-profile` → `scripts/apply-mcp-profile.mjs`
 - Official package install (Path A) is `pi install git:...` / `pi install npm:...` and does not run `install.mjs`.
 - Maintenance-only helpers stay as direct `node scripts/...` invocations and must **not** be promoted into `package.json` scripts unless they become part of the normal operator path.

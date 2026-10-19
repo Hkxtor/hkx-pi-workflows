@@ -26,7 +26,7 @@ Use it when deciding:
 | --- | --- | --- | --- |
 | `commands/` | give operators a named workflow entry point | human user | indirectly, via the workflow it describes |
 | `skills/` | provide reusable guidance and decision frameworks | model / agent | no |
-| `rules/` | provide short reminders and guardrails | model / agent | no |
+| `rules/` | provide short reminders and guardrails | model / agent (via `hkx-rules`) | no |
 | `agents/` | execute a narrow specialist role | pi-subagents | some yes, some no |
 | `chains/` | orchestrate multiple agents in a stable sequence | pi-subagents runner | depends on included agents |
 | `extensions/` | runtime hooks, notifications, gatekeeping, or TUI chrome | pi runtime | should stay narrow and explicit |
@@ -89,6 +89,20 @@ Examples:
 - `hkx-ts-no-console-log`
 - `hkx-rust-no-unwrap`
 - `hkx-common-security`
+
+**Pi does not read `~/.pi/agent/rules/` on its own.** The `hkx-rules` extension is what makes this layer real: it parses each file's frontmatter (CRLF-tolerant) and injects the body into the system prompt. Rules therefore come in three classes:
+
+| Class | Frontmatter | When it reaches the model |
+| --- | --- | --- |
+| Always-on (8) | `description` only | Start of every run, one prompt section |
+| Gated by path (6) | `globs: ["**/*.py", …]` | First time the session touches a matching file |
+| Gated by edit (3) | `condition` + `scope` | Only when the edit's target path is in `scope` **and** the written text matches `condition` |
+
+The two web rules show why `globs` can differ inside one family: both fire on component/markup/style files, but only `hkx-web-performance` also fires on `**/{tailwind,vite,next,postcss,astro,svelte,nuxt}.config.*`. A bundler config holds bundle budgets and chunking, so performance guidance belongs there; it is not a design surface, so design-quality guidance would be noise.
+
+The split is a cost decision, not a taxonomy exercise: the 8 always-on rules cost ~2,515 tokens in every session, while the 9 gated rules cost nothing until they fire. `hkx-web-performance` and `hkx-web-design-quality` were always-on until their bodies were measured at 523 + 329 tokens — for guidance that only matters on web files, that is 852 tokens of every session's budget spent on nothing.
+
+Gated rules are delivered once, as a message, and never rewrite the prompt — so activation costs its own body and leaves the prompt cache intact. Because the layer is advisory, a rule still cannot enforce anything: if the constraint must be impossible to violate, it belongs in an extension (`hkx-gateguard.ts`, `hkx-hookify.ts`) instead.
 
 If a file grows into a long tutorial or multi-step framework, it probably belongs in `skills/`, not `rules/`.
 
@@ -298,6 +312,7 @@ Declared in `package.json`:
 - `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
 - Agents/chains require **pi-subagents** to already be installed.
 - Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings/keybindings overlays, or pi-lsp / permission / tool-display / notify / magic-context config overlays.
+- Path A *does* load `extensions/hkx-rules.ts`, which then finds no `~/.pi/agent/rules/` and silently injects nothing. Rules become live only under Path B.
 
 #### Path B — global operator layout
 
