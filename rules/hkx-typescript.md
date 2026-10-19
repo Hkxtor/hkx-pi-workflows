@@ -1,7 +1,7 @@
 ---
 description: TypeScript and JavaScript coding, testing, and security guidance.
 globs:
-  - "**/*.{ts,tsx,js,jsx,mts,cts}"
+  - "**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}"
 ---
 
 # HKX TypeScript Guidance

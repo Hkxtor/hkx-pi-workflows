@@ -200,7 +200,12 @@ async function runInProcess(mod) {
 		check("T3 scope parsed into two entries", ts.scope.length === 2, JSON.stringify(ts.scope));
 		check(
 			"T3 scope entries keep their glob braces",
-			ts.scope.every((s) => s.includes("{ts,tsx,js,jsx,mts,cts}")),
+			ts.scope.every((s) => s.includes("{ts,tsx,js,jsx,mts,cts,mjs,cjs}")),
+			JSON.stringify(ts.scope),
+		);
+		check(
+			"T3 scope covers the Node ESM/CJS extensions",
+			ts.scope.every((s) => s.includes("mjs") && s.includes("cjs")),
 			JSON.stringify(ts.scope),
 		);
 		check(
@@ -452,7 +457,9 @@ async function runInProcess(mod) {
 		check("T12 pyi matches", matchesAnyGlob("x/y.pyi", py.globs));
 		check("T12 deep nesting matches", matchesAnyGlob("a/b/c/d/e.py", py.globs));
 		check("T12 pyc does not match", !matchesAnyGlob("a.pyc", py.globs));
-		check("T12 absolute path matches", matchesAnyGlob("/root/x/src/a.tsx", ["**/*.{ts,tsx,js,jsx,mts,cts}"]));
+		check("T12 absolute path matches", matchesAnyGlob("/root/x/src/a.tsx", ["**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}"]));
+		check("T12 Node ESM .mjs matches", matchesAnyGlob("scripts/validate.mjs", ["**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}"]));
+		check("T12 Node CJS .cjs matches", matchesAnyGlob("scripts/plan-canvas.cjs", ["**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}"]));
 		check("T12 Cargo.toml matches", matchesAnyGlob("Cargo.toml", ["**/*.rs", "**/Cargo.toml"]));
 		check("T12 go.mod matches", matchesAnyGlob("pkg/go.mod", ["**/*.go", "**/go.mod"]));
 		check("T12 empty path never matches", !matchesAnyGlob("", py.globs));
@@ -469,9 +476,11 @@ async function runInProcess(mod) {
 		check("T13 scope parses into tool+glob", ts.scope.every((s) => parseScope(s) !== null), JSON.stringify(ts.scope));
 		const parsed = parseScope(ts.scope[0]);
 		check("T13 tool name parsed", parsed?.tool === "edit", JSON.stringify(parsed));
-		check("T13 glob keeps its brace list", parsed?.glob === "**/*.{ts,tsx,js,jsx,mts,cts}", JSON.stringify(parsed));
+		check("T13 glob keeps its brace list", parsed?.glob === "**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}", JSON.stringify(parsed));
 		check("T13 unknown scope shape is rejected", parseScope("nonsense") === null);
 		check("T13 scope matches an edit on a .ts file", scopeMatches(ts, "edit", "src/a.ts"));
+		check("T13 scope matches an edit on a .mjs file", scopeMatches(ts, "edit", "scripts/validate.mjs"));
+		check("T13 scope matches a write on a .cjs file", scopeMatches(ts, "write", "scripts/plan-canvas.cjs"));
 		check("T13 scope does not match a read", !scopeMatches(ts, "read", "src/a.ts"));
 		check("T13 scope does not match another language", !scopeMatches(ts, "edit", "src/a.py"));
 	}

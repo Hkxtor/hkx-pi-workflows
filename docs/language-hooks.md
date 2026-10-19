@@ -35,7 +35,7 @@ The gated shapes are what keep the always-on cost down (~2,515 tokens for the 8 
 ---
 description: Warn when JavaScript or TypeScript edits add console.log.
 condition: "console\\.log\\("
-scope: "tool:edit(**/*.{ts,tsx,js,jsx,mts,cts}), tool:write(**/*.{ts,tsx,js,jsx,mts,cts})"
+scope: "tool:edit(**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}), tool:write(**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs})"
 ---
 ```
 

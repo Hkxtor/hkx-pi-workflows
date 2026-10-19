@@ -1,7 +1,7 @@
 ---
 description: Warn when JavaScript or TypeScript edits add console.log.
 condition: "console\\.log\\("
-scope: "tool:edit(**/*.{ts,tsx,js,jsx,mts,cts}), tool:write(**/*.{ts,tsx,js,jsx,mts,cts})"
+scope: "tool:edit(**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}), tool:write(**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs})"
 ---
 
 # Avoid Console Logging In Product Code
