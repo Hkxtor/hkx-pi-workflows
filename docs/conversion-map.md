@@ -263,6 +263,7 @@ The `agents/` directory is now a **pi-subagents native** surface.
 - explicit acceptance role: `acceptanceRole: read-only` for inspection/planning agents and `acceptanceRole: writer` for mutation agents
 - search surface: `ffgrep` / `fffind` (preferred) with native `grep` / `find` as co-resident fallback
 - code intelligence surface: `lsp_diagnostics` and `lsp_fix` for configured routes; targeted `ffgrep` and `read` for navigation and structure
+- extension providers: any agent declaring an extension tool also declares its provider in `subagentOnlyExtensions` (`npm:@ff-labs/pi-fff` for FFF search, `npm:@narumitw/pi-lsp` for LSP, `npm:pi-web-access` for web tools, `npm:@juicesharp/rpiv-todo` for `todo`), because foreground children never inherit ambient extensions and an unregistered declared tool fails the run
 - reviewers are read-only by default
 - writer agents use scoped mutation plus supervisor/intercom escalation rules
 

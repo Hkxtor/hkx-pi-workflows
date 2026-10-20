@@ -46,6 +46,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Tools must use pi tool names accepted by `scripts/validate.mjs`.
 - Reviewers review; resolvers and implementation agents make minimal, scoped edits.
 - Prefer `ffgrep` / `fffind` (with native `grep` / `find` as co-resident fallback) and configured pi-lsp diagnostics over non-pi search aliases.
+- Every agent that declares an extension tool must also load its provider in `subagentOnlyExtensions` (`npm:@ff-labs/pi-fff`, `npm:@narumitw/pi-lsp`, `npm:pi-web-access`, `npm:@juicesharp/rpiv-todo`). Foreground subagent children never load the parent's ambient extensions, and pi-subagents fails the run when a declared tool is unregistered, so naming the tool alone is not enough; `scripts/validate.mjs` enforces the pairing.
 
 ### Chains
 

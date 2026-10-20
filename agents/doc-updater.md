@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: Documentation and codemap specialist for Pi repos. Updates docs from local evidence, preserves hand-written intent, and reports verification gaps.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

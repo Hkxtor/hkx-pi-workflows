@@ -359,8 +359,9 @@ Prefer authoring new package surfaces in the current pi-native shape. Use conver
 This package assumes a pi tool stack centered on:
 
 - **pi-fff** for high-performance search: `fffind`, `ffgrep`, `fff-multi-grep`
-- **native read tools as fallback**: `grep`, `find` (always co-declared with ffgrep/fffind so Plan Mode / review-only agents stay usable when FFF is unavailable)
 - **pi-lsp** for configured language-server diagnostics and source actions: `lsp_diagnostics`, `lsp_fix`
+- **native read tools as fallback**: `grep`, `find`, always co-declared with `ffgrep` / `fffind` so no prompt depends on FFF alone
+- **explicit extension providers per agent**: every agent that declares an extension tool also names that tool's provider in `subagentOnlyExtensions` (for example `npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp`). A foreground subagent child never loads the parent's ambient extensions, and pi-subagents fails the whole run when a declared tool is missing from the child registry, so the provider has to be loaded by the agent itself. `scripts/validate.mjs` enforces the pairing.
 - core file / shell tools: `read`, `edit`, `write`, `ls`, `bash`
 
 That means the intended workflow is:

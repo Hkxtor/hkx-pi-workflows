@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Expert Rust code reviewer specializing in ownership, lifetimes, error handling, unsafe usage, and idiomatic patterns. Use for all Rust code changes. MUST BE USED for Rust projects.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: Build and TypeScript error resolution specialist. Use PROACTIVELY when build fails or type errors occur. Fixes build/type errors only with minimal diffs, no architectural edits. Focuses on getting the build green quickly.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

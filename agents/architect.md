@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Architecture specialist for system design, boundary decisions, and refactor structure. Produces tradeoff-driven design proposals without editing files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

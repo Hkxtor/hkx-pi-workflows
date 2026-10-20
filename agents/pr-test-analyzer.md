@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Pull request test coverage reviewer focused on whether tests cover changed behavior, edge cases, and real regression risk. Reports findings only; does not mutate files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

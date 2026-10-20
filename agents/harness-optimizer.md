@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: Reviews and improves local Pi harness configuration for reliability, cost, and throughput by changing prompts, rules, MCP layout, and safety surfaces rather than product code.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

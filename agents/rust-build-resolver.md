@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: Rust build, compilation, and dependency error resolution specialist. Fixes cargo build errors, borrow checker issues, and Cargo.toml problems with minimal changes. Use when Rust builds fail.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

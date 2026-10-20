@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Planning specialist for complex features, migrations, and refactors. Produces actionable implementation plans with dependencies, risks, file paths, and validation order.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

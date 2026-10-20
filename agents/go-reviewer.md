@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Expert Go code reviewer specializing in idiomatic Go, concurrency patterns, error handling, and performance. Use for all Go code changes. MUST BE USED for Go projects.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

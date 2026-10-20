@@ -294,6 +294,13 @@ These agents and chains are tuned for:
 - **pi-lsp**: `lsp_diagnostics`, `lsp_fix` (with routes from `pi-lsp.json`)
 - core file and shell tools: `read`, `edit`, `write`, `ls`, `bash`
 
+Every agent that declares one of those extension tools loads its provider explicitly through
+`subagentOnlyExtensions` (for example `npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp`). Foreground
+subagent children never inherit the parent's ambient extensions, so declaring the tool without
+loading the provider fails the whole run. `npm run install-global` installs those packages;
+otherwise `pi install npm:@ff-labs/pi-fff` (and the same for `npm:@narumitw/pi-lsp`,
+`npm:pi-web-access`, `npm:@juicesharp/rpiv-todo`) makes them resolvable.
+
 In short: search with pi-fff, inspect with targeted reads and pi-lsp diagnostics, mutate narrowly.
 
 ## Context File Split

@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Designs feature architectures by analyzing existing codebase patterns and conventions, then providing implementation blueprints with concrete files, interfaces, data flow, and build order.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

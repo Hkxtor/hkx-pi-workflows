@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: Refactoring and dead-code cleanup specialist. Removes duplication, trims unused paths, and preserves behavior through focused validation. Also handles behavior-preserving readability polish of recently modified code (the former code-simplifier lane).
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

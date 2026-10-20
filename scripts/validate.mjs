@@ -133,6 +133,24 @@ const allowedPiTools = new Set([
 	"lsp_fix",
 ]);
 
+// Tools registered by an extension package rather than by Pi itself. Declaring
+// one in an agent's `tools` list is not enough: foreground children never load
+// the parent's ambient extensions, and pi-subagents fails the whole run when a
+// declared tool is missing from the child registry. The agent must load the
+// provider through `subagentOnlyExtensions` (or `extensions`).
+const extensionToolProviders = new Map([
+	["ffgrep", "npm:@ff-labs/pi-fff"],
+	["fffind", "npm:@ff-labs/pi-fff"],
+	["fff-multi-grep", "npm:@ff-labs/pi-fff"],
+	["lsp_diagnostics", "npm:@narumitw/pi-lsp"],
+	["lsp_fix", "npm:@narumitw/pi-lsp"],
+	["web_search", "npm:pi-web-access"],
+	["fetch_content", "npm:pi-web-access"],
+	["get_search_content", "npm:pi-web-access"],
+	["source_check", "npm:pi-web-access"],
+	["todo", "npm:@juicesharp/rpiv-todo"],
+]);
+
 const piCorePackages = new Set([
 	"@earendil-works/pi-ai",
 	"@earendil-works/pi-agent-core",
@@ -1274,6 +1292,25 @@ async function main() {
 		) {
 			errors.push(
 				`${relativePath}: use lsp_diagnostics/lsp_fix and ffgrep/edit instead of legacy lsp/ast aliases`,
+			);
+		}
+		// Extension tools need their provider loaded in the child, not just named.
+		const declaredProviders = [
+			...parseToolsList(
+				frontmatterField(frontmatter, "subagentOnlyExtensions")?.value,
+			),
+			...parseToolsList(frontmatterField(frontmatter, "extensions")?.value),
+		];
+		const missingProviders = new Set();
+		for (const tool of tools) {
+			const provider = extensionToolProviders.get(tool);
+			if (provider && !declaredProviders.includes(provider)) {
+				missingProviders.add(provider);
+			}
+		}
+		if (missingProviders.size > 0) {
+			errors.push(
+				`${relativePath}: extension tools require their provider in subagentOnlyExtensions (missing ${[...missingProviders].join(", ")})`,
 			);
 		}
 	}

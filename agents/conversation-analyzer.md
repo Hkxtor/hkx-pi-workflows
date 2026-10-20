@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Analyze conversation or task text for repeated unwanted agent behaviors and propose Hookify rules. Reports suggestions only; does not write rule files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff
 thinking: medium
 systemPromptMode: replace
 inheritProjectContext: true

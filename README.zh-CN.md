@@ -287,6 +287,12 @@ subagent({
 - **pi-lsp**：`lsp_diagnostics`、`lsp_fix`（路由来自 `pi-lsp.json`）
 - 核心文件/Shell 工具：`read`、`edit`、`write`、`ls`、`bash`
 
+凡是声明了上述扩展工具的 agent，都在 `subagentOnlyExtensions` 里显式加载对应 provider
+（例如 `npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp`）。前台子代理不会继承父会话的 ambient 扩展，
+只声明工具而不加载 provider 会让整次 run 直接失败。`npm run install-global` 会安装这些包；
+否则用 `pi install npm:@ff-labs/pi-fff`（以及 `npm:@narumitw/pi-lsp`、`npm:pi-web-access`、
+`npm:@juicesharp/rpiv-todo`）让它们可被解析。
+
 简言之：用 pi-fff 搜索，以定向读取和 pi-lsp 诊断理解代码，窄范围修改。
 
 ## 上下文文件分工

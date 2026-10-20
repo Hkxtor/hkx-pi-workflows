@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: Python install, import, type, lint, and test-collection failure resolution specialist. Fixes packaging, dependency, mypy/pyright, ruff, and pytest collection errors with minimal changes. Use when Python checks fail before normal feature behavior can be tested.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, lsp_diagnostics, lsp_fix, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

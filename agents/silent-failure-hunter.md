@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Reviewer for swallowed errors, dangerous fallbacks, missing propagation, and failures hidden by logs or defaults. Reports findings only; does not mutate files.
 tools: read, ffgrep, fffind, grep, find, ls, bash, lsp_diagnostics, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:@narumitw/pi-lsp
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

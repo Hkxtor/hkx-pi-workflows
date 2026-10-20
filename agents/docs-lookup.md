@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: read-only
 description: Documentation lookup specialist for libraries, frameworks, SDKs, and APIs. Uses current official docs or configured docs search surfaces and returns concise, source-aware guidance.
 tools: read, ffgrep, fffind, grep, find, ls, bash, web_search, intercom
+subagentOnlyExtensions: npm:@ff-labs/pi-fff, npm:pi-web-access
 thinking: medium
 systemPromptMode: replace
 inheritProjectContext: true

@@ -172,6 +172,23 @@ function mapTools(ompTools, name, isReviewer) {
 	return ordered;
 }
 
+const EXTENSION_TOOL_PROVIDERS = [
+	{ spec: "npm:@ff-labs/pi-fff", tools: ["ffgrep", "fffind", "fff-multi-grep"] },
+	{ spec: "npm:@narumitw/pi-lsp", tools: ["lsp_diagnostics", "lsp_fix"] },
+	{
+		spec: "npm:pi-web-access",
+		tools: ["web_search", "fetch_content", "get_search_content", "source_check"],
+	},
+	{ spec: "npm:@juicesharp/rpiv-todo", tools: ["todo"] },
+];
+
+/** Providers an imported agent must load for its extension tools to exist. */
+function providerSpecsFor(tools) {
+	return EXTENSION_TOOL_PROVIDERS.filter((provider) =>
+		provider.tools.some((tool) => tools.includes(tool)),
+	).map((provider) => provider.spec);
+}
+
 function adaptToolMentions(body) {
 	// Rewrite older prompt/tool wording so imported agent prompts read as
 	// pi-native instructions after conversion.
@@ -239,12 +256,16 @@ function convertOne(file) {
 		"",
 	].join("\n");
 
+	const providers = providerSpecsFor(tools);
 	const lines = [
 		"---",
 		`name: ${name}`,
 		"package: hkx",
 		`description: ${fm.description || name}`,
 		`tools: ${tools.join(", ")}`,
+		...(providers.length > 0
+			? [`subagentOnlyExtensions: ${providers.join(", ")}`]
+			: []),
 		`thinking: ${thinking}`,
 		"systemPromptMode: replace",
 		"inheritProjectContext: true",

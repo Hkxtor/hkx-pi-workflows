@@ -4,6 +4,7 @@ package: hkx
 acceptanceRole: writer
 description: End-to-end testing specialist for browser, CLI, and critical user journeys. Creates or updates stable E2E coverage and validates flows with artifacts when the repo supports it.
 tools: read, ffgrep, fffind, grep, find, ls, bash, edit, write, contact_supervisor
+subagentOnlyExtensions: npm:@ff-labs/pi-fff
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
