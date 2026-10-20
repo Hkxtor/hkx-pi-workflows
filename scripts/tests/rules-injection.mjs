@@ -3,11 +3,17 @@
  * Parse-contract tests for the HKX rules layer loader (extensions/hkx-rules.ts).
  *
  * Fixtures are the repository's real `rules/*.md` files rather than synthetic
- * ones: 16 of the 17 are CRLF, and a `\n`-only frontmatter regex silently
- * classifies all of them as "no frontmatter" — which would switch off every
- * filter without raising anything. The `lfOnlySplit` guard below turns exactly
- * that failure mode into a regression test, and it runs without the extension
- * so the guard's meaning never depends on the code it guards.
+ * ones: a `\n`-only frontmatter regex silently classifies a CRLF rule as "no
+ * frontmatter", which would switch off every filter without raising anything.
+ * The `lfOnlySplit` guard below turns exactly that failure mode into a
+ * regression test, and it runs without the extension so the guard's meaning
+ * never depends on the code it guards.
+ *
+ * The fixtures are re-spelled to CRLF/LF in memory instead of being taken from
+ * the checkout as-is: line endings on disk are a checkout artifact
+ * (`core.autocrlf`), not a repository fact. `autocrlf=true` materializes every
+ * rule as CRLF, so a census pinned to one LF file would fail on Windows while
+ * the parser contract it guards is perfectly intact.
  *
  * Node 24 imports `.ts` in process; older runtimes re-run this file under
  * `--experimental-strip-types` (see the PARSERED_CHILD branch at the bottom).
@@ -52,23 +58,28 @@ function readRule(file) {
 check("extension file exists", fs.existsSync(extPath));
 check("17 rule files on disk", ruleFiles.length === 17, String(ruleFiles.length));
 
-{
-	const crlf = ruleFiles.filter((f) => readRule(f).includes("\r\n"));
-	const lf = ruleFiles.filter((f) => !readRule(f).includes("\r\n"));
-	check("16 CRLF rule files", crlf.length === 16, String(crlf.length));
-	check("1 LF rule file", lf.length === 1, lf.join(","));
+// The guard re-spells the real corpus to each line ending rather than trusting
+// the checkout: `core.autocrlf=true` turns all 17 files into CRLF on disk, and
+// `input` keeps the one LF file in the index as LF. Either way the parser must
+// behave, so both spellings are asserted for every rule.
+const toLF = (raw) => raw.replace(/\r\n/g, "\n");
+const toCRLF = (raw) => toLF(raw).replace(/\n/g, "\r\n");
 
+{
 	// The point of the CRLF requirement: the naive splitter must actually fail.
-	const naiveFailures = crlf.filter((f) => lfOnlySplit(readRule(f)).frontmatter === null);
+	const naiveFailures = ruleFiles.filter((f) => lfOnlySplit(toCRLF(readRule(f))).frontmatter === null);
 	check(
-		"G1 lfOnlySplit fails on every CRLF fixture (guard is meaningful)",
-		naiveFailures.length === crlf.length,
-		`${naiveFailures.length}/${crlf.length}`,
+		"G1 lfOnlySplit fails on every CRLF spelling (guard is meaningful)",
+		naiveFailures.length === ruleFiles.length,
+		`${naiveFailures.length}/${ruleFiles.length}`,
 	);
 	check(
-		"G2 lfOnlySplit still works on the LF fixture (planted positive control)",
-		lfOnlySplit(readRule(lf[0])).frontmatter !== null,
-		lf[0],
+		"G2 lfOnlySplit still works on the LF spelling (planted positive control)",
+		lfOnlySplit(toLF(readRule("hkx-python.md"))).frontmatter !== null,
+	);
+	check(
+		"G2 the two spellings really differ",
+		toLF(readRule("hkx-python.md")) !== toCRLF(readRule("hkx-python.md")),
 	);
 }
 

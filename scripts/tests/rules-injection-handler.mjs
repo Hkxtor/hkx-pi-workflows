@@ -106,8 +106,14 @@ function runInProcess(mod) {
 		'---\ndescription: gated fixture\nglobs:\n  - "**/*.py"\n---\n# Gated\nGATED_BODY_MARKER.\n',
 	);
 
+	// os.homedir() reads HOME on POSIX but USERPROFILE on win32, so the fixture
+	// home must set both — otherwise the run silently loads the operator's real
+	// ~/.pi/agent/rules and every assertion sees the wrong corpus.
 	const savedHome = process.env.HOME;
+	const savedUserprofile = process.env.USERPROFILE;
+	const isWin = process.platform === "win32";
 	process.env.HOME = tmpHome;
+	if (isWin) process.env.USERPROFILE = tmpHome;
 
 	const notifications = [];
 	const ctx = {
@@ -173,7 +179,9 @@ function runInProcess(mod) {
 		// H7: a HOME with no rules directory injects nothing and does not spam.
 		const emptyHome = fs.mkdtempSync(path.join(os.tmpdir(), "hkx-rules-empty-home-"));
 		const savedHome2 = process.env.HOME;
+		const savedUserprofile2 = process.env.USERPROFILE;
 		process.env.HOME = emptyHome;
+		if (isWin) process.env.USERPROFILE = emptyHome;
 		notifications.length = 0;
 		const otherMod = await import(`${pathToFileURL(extPath).href}?empty-home`);
 		const otherHandlers = new Map();
@@ -201,6 +209,7 @@ function runInProcess(mod) {
 		// a notification here would greet every Path A session with a non-problem.
 		check("H7 missing rules dir notifies nothing", notifications.length === 0, JSON.stringify(notifications));
 		process.env.HOME = savedHome2;
+		if (isWin) process.env.USERPROFILE = savedUserprofile2;
 		fs.rmSync(emptyHome, { recursive: true, force: true });
 
 		// H8-H11: promotion. A fresh extension instance keeps the counters clean.
@@ -293,6 +302,7 @@ function runInProcess(mod) {
 		}
 
 		process.env.HOME = savedHome === undefined ? tmpHome : savedHome;
+		if (isWin) process.env.USERPROFILE = savedUserprofile;
 		fs.rmSync(tmpHome, { recursive: true, force: true });
 	})();
 }
