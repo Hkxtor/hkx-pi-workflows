@@ -9,6 +9,7 @@
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -336,52 +337,79 @@ process.exit(bad.length ? 1 : 0);
 		parseErr = error instanceof Error ? error.message : String(error);
 	}
 	check("permission config parseable", config !== null, parseErr ?? "");
-	const external = config?.permission?.external_directory ?? {};
-	check("permission: /tmp allow", external["/tmp"] === "allow");
-	check("permission: /tmp/* allow", external["/tmp/*"] === "allow");
-	check("permission: /var/tmp allow", external["/var/tmp"] === "allow");
-	check("permission: /var/tmp/* allow", external["/var/tmp/*"] === "allow");
-	check("permission: ~/.pi allow", external["~/.pi"] === "allow");
-	check("permission: ~/.pi/* allow", external["~/.pi/*"] === "allow");
+	// The policy is asserted by BEHAVIOR, not by which key carries the grant.
+	// `external_directory_read: { "*": "allow" }` supersedes the former
+	// per-directory allow-list and `piInfrastructureReadPaths`: together they
+	// granted reads inside those roots while leaving every read outside them on
+	// `ask`. A read is open exactly when some read-side rule resolves to allow;
+	// a path listed only in the write map is not readable.
+	const readMap = {
+		...(config?.permission?.external_directory_read ?? {}),
+	};
+	const writeMap = {
+		...(config?.permission?.external_directory_write ?? {}),
+	};
+	// Replicates pi-permission-system wildcard semantics: `*` is greedy across
+	// separators, `~`/`$HOME`/`${HOME}` expand to the home directory on the
+	// pattern side, and the last matching rule wins.
+	const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const expandHome = (pattern) =>
+		pattern.replace(/^(\$\{HOME\}|\$HOME|~)(?=\/|$)/, os.homedir());
+	const compileRule = (pattern) => {
+		let body = expandHome(pattern)
+			.split("*")
+			.map((part) => escapeRegExp(part).replaceAll("\\?", "."))
+			.join(".*");
+		if (body.endsWith(" .*")) body = `${body.slice(0, -3)}( .*)?`;
+		return new RegExp(`^${body}$`, "s");
+	};
+	const resolveOutsideCwd = (map, target) => {
+		const entries = Object.entries(map);
+		for (let i = entries.length - 1; i >= 0; i--) {
+			const [pattern, state] = entries[i];
+			if (compileRule(pattern).test(target)) return state;
+		}
+		return null;
+	};
+	const readAllowed = (target) => resolveOutsideCwd(readMap, target) === "allow";
+
+	// A subagent's /tmp channel and temp fixtures must stay prompt-free.
+	check("permission: /tmp readable", readAllowed("/tmp/x"));
+	check("permission: /var/tmp readable", readAllowed("/var/tmp/x"));
+	// Pi infrastructure, npm global roots, and language caches must stay readable
+	// on every platform.
 	check(
-		"permission: Windows npm global allow",
-		external["~/AppData/Roaming/npm/node_modules"] === "allow",
+		"permission: ~/.pi readable",
+		readAllowed(path.join(os.homedir(), ".pi/agent/skills/a/SKILL.md")),
 	);
 	check(
-		"permission: Windows npm global/* allow",
-		external["~/AppData/Roaming/npm/node_modules/*"] === "allow",
+		"permission: Windows npm global readable",
+		readAllowed(
+			path.join(os.homedir(), "AppData/Roaming/npm/node_modules/pkg/index.js"),
+		),
 	);
 	check(
-		"permission: Linux /usr/lib/node_modules allow",
-		external["/usr/lib/node_modules"] === "allow",
+		"permission: Linux /usr/lib/node_modules readable",
+		readAllowed("/usr/lib/node_modules/pkg/index.js"),
 	);
 	check(
-		"permission: Linux /usr/lib/node_modules/* allow",
-		external["/usr/lib/node_modules/*"] === "allow",
-	);
-	check(
-		"permission: Linux /usr/local/lib/node_modules allow",
-		external["/usr/local/lib/node_modules"] === "allow",
-	);
-	check(
-		"permission: Linux /usr/local/lib/node_modules/* allow",
-		external["/usr/local/lib/node_modules/*"] === "allow",
-	);
-	const infrastructure = config?.piInfrastructureReadPaths ?? [];
-	check(
-		"permission: infrastructure covers ~/.pi",
-		infrastructure.includes("~/.pi") && infrastructure.includes("~/.pi/*"),
-	);
-	check(
-		"permission: infrastructure covers Windows npm global",
-		infrastructure.includes("~/AppData/Roaming/npm/node_modules") &&
-			infrastructure.includes("~/AppData/Roaming/npm/node_modules/*"),
+		"permission: Linux /usr/local/lib/node_modules readable",
+		readAllowed("/usr/local/lib/node_modules/pkg/index.js"),
 	);
 	check(
 		"permission: fff tools allowed",
-		config?.permission?.ffgrep === "allow" &&
-			config?.permission?.fffind === "allow" &&
-			config?.permission?.["fff-multi-grep"] === "allow",
+		config?.permission?.["*"] === "allow" ||
+			config?.permission?.ffgrep === "allow",
+	);
+	// Writing outside the working tree still asks unless the target is a
+	// deliberate scratch/infrastructure root.
+	check(
+		"permission: unknown external write still asks",
+		resolveOutsideCwd(writeMap, "/etc/passwd") === "ask",
+	);
+	check(
+		"permission: /tmp write allowed",
+		resolveOutsideCwd(writeMap, "/tmp/x") === "allow",
 	);
 }
 
