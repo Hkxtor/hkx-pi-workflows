@@ -338,6 +338,7 @@ Important mappings:
 - then: `configs/magic-context/magic-context.jsonc` → `${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc` (authoritative managed overlay: backup previous destination, then write on every install; `historian` seed-if-missing (template default when absent, operator value preserved); managed behavior defaults include `execute_threshold_tokens` (absolute-token historian trigger); never symlink)
 - `GLOBAL_AGENTS.md` → `~/.pi/agent/AGENTS.md`
 - `APPEND_SYSTEM.md` → `~/.pi/agent/APPEND_SYSTEM.md`
+- retired surfaces: before each linking pass, `pruneDanglingLinks` removes `~/.pi/agent/...` symlinks whose repo source is gone (a rule/command/prompt/agent/chain/skill deleted from the package would otherwise linger). Scoped to symlinks only, whose link text resolves back into the package source dir and whose target no longer exists — real files, foreign operator symlinks, Windows junctions, and copy-only directories are never removed. Dangling rule links matter because `hkx-rules` fails open with a warning, putting a `cannot read rule ...` notice in front of every session; `scripts/tests/retired-surface-prune.mjs` pins the contract
 
 ### Scripts model
 

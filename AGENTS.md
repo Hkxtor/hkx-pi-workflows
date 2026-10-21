@@ -64,6 +64,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Rule frontmatter shapes are contractual (`description` only = always-on; `globs` = path-gated; `condition` + `scope` = edit-gated). Adding a new shape means changing the loader, the tests, and `docs/language-hooks.md` together.
 - Keep the always-on set small: every always-on rule is charged to every session (~2,515 tokens for the current 8). Prefer `globs` / `condition` for anything language- or edit-specific.
 - Files under `rules/` may carry CRLF line endings; the loader is tolerant, and `scripts/tests/rules-injection.mjs` guards it. Do not "simplify" the parser to `/^---\n/`.
+- Retiring a rule, command, prompt, agent, chain, or skill folder must not leave a dangling symlink under `~/.pi/agent/`: `linkOrCopy` only writes what the repo still has. `install.mjs::pruneDanglingLinks` clears them before each linking pass, scoped to symlinks whose link text resolves back into the package source dir and whose target is gone. It never deletes a real file, an operator symlink pointing elsewhere, or a copy-only directory. `scripts/tests/retired-surface-prune.mjs` pins that contract — a dangling rule link otherwise makes `hkx-rules` warn on every session start.
 - Avoid placeholder text and fake workflows.
 
 ### package.json dual-path contract

@@ -108,6 +108,72 @@ async function pathExists(p) {
 	}
 }
 
+/**
+ * Remove package-managed symlinks whose repo source no longer exists.
+ *
+ * Retiring a rule/command/agent/skill deletes its repo file but leaves the
+ * `~/.pi/agent/...` symlink behind, because linkOrCopy only ever writes the
+ * files the repo still has. A dangling link is not harmless: hkx-rules fails
+ * open with a warning, so every session opens with a `cannot read rule ...`
+ * notice for a surface that no longer exists.
+ *
+ * Scope is deliberately narrow so this cannot become a GC pass:
+ * - symlinks only (a real file, or a copy-only directory, is never removed —
+ *   it may be the only surviving copy);
+ * - `readlink()` must succeed, which rules out Windows junctions (those
+ *   report the resolved target, not the recorded link text);
+ * - the link text must resolve back INTO `srcDir`, so an operator symlink
+ *   pointing somewhere else is left alone;
+ * - removal happens only when the resolved target is gone (dangling).
+ *
+ * A directory source that still exists but no longer holds the link basename
+ * is therefore NOT pruned — retirement of a single skill folder is not
+ * distinguishable from an operator-added local skill.
+ */
+async function pruneDanglingLinks(srcDir, destDir, { extensions = null } = {}) {
+	let entries;
+	try {
+		entries = await fs.readdir(destDir);
+	} catch {
+		// Nothing installed yet (cold install) — nothing to prune.
+		return [];
+	}
+
+	const srcRoot = path.resolve(srcDir) + path.sep;
+	const pruned = [];
+	for (const entry of entries) {
+		if (extensions && !extensions.some((ext) => entry.endsWith(ext))) continue;
+		const dest = path.join(destDir, entry);
+		let stats;
+		try {
+			stats = await fs.lstat(dest);
+		} catch {
+			continue;
+		}
+		if (!stats.isSymbolicLink()) continue;
+
+		let linkText;
+		try {
+			linkText = await fs.readlink(dest);
+		} catch {
+			// Junction or unreadable link metadata: not package-owned, skip.
+			continue;
+		}
+		const target = path.resolve(path.dirname(dest), linkText);
+		if (!target.startsWith(srcRoot)) continue;
+		if (await pathExists(target)) continue;
+
+		try {
+			await fs.unlink(dest);
+			pruned.push(entry);
+			console.log(`Pruned dangling link: ${dest} -> ${linkText}`);
+		} catch (err) {
+			console.warn(`Could not prune dangling link ${dest}: ${err.message}`);
+		}
+	}
+	return pruned;
+}
+
 async function linkOrCopy(src, dest, { copyOnly = false } = {}) {
 	try {
 		await fs.rm(dest, { force: true, recursive: true });
@@ -1480,6 +1546,16 @@ async function main() {
 	// still looking at commands/.
 	const commandsDir = path.join(repoRoot, "commands");
 	if (await pathExists(commandsDir)) {
+		// Both destination dirs also hold package/operator prompts that this
+		// package does not own; pruneDanglingLinks only touches links that
+		// resolve back into repoRoot/commands.
+		const cmdExtensions = [".md"];
+		await pruneDanglingLinks(commandsDir, path.join(piHome, "commands"), {
+			extensions: cmdExtensions,
+		});
+		await pruneDanglingLinks(commandsDir, path.join(piHome, "prompts"), {
+			extensions: cmdExtensions,
+		});
 		for (const cmd of await fs.readdir(commandsDir)) {
 			if (cmd.endsWith(".md")) {
 				const src = path.join(commandsDir, cmd);
@@ -1490,8 +1566,13 @@ async function main() {
 	}
 
 	// Rules
+	// Prune retired rules first: a rule deleted from the repo leaves a dangling
+	// symlink here, and hkx-rules would then warn on every session start.
 	const rulesDir = path.join(repoRoot, "rules");
 	if (await pathExists(rulesDir)) {
+		await pruneDanglingLinks(rulesDir, path.join(piHome, "rules"), {
+			extensions: [".md", ".mdc"],
+		});
 		for (const rule of await fs.readdir(rulesDir)) {
 			if (rule.endsWith(".md") || rule.endsWith(".mdc")) {
 				await linkOrCopy(
@@ -1505,6 +1586,7 @@ async function main() {
 	// Skills
 	const skillsDir = path.join(repoRoot, "skills");
 	if (await pathExists(skillsDir)) {
+		await pruneDanglingLinks(skillsDir, path.join(piHome, "skills"));
 		for (const skill of await fs.readdir(skillsDir)) {
 			const skillPath = path.join(skillsDir, skill);
 			const stat = await fs.stat(skillPath);
@@ -1517,6 +1599,9 @@ async function main() {
 	// Agents under agents/hkx so package: hkx is discoverable and namespaced
 	const agentsDir = path.join(repoRoot, "agents");
 	if (await pathExists(agentsDir)) {
+		await pruneDanglingLinks(agentsDir, path.join(piHome, "agents", "hkx"), {
+			extensions: [".md"],
+		});
 		for (const agent of await fs.readdir(agentsDir)) {
 			if (agent.endsWith(".md")) {
 				await linkOrCopy(
@@ -1530,6 +1615,9 @@ async function main() {
 	// Chains
 	const chainsDir = path.join(repoRoot, "chains");
 	if (await pathExists(chainsDir)) {
+		await pruneDanglingLinks(chainsDir, path.join(piHome, "chains"), {
+			extensions: [".chain.json", ".chain.md"],
+		});
 		for (const chain of await fs.readdir(chainsDir)) {
 			if (chain.endsWith(".chain.json") || chain.endsWith(".chain.md")) {
 				await linkOrCopy(
@@ -1784,4 +1872,7 @@ export {
 	installMagicContextConfig,
 	installPiGoalConfig,
 	installPiUnipiNotifyConfig,
+	// Exported for the retirement regression suite; main() uses it inline for
+	// rules, commands/prompts, skills, agents, and chains.
+	pruneDanglingLinks,
 };

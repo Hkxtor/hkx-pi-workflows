@@ -89,6 +89,10 @@ const requiredFiles = [
 	// promotion. Two suites on purpose — the pure layer and the handler contract.
 	"scripts/tests/rules-injection.mjs",
 	"scripts/tests/rules-injection-handler.mjs",
+	// Retirement contract: a rule/command/agent/chain/skill removed from the repo
+	// must not leave a dangling ~/.pi/agent symlink behind (hkx-rules would warn
+	// on every session start).
+	"scripts/tests/retired-surface-prune.mjs",
 	// Extensions (Path A + B).
 	"extensions/hkx-gateguard.ts",
 	"extensions/hkx-hookify.ts",
