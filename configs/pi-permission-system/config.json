@@ -65,7 +65,13 @@
       "~/.npm/*": "allow",
       "~/.cargo/registry": "allow",
       "~/.cargo/registry/*": "allow",
-      "~/development/*": "allow"
+      "~/development/*": "allow",
+      "~/AppData/Local/Temp": "allow",
+      "~/AppData/Local/Temp/*": "allow",
+      "~/AppData/Local/npm-cache": "allow",
+      "~/AppData/Local/npm-cache/*": "allow",
+      "~/AppData/Roaming/npm/node_modules": "allow",
+      "~/AppData/Roaming/npm/node_modules/*": "allow"
     }
   }
 }

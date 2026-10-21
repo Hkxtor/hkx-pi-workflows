@@ -351,23 +351,30 @@ process.exit(bad.length ? 1 : 0);
 	};
 	// Replicates pi-permission-system wildcard semantics: `*` is greedy across
 	// separators, `~`/`$HOME`/`${HOME}` expand to the home directory on the
-	// pattern side, and the last matching rule wins.
+	// pattern side, the last matching rule wins, and on Windows both sides are
+	// folded to `/` + lower case (the engine canonicalizes the path and its
+	// `matchOptions` fold case and separators).
+	const foldForHost = (value) =>
+		process.platform === "win32"
+			? value.replaceAll("\\", "/").toLowerCase()
+			: value;
 	const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	const expandHome = (pattern) =>
 		pattern.replace(/^(\$\{HOME\}|\$HOME|~)(?=\/|$)/, os.homedir());
 	const compileRule = (pattern) => {
-		let body = expandHome(pattern)
+		let body = foldForHost(expandHome(pattern))
 			.split("*")
 			.map((part) => escapeRegExp(part).replaceAll("\\?", "."))
 			.join(".*");
 		if (body.endsWith(" .*")) body = `${body.slice(0, -3)}( .*)?`;
-		return new RegExp(`^${body}$`, "s");
+		return new RegExp(`^${body}$`, "si");
 	};
 	const resolveOutsideCwd = (map, target) => {
+		const folded = foldForHost(target);
 		const entries = Object.entries(map);
 		for (let i = entries.length - 1; i >= 0; i--) {
 			const [pattern, state] = entries[i];
-			if (compileRule(pattern).test(target)) return state;
+			if (compileRule(pattern).test(folded)) return state;
 		}
 		return null;
 	};
@@ -410,6 +417,42 @@ process.exit(bad.length ? 1 : 0);
 	check(
 		"permission: /tmp write allowed",
 		resolveOutsideCwd(writeMap, "/tmp/x") === "allow",
+	);
+	// Windows scratch roots mirror the POSIX `/tmp` grant. Without them a probe
+	// script written to %TEMP% prompts on every call while the same write to
+	// /tmp passes — an asymmetry that only ever costs Windows operators a
+	// dialog. Paths are built with path.join so the assertion follows the host.
+	check(
+		"permission: Windows temp write allowed",
+		resolveOutsideCwd(
+			writeMap,
+			path.join(os.homedir(), "AppData/Local/Temp/probe.py"),
+		) === "allow",
+	);
+	check(
+		"permission: Windows npm-cache write allowed",
+		resolveOutsideCwd(
+			writeMap,
+			path.join(os.homedir(), "AppData/Local/npm-cache/_cacache/x"),
+		) === "allow",
+	);
+	check(
+		"permission: Windows npm global write allowed",
+		resolveOutsideCwd(
+			writeMap,
+			path.join(
+				os.homedir(),
+				"AppData/Roaming/npm/node_modules/pkg/index.js",
+			),
+		) === "allow",
+	);
+	// The scratch grants must not widen into a general AppData write allow.
+	check(
+		"permission: other AppData write still asks",
+		resolveOutsideCwd(
+			writeMap,
+			path.join(os.homedir(), "AppData/Roaming/Microsoft/Credentials/x"),
+		) === "ask",
 	);
 }
 
