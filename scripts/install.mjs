@@ -80,6 +80,16 @@
  *                              values are recoverable. Magic Context owns
  *                              compaction; pi native compaction is disabled
  *                              in configs/agent-settings.json.
+ * - configs/pi-plan-mode/config.json
+ *                            -> ~/.pi/agent/pi-plan-mode.json
+ *                              (after package update; missing-managed-keys
+ *                               only: the /plan settings UI rewrites the file
+ *                               at runtime, so the operator file is the base
+ *                               and only absent `defaultPlanTools` /
+ *                               `safeSubcommands` are appended. An explicit
+ *                               defaultPlanTools list is what keeps Plan mode
+ *                               usable when a display extension re-registers
+ *                               built-in tool names.)
  *
  * This is the full operator install path. It does not run migration helpers.
  */
@@ -1502,6 +1512,128 @@ async function installMagicContextConfig() {
 	return true;
 }
 
+/**
+ * Managed top-level keys for @narumitw/pi-plan-mode.
+ *
+ * Each is seeded only when the destination lacks it; an existing operator
+ * value is carried over verbatim. Every other key (notably `thinkingLevel`,
+ * `toggleShortcut`, `defaultPlanExportPath`, `implementationPlanRetention`,
+ * and the implementation-model defaults) stays entirely operator-owned: it is
+ * never seeded and never rewritten.
+ *
+ * Why this file needs a managed default at all: Pi tool registration is a
+ * name-keyed Map, so an extension that re-registers a built-in name replaces
+ * it and rewrites `sourceInfo.source` from "builtin" to its own package. Plan
+ * mode's automatic policy admits only tools whose source is "builtin"
+ * (`defaultPlanModeToolNames` -> `isBuiltinTool`), so a display-only extension
+ * such as pi-tool-display (registerToolOverrides) silently empties the
+ * automatic allowlist and Plan mode blocks every exploration tool. An explicit
+ * `defaultPlanTools` list bypasses that filter (`unique(configuredNames)`).
+ *
+ * `safeSubcommands` cannot rescue constructs Plan mode rejects before the
+ * per-command policy runs: redirects (`2>/dev/null`, `>`), command
+ * substitution, and bare glob metacharacters (`*`, `?`, `[`, `{`) fail in
+ * `splitShellSegments`/`hasShellExpansion`. Quoting a glob makes it safe.
+ * `cd` is not in READ_ONLY_COMMANDS, so it needs a literal prefix here; it is
+ * deliberately not seeded because that would pin an absolute machine path.
+ *
+ * A destination that cannot be read as a JSON object fails closed (mirrors
+ * mergeMcpConfig / installMagicContextConfig): a corrupt operator file is
+ * never replaced silently.
+ *
+ * `options.agentDir` / `options.sourcePath` let tests drive the seed against a
+ * temp agent dir without touching the real ~/.pi/agent.
+ */
+const PLAN_MODE_SEED_KEYS = ["defaultPlanTools", "safeSubcommands"];
+
+async function installPlanModeConfig(options = {}) {
+	const src =
+		options.sourcePath ??
+		path.join(repoRoot, "configs", "pi-plan-mode", "config.json");
+	if (!(await pathExists(src))) {
+		console.warn("Skip pi-plan-mode config: source missing at", src);
+		return false;
+	}
+
+	let templateRaw;
+	try {
+		templateRaw = await fs.readFile(src, "utf-8");
+	} catch (err) {
+		console.error(`Failed to read pi-plan-mode template: ${err.message}`);
+		return false;
+	}
+	let templateObj;
+	try {
+		templateObj = JSON.parse(templateRaw);
+	} catch (err) {
+		console.error(
+			`pi-plan-mode template is invalid JSON (${src}): ${err.message}`,
+		);
+		return false;
+	}
+	if (!isPlainObject(templateObj)) {
+		console.error(`pi-plan-mode template must be a JSON object: ${src}`);
+		return false;
+	}
+
+	const agentDir = options.agentDir ?? piHome;
+	const dest = path.join(agentDir, "pi-plan-mode.json");
+
+	const destExists = await pathExists(dest);
+	const seededKeys = [];
+	if (destExists) {
+		let destObj;
+		try {
+			destObj = JSON.parse(await fs.readFile(dest, "utf-8"));
+		} catch (err) {
+			// Hard-fail: never replace an operator file we cannot read.
+			console.error(
+				`Destination pi-plan-mode config is invalid JSON (${dest}): ${err.message}. ` +
+					"Fix or remove it before re-running install-global (refusing to drop operator settings).",
+			);
+			return false;
+		}
+		if (!isPlainObject(destObj)) {
+			console.error(
+				`Destination pi-plan-mode config must be a JSON object: ${dest}`,
+			);
+			return false;
+		}
+		// Operator file is the base: its keys, its order, its values. Managed
+		// keys are appended only when absent, so /plan settings edits and any
+		// unrelated operator key survive untouched.
+		let changed = false;
+		for (const key of PLAN_MODE_SEED_KEYS) {
+			if (!Object.hasOwn(templateObj, key)) continue;
+			if (Object.hasOwn(destObj, key)) continue;
+			destObj[key] = templateObj[key];
+			seededKeys.push(key);
+			changed = true;
+		}
+		if (!changed) {
+			console.log(`Keep existing pi-plan-mode config (managed keys present): ${dest}`);
+			return true;
+		}
+		await fs.writeFile(dest, `${JSON.stringify(destObj, null, 2)}\n`, {
+			encoding: "utf-8",
+		});
+		console.log(
+			`Seeded pi-plan-mode managed keys (no operator value present): ${seededKeys.join(", ")}`,
+		);
+		return true;
+	}
+
+	await ensureDir(agentDir);
+	for (const key of PLAN_MODE_SEED_KEYS) {
+		if (Object.hasOwn(templateObj, key)) seededKeys.push(key);
+	}
+	await fs.writeFile(dest, `${JSON.stringify(templateObj, null, 2)}\n`, {
+		encoding: "utf-8",
+	});
+	console.log(`Seeded pi-plan-mode config: ${dest}`);
+	return true;
+}
+
 async function main() {
 	console.log(`Installing Pi Workflows globally to ${piHome}...`);
 	const packageAssetRoot = path.join(piHome, "hkx-pi-workflows");
@@ -1812,6 +1944,12 @@ async function main() {
 	const magicContextConfigOk = await installMagicContextConfig();
 	if (!magicContextConfigOk) failed.push("magic-context config");
 
+	// Seed Plan-mode policy keys (the /plan settings UI rewrites the file at
+	// runtime; an extension that re-registers built-in tool names otherwise
+	// empties the automatic allowlist).
+	const planModeConfigOk = await installPlanModeConfig();
+	if (!planModeConfigOk) failed.push("pi-plan-mode config");
+
 	if (failed.length > 0) {
 		console.error(
 			`\nInstall completed with ${failed.length} non-fatal issue(s): ${failed.join(", ")}`,
@@ -1851,6 +1989,9 @@ async function main() {
 	console.log(
 		"magic-context: configs/magic-context/magic-context.jsonc → ${XDG_CONFIG_HOME}/cortexkit/magic-context.jsonc (authoritative; backup previous)",
 	);
+	console.log(
+		"pi-plan-mode: configs/pi-plan-mode/config.json → seed ~/.pi/agent/pi-plan-mode.json (missing managed keys only)",
+	);
 }
 
 // Export the managed-overlay installer so the versioned smoke suite can
@@ -1872,6 +2013,7 @@ export {
 	installMagicContextConfig,
 	installPiGoalConfig,
 	installPiUnipiNotifyConfig,
+	installPlanModeConfig,
 	// Exported for the retirement regression suite; main() uses it inline for
 	// rules, commands/prompts, skills, agents, and chains.
 	pruneDanglingLinks,

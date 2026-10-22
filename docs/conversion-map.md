@@ -383,6 +383,12 @@ Current overlays:
   - written on every install (never symlinked); the previous destination is backed up (timestamped `.bak.*` sibling) before the write
   - seed keys (`historian`) are seed-if-missing: the template carries a working default, so a cold install gets a configured historian, and `scripts/install.mjs` writes it only when the destination lacks the key — an existing operator model pick is carried over verbatim, so `npm run install-global` cannot silently undo it; an unreadable or non-object destination fails closed
   - Magic Context owns compaction; pi native `compaction` is disabled in `configs/agent-settings.json`
+- `configs/pi-plan-mode/config.json`
+  - seeded by `npm run install-global` into `~/.pi/agent/pi-plan-mode.json`, **missing managed keys only**
+  - the `/plan` settings UI rewrites the file at runtime, so the operator file is the base and only an absent `defaultPlanTools` / `safeSubcommands` is appended; a fully-seeded file is not rewritten and an unreadable or non-object destination fails closed
+  - why: Plan mode's automatic policy admits only tools whose `sourceInfo.source` is `builtin`, and an extension that re-registers a built-in name (pi-tool-display `registerToolOverrides`) rewrites that to its own package, emptying the allowlist. An explicit `defaultPlanTools` list bypasses that filter
+  - limits: `safeSubcommands` cannot rescue redirects (`2>/dev/null`), command substitution, or bare globs (quote them); `cd` needs a literal prefix and is deliberately not seeded
+  - operator-owned keys stay out of the template: `thinkingLevel`, `toggleShortcut`, `defaultPlanExportPath`, `implementationPlanRetention`, `defaultImplementationModel`, `defaultImplementationThinkingLevel`
 
 ## Global agent settings
 

@@ -1,0 +1,7 @@
+{
+  "defaultPlanTools": ["read", "bash", "grep", "find", "ls", "ffgrep", "fffind"],
+  "safeSubcommands": {
+    "git": ["rev-parse", "blame", "describe", "merge-base", "ls-tree", "cat-file"],
+    "gh": ["pr view", "pr list", "pr diff", "issue view", "issue list", "run list", "run view"]
+  }
+}

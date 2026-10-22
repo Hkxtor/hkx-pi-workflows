@@ -42,6 +42,7 @@ const requiredFiles = [
 	"configs/pi-unipi-notify/config.json",
 	"configs/pi-goal/pi-goal.json",
 	"configs/magic-context/magic-context.jsonc",
+	"configs/pi-plan-mode/config.json",
 	"configs/agent-settings.json",
 	"configs/keybindings.json",
 	"agents/code-reviewer.md",
@@ -74,6 +75,8 @@ const requiredFiles = [
 	"scripts/tests/pi-unipi-notify-seed.mjs",
 	// pi-goal seed (Path B; never overwrite /goal settings rewrites).
 	"scripts/tests/pi-goal-seed.mjs",
+	// pi-plan-mode managed-key seed (Path B; never overwrite /plan settings rewrites).
+	"scripts/tests/pi-plan-mode-seed.mjs",
 	// magic-context authoritative managed overlay (Path B; backup + overwrite).
 	"scripts/tests/magic-context-install.mjs",
 	// GateGuard, custom-header compatibility, and artifact auto-reply suites.
@@ -1064,6 +1067,137 @@ async function main() {
 					Array.isArray(mc.historian.pi.fallback_models),
 				"historian.pi.fallback_models must be an array when set",
 			);
+		}
+	}
+
+	// Managed @narumitw/pi-plan-mode policy keys. install.mjs seeds only the
+	// missing managed keys into an existing operator file (the /plan settings UI
+	// rewrites that file at runtime), so the template must stay minimal: seed
+	// `defaultPlanTools` and `safeSubcommands`, never operator-owned keys such as
+	// `thinkingLevel` / `toggleShortcut` / `defaultPlanExportPath`.
+	//
+	// The explicit tool list is load-bearing, not cosmetic: Plan mode's automatic
+	// policy admits only tools whose sourceInfo.source is "builtin", and an
+	// extension that re-registers a built-in name (pi-tool-display
+	// registerToolOverrides) rewrites that to its own package, emptying the
+	// automatic allowlist. Plan mode then blocks read/bash/grep/find/ls.
+	const planModeConfigPath = path.join(
+		root,
+		"configs",
+		"pi-plan-mode",
+		"config.json",
+	);
+	let planModeParseOk = true;
+	let planModeConfig;
+	try {
+		planModeConfig = JSON.parse(
+			await fs.readFile(planModeConfigPath, "utf8"),
+		);
+	} catch (err) {
+		planModeParseOk = false;
+		if (err && err.code !== "ENOENT") {
+			errors.push(
+				`configs/pi-plan-mode/config.json: invalid JSON: ${err.message}`,
+			);
+		}
+	}
+	if (planModeParseOk) {
+		if (
+			!planModeConfig ||
+			typeof planModeConfig !== "object" ||
+			Array.isArray(planModeConfig)
+		) {
+			errors.push(
+				"configs/pi-plan-mode/config.json: must be a JSON object",
+			);
+		} else {
+			const pmPath = "configs/pi-plan-mode/config.json";
+			const pmAssert = (cond, msg) => {
+				if (!cond) errors.push(`${pmPath}: ${msg}`);
+			};
+			// The cold-install path writes the WHOLE template while the merge path
+			// appends only PLAN_MODE_SEED_KEYS. A new template key that is missing
+			// from that list would make the two paths diverge silently (cold install
+			// ships it, an existing operator file never gets it), so the template is
+			// pinned to exactly the managed keys.
+			const managedPlanModeKeys = new Set([
+				"defaultPlanTools",
+				"safeSubcommands",
+			]);
+			for (const key of Object.keys(planModeConfig)) {
+				pmAssert(
+					managedPlanModeKeys.has(key),
+					`template must contain only managed keys (unexpected "${key}"); extend PLAN_MODE_SEED_KEYS in scripts/install.mjs if it should seed`,
+				);
+			}
+			const tools = planModeConfig.defaultPlanTools;
+			pmAssert(
+				Array.isArray(tools) && tools.length > 0,
+				"defaultPlanTools must be a non-empty array (an empty list denies every tool)",
+			);
+			if (Array.isArray(tools)) {
+				pmAssert(
+					tools.every((n) => typeof n === "string" && n.trim().length > 0),
+					"defaultPlanTools entries must be non-empty strings",
+				);
+				pmAssert(
+					new Set(tools).size === tools.length,
+					"defaultPlanTools must not contain duplicates",
+				);
+				// `edit` and `write` are policy-blocked regardless of settings, so
+				// listing them only implies a grant the extension will never honor.
+				for (const blocked of ["edit", "write", "update_plan"]) {
+					pmAssert(
+						!tools.includes(blocked),
+						`defaultPlanTools must not list "${blocked}" (blocked by Plan policy regardless of settings)`,
+					);
+				}
+				// The seed exists so exploration stays usable under a display-only
+				// extension; dropping these would reintroduce the outage.
+				for (const required of ["read", "bash", "grep", "find", "ls"]) {
+					pmAssert(
+						tools.includes(required),
+						`defaultPlanTools must include "${required}" (core exploration tool)`,
+					);
+				}
+			}
+			const safe = planModeConfig.safeSubcommands;
+			if (safe !== undefined) {
+				pmAssert(
+					safe && typeof safe === "object" && !Array.isArray(safe),
+					"safeSubcommands must be an object",
+				);
+				if (safe && typeof safe === "object" && !Array.isArray(safe)) {
+					for (const [command, subcommands] of Object.entries(safe)) {
+						pmAssert(
+							command.trim().length > 0,
+							"safeSubcommands command keys must be non-empty",
+						);
+						pmAssert(
+							Array.isArray(subcommands) &&
+								subcommands.every(
+									(s) => typeof s === "string" && s.trim().length > 0,
+								),
+							`safeSubcommands.${command} must be an array of non-empty strings`,
+						);
+					}
+				}
+			}
+			// Operator-owned keys must never be seeded: /plan settings owns them and
+			// a versioned value would silently pin a machine-specific choice.
+			for (const operatorOwned of [
+				"thinkingLevel",
+				"toggleShortcut",
+				"defaultPlanExportPath",
+				"implementationPlanRetention",
+				"defaultImplementationModel",
+				"defaultImplementationThinkingLevel",
+			]) {
+				pmAssert(
+					!Object.hasOwn(planModeConfig, operatorOwned),
+					`do not seed operator-owned key "${operatorOwned}" (the /plan settings UI owns it)`,
+				);
+			}
 		}
 	}
 
