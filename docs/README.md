@@ -14,6 +14,7 @@ Use this page when you need to decide **which doc to open**, not when you need t
 | What currently ships in this package? | `conversion-map.md` |
 | Which skill should win when several could match? | `skill-routing.md` |
 | Should this be a language rule or a runtime extension? | `language-hooks.md` |
+| How do I wire a classifier / decision model (Jev, StartLux) and call it from `codemode`? | `classifier-models.md` |
 | How does instinct inventory + evolve work (Linux/Windows)? | `instinct-evolve-plan.md` + skill `instinct-evolve` |
 | Which agents have a command/skill/chain entrance (ECC port status)? | `command-agent-map.md` (formal map); `command-agent-map-checklist.md` (M1/M2 audit trail) |
 | Where is the closed Unified Memory PRD (vault vs instinct vs OM)? | `prds/unified-memory-instinct-om.prd.md` + skill `unified-memory` |
@@ -109,6 +110,17 @@ Read this when you need to decide:
 - whether behavior must react to live tool events in `extensions/`
 - how `hkx-language-quality.ts` and `hkx-gateguard.ts` are intended to behave
 - where TUI appearance (statusline / working indicator) is documented (`architecture.md`, `conversion-map.md`, root README appearance section)
+
+### `classifier-models.md`
+
+Classifier (decision) model guidance: System One endpoints, `models.json` wiring, and `codemode` usage.
+
+Read this when you need to decide:
+
+- whether an endpoint speaks the System One protocol, and how to set `baseUrl` so pi appends `systemone` correctly
+- how each provider's image wire format differs (`assets` / `images` / `state-image-urls`) and when the caller must write `<image>` markers
+- why every `choice` question needs a fallback criterion (measured: without one, `choice: null` makes the parse fail and drops the answer)
+- what a classifier cannot do (it is not a chat model, it never appears in `/model`)
 
 ### `sol-pi-overlap.md`
 

@@ -32,7 +32,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 3. Reuse the package conventions already present instead of introducing a second pattern.
 4. Prefer compact workflow guidance over long tutorial text.
 5. Verify with `npm run validate` and `npm test` after changing package surfaces, install scripts, or MCP resolver logic.
-6. Before creating a new surface, check `docs/architecture.md` for layer boundaries, `docs/conversion-map.md` for the current stable package map, and `docs/skill-routing.md` when skill families may overlap.
+6. Before creating a new surface, check `docs/architecture.md` for layer boundaries, `docs/conversion-map.md` for the current stable package map, and `docs/skill-routing.md` when skill families may overlap. For model-endpoint or classifier work, also check `docs/classifier-models.md`.
 7. When changing what gets installed, also check `package.json` (`pi` / `pi-subagents`), `scripts/install.mjs`, `scripts/validate.mjs`, `README.md` dual-path section, `configs/agent-settings.json` (if packages/settings change), `configs/keybindings.json` (if shortcuts change), and the installed target paths under `~/.pi/agent/`.
 8. Keep dual install paths honest: Path A is `pi install` (official package resources only); Path B is `npm run install-global` (full operator overlays). Do not claim Path A installs rules/MCP/GLOBAL_AGENTS.
 
@@ -147,6 +147,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - `docs/conversion-map.md` is the stable package surface map.
 - `docs/skill-routing.md` is the primary-skill router when skill families overlap.
 - `docs/language-hooks.md` explains the boundary between language rules and runtime extensions.
+- `docs/classifier-models.md` explains classifier / decision model (System One) wiring and `codemode` usage.
 - `AGENTS.md` is the repository maintenance rule set.
 - `GLOBAL_AGENTS.md` is the source for the installed global development handbook.
 - `APPEND_SYSTEM.md` is the source for the installed global system-level tool discipline.

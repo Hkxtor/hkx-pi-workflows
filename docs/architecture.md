@@ -447,6 +447,7 @@ The package aims to be:
 - `docs/conversion-map.md` — current package surface map
 - `docs/skill-routing.md` — primary skill choice when families overlap
 - `docs/language-hooks.md` — narrower rule vs extension guidance for language/runtime behavior
+- `docs/classifier-models.md` — classifier / decision model (System One) wiring and `codemode` usage
 - `AGENTS.md` — repository maintenance rules
 - `GLOBAL_AGENTS.md` — source of the global development handbook
 - `APPEND_SYSTEM.md` — source of the global system-level tool discipline

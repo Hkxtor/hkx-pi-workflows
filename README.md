@@ -355,6 +355,7 @@ npm test
 - `docs/conversion-map.md` — current package surface map
 - `docs/skill-routing.md` — primary skill choice when families overlap
 - `docs/language-hooks.md` — how language rules and runtime extensions divide responsibility
+- `docs/classifier-models.md` — classifier / decision model wiring and `codemode` usage
 - `AGENTS.md` — repository maintenance rules
 - `GLOBAL_AGENTS.md` — global development handbook source
 - `APPEND_SYSTEM.md` — global system-level tool discipline source

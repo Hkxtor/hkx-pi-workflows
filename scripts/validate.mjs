@@ -34,6 +34,7 @@ const requiredFiles = [
 	"docs/conversion-map.md",
 	"docs/skill-routing.md",
 	"docs/language-hooks.md",
+	"docs/classifier-models.md",
 	"configs/pi-permission-system/config.json",
 	"configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md",
 	"configs/pi-lsp/pi-lsp.json",

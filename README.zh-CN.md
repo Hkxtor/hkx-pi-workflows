@@ -353,6 +353,7 @@ npm test
 - `docs/conversion-map.md` — 当前包 surface 地图
 - `docs/skill-routing.md` — skill 族重叠时的主 skill 选择
 - `docs/language-hooks.md` — 语言规则与运行时扩展的分工
+- `docs/classifier-models.md` — 分类器 / 决策模型（System One）接入与 `codemode` 用法
 - `AGENTS.md` — 本仓库维护规则
 - `GLOBAL_AGENTS.md` — 全局开发手册源
 - `APPEND_SYSTEM.md` — 全局系统级工具纪律源
