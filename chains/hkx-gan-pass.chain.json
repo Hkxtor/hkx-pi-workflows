@@ -1,0 +1,25 @@
+{
+  "name": "hkx-gan-pass",
+  "description": "Single generator-evaluator pass for a GAN-style build loop: the generator implements or improves the artifact against gan/spec.md, then an isolated read-only evaluator tests the running result and returns scores plus a pass/fail/plateau/blocked verdict. The main loop owns repetition and the stop decision.",
+  "chain": [
+    {
+      "agent": "hkx.gan-generator",
+      "phase": "Generate",
+      "label": "Implement or improve the artifact",
+      "as": "gen",
+      "output": "gan/generator-state.md",
+      "outputMode": "file-only",
+      "progress": true,
+      "task": "Run one generator iteration for this build.\n\nBrief:\n{task}\n\nRead `gan/spec.md` first — it is the contract for what done means. If `gan/feedback.md` exists, read it and address every finding in this iteration, ordered by functionality defects first, then robustness, craft, omitted features, and design.\n\nFirst iteration: scaffold per the spec's technical constraints, implement the must-have features end to end enough to be runnable, start the runbook from the spec's \"How to run it\" section, then smoke-check.\nLater iteration: fix the feedback, re-run the runbook, and verify each named issue is actually gone.\n\nYou are the only writer in this worktree. Do not self-evaluate and do not produce rubric scores — that judgment belongs to the evaluator. Do not edit the spec or rubric, do not weaken or delete tests, and do not leave the build in a non-runnable state.\n\nWrite `gan/generator-state.md` (what was built, how to run it, feedback addressed vs outstanding, known gaps, commands run) and return: iteration number, file-level changes, runbook status with URL if relevant, issues addressed vs outstanding, and anything the parent must decide."
+    },
+    {
+      "agent": "hkx.gan-evaluator",
+      "phase": "Evaluate",
+      "label": "Score the running artifact",
+      "as": "verdict",
+      "output": "gan/feedback.md",
+      "progress": true,
+      "task": "Evaluate the running artifact for this build.\n\nBrief:\n{task}\n\nGenerator report for this iteration:\n{outputs.gen}\n\nRead `gan/spec.md` first, especially its \"How to run it\" section. Then establish the evaluation mode you can actually achieve (live / headless / static) and state it explicitly — a runbook failure is a `blocked` verdict, never a silent downgrade to a static code read scored as if it were live.\n\nTest the artifact, not the author's summary: run the runbook verbatim, walk every numbered must-have feature on the happy path plus edge cases (empty, oversized, unicode, double submit, refresh mid-flow), probe error states, and audit cross-artifact consistency. Score Functionality/Craft/Coherence/Robustness 1-10 against the weighted rubric (pass threshold 7.0) unless the spec supplies its own criteria.\n\nYou have no write tools — findings go in your report. Never suggest a fix and then grade it. Every must-fix needs evidence: a command you ran, a path and line, or a reproduced behavior. Requirements absent from the spec go under `Spec Gaps`, not under must-fix.\n\nReturn the report (mode, runbook, score table with arithmetic, must-fix, should-fix, nitpicks, spec gaps) ending with exactly one verdict: pass | fail | plateau | blocked, and one paragraph justifying it."
+    }
+  ]
+}
