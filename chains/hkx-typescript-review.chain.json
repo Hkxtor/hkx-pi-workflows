@@ -1,0 +1,60 @@
+{
+  "name": "hkx-typescript-review",
+  "description": "TypeScript-focused multi-angle review: typescript-reviewer + security + tests + silent failures, then synthesis.",
+  "chain": [
+    {
+      "parallel": [
+        {
+          "agent": "hkx.typescript-reviewer",
+          "phase": "Review",
+          "label": "TS idioms",
+          "as": "ts",
+          "output": "ts-review/ts.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "TypeScript-focused review for:\n\n{task}\n\nFocus: type safety (any leakage, unsafe casts/assertions), generics fit, async patterns (unawaited promises, error propagation), module boundaries and import hygiene, strictness flag compliance, dependency surface, and performance-sensitive paths.\nInspect the actual staged/unstaged diff and related TypeScript files. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nReturn severity-ranked findings, a verdict (approve / request-changes / block), and the smallest safe fixes.\n\nConfigured output path is under `.pi-subagents/` (gitignored) and is the only permitted write target for this review. Do not modify project/source files. Do not request supervisor input solely to write that configured review artifact. If a tool or permission layer blocks the write, retry once; parent auto-reply may handle artifact-only authorization."
+        },
+        {
+          "agent": "hkx.security-reviewer",
+          "phase": "Review",
+          "label": "Security",
+          "as": "security",
+          "output": "ts-review/security.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Security review of TypeScript changes for:\n\n{task}\n\nFocus: injection surfaces (template interpolation into shell/HTML/URL), prototype pollution, unsafe deserialization, XSS paths, path traversal, secrets in code or logs, authz gaps, and sensitive data exposure.\nInspect the actual diff and call sites. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored) and is the only permitted write target for this review. Do not modify project/source files. Do not request supervisor input solely to write that configured review artifact. If a tool or permission layer blocks the write, retry once; parent auto-reply may handle artifact-only authorization."
+        },
+        {
+          "agent": "hkx.pr-test-analyzer",
+          "phase": "Review",
+          "label": "Tests/regression",
+          "as": "tests",
+          "output": "ts-review/tests.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Test coverage and regression-risk review for TypeScript changes in:\n\n{task}\n\nFocus: unit/integration tests, edge cases (null/undefined/empty), async and error-path coverage, and whether changed behavior is locked by the project's test suite.\nInspect the actual diff and related tests. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored) and is the only permitted write target for this review. Do not modify project/source files. Do not request supervisor input solely to write that configured review artifact. If a tool or permission layer blocks the write, retry once; parent auto-reply may handle artifact-only authorization."
+        },
+        {
+          "agent": "hkx.silent-failure-hunter",
+          "phase": "Review",
+          "label": "Silent failures",
+          "as": "silent",
+          "output": "ts-review/silent.md",
+          "outputMode": "file-only",
+          "progress": false,
+          "task": "Hunt silent failures in TypeScript changes for:\n\n{task}\n\nFocus: swallowed errors (empty catch blocks, catch-and-return-undefined), floating/unawaited promises, unhandled rejections, optional chaining that hides failures, fallbacks that mask real errors, and fire-and-forget side channels.\nInspect the actual diff. Cite path:line evidence.\nDo not modify project/source files; returning findings via the configured output artifact is allowed.\n\nConfigured output path is under `.pi-subagents/` (gitignored) and is the only permitted write target for this review. Do not modify project/source files. Do not request supervisor input solely to write that configured review artifact. If a tool or permission layer blocks the write, retry once; parent auto-reply may handle artifact-only authorization."
+        }
+      ],
+      "concurrency": 4
+    },
+    {
+      "agent": "hkx.agent-evaluator",
+      "phase": "Synthesis",
+      "label": "TS verdict",
+      "as": "verdict",
+      "output": "ts-review/verdict.md",
+      "outputMode": "file-only",
+      "task": "Synthesize a final TypeScript review verdict. Deduplicate findings, keep only evidence-backed issues, and rank by severity.\n\nScope/request:\n{task}\n\nTS review:\n{outputs.ts}\n\nSecurity review:\n{outputs.security}\n\nTest review:\n{outputs.tests}\n\nSilent-failure review:\n{outputs.silent}\n\nReturn:\n1. Final verdict: approve | request-changes | block\n2. CRITICAL/HIGH findings first, then actionable MEDIUM\n3. Deduped list with source angle tags\n4. Must-fix-now vs optional/defer\n5. Suggested validation commands (typecheck, lint, unit tests only if relevant)\nDo not modify project/source files."
+    }
+  ]
+}

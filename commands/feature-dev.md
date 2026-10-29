@@ -33,10 +33,29 @@ If `$ARGUMENTS` is empty, ask the user what feature should be built.
 - ask targeted design and edge-case questions;
 - wait for the user's response before proceeding.
 
-### 4. Architecture Design
+### 4. Architecture Design (in-session)
 
-- use the `hkx.code-architect` subagent to design the feature;
-- provide the implementation blueprint with concrete files, interfaces, and build order;
+- design the feature in this session from the exploration findings, fitting existing codebase patterns (load skill `hkx-plan` / `intent-driven-development` guidance as needed);
+- produce an implementation blueprint with concrete files, interfaces, and build order:
+
+```markdown
+## Architecture: {Feature}
+### Design Decisions
+- {Decision}: {Rationale}
+### Files to Create / Modify
+| File | Purpose/Changes | Priority |
+### Data Flow
+{short description}
+### Build Sequence
+1. types and interfaces
+2. core logic
+3. integration layer
+4. UI
+5. tests
+6. docs
+```
+
+- choose the simplest architecture that meets the requirement; avoid speculative abstractions unless the repo already uses them;
 - wait for the user's approval before implementing.
 
 ### 5. Implementation

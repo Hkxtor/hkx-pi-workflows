@@ -31,8 +31,7 @@ Load skill `hookify-rules` for format details when needed.
 
 **If `$ARGUMENTS` is empty**
 
-- Prefer subagent `hkx.conversation-analyzer` with a task that includes recent conversation context / user corrections (fresh context).
-- **Fallback** (no pi-subagents): perform the same analysis **read-only in this session** using the conversation-analyzer output contract (YAML behaviors list). Do not write files during analysis.
+- Perform the conversation analysis **read-only in this session** using the conversation-analysis heuristics and YAML output contract from the `hookify-rules` skill (explicit corrections, frustrated reactions, repeated issues, reverted changes). Do not write files during analysis.
 
 ### 2. Present proposal
 

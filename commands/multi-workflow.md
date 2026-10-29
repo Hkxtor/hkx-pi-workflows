@@ -86,8 +86,8 @@ Do **not** re-implement the six phases inline if you can invoke `/workflow` or t
 **Mode `plan`**
 
 - **No production code edits.**
-- Use **`/hkx-plan`** (or **`/blueprint`** for multi-session construction, **`/hkx-plan-prd`** for PRD-shaped work).
-- Optional read-only agents: `hkx.code-explorer`, `hkx.planner`, `hkx.architect` (or run only the research/plan prefix of a delivery flow and stop).
+- Use **`/hkx-plan`** (or **`/blueprint`** for multi-session construction, **`/hkx-plan-prd`** for PRD-shaped work). Design procedure runs in the main session via skills (`hkx-plan`, `intent-driven-development`, `hexagonal-architecture`, `domain-modeling`, `api-design`).
+- Optional read-only agent: `hkx.code-explorer` for repo evidence gathering (or run only the research/plan prefix of a delivery flow and stop).
 - Write plan artifacts under `.pi/plans/` or the path the user names.
 - Present the plan and **wait for explicit approval** before any execute mode.
 
@@ -112,7 +112,7 @@ Same as **full** / **execute**, with emphasis:
 
 - API, data, algorithms, business logic, migrations.
 - Skills: `backend-patterns`, language `*-workflow`, `api-design` as needed.
-- Review: language chain if known (`hkx-go-review`, `hkx-rust-review`, `hkx-python-review`; TS via `hkx-pr-review` / typescript reviewer agents), else **`hkx-pr-review`** + **`security-scan`** when auth/data touched.
+- Review: language chain if known (`hkx-typescript-review`, `hkx-go-review`, `hkx-rust-review`, `hkx-python-review`), else **`hkx-pr-review`** + **`security-scan`** when auth/data touched.
 - Still **one writer**; use reviewers as advisors, not a second writer.
 
 ### E. Frontend-focused (ECC `/multi-frontend`)
@@ -151,7 +151,7 @@ Delivery:
 Review:
 
 - `hkx-pr-review`, `hkx-adversarial-review`, `hkx-security-scan`
-- `hkx-go-review`, `hkx-python-review`, `hkx-rust-review`
+- `hkx-typescript-review`, `hkx-go-review`, `hkx-python-review`, `hkx-rust-review`
 
 Build recovery:
 

@@ -31,7 +31,7 @@ Operator entry: `/blueprint`.
 1. **Research** — git remote/default branch; repo structure; existing `.pi/plans/`, PRDs, ADRs, tests
 2. **Design** — 3–12 one-PR-sized steps; dependency edges; parallel vs serial; model tier; rollback
 3. **Draft** — write `.pi/plans/{kebab-objective}.blueprint.md` (self-contained steps)
-4. **Review** — fresh `hkx.planner` or `hkx.code-reviewer` adversarial pass; fix critical findings
+4. **Review** — fresh `hkx.code-reviewer` adversarial pass; fix critical findings
 5. **Register** — present step count, parallelism summary, next step; optional `/hkx-plan-canvas`
 
 Git + `gh` available → branch/PR/CI mode per step. Otherwise → direct edit-in-place mode.

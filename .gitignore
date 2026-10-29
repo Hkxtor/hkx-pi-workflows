@@ -5,6 +5,8 @@ node_modules/
 # Local pi / agent state (may hold MCP tokens after apply-mcp-profile)
 .pi/
 .pi-subagents/
+# Local unipi extension runtime state (config migrations, version markers)
+.unipi/
 
 # Local scratch only — versioned suite lives in scripts/tests/ (npm test)
 scripts/_smoke/

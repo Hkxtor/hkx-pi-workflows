@@ -57,15 +57,11 @@ previous output. Use `parallel` when steps are independent.
 
 General:
 
-- `planner` — requirement restatement, risk decomposition, step planning
-- `architect` — architecture, system design, refactor proposals
-- `code-architect` — feature-layer blueprint fitted to existing codebase patterns
 - `tdd-guide` — write tests → implement → 80%+ coverage
 - `code-reviewer` — generic code review
 - `security-reviewer` — security audit, OWASP, secret leakage
 - `refactor-cleaner` — dead code, duplicates, knip-class cleanup
 - `doc-updater` — documentation, codemap, README
-- `docs-lookup` — third-party library API lookups (Context7)
 - `e2e-runner` — end-to-end test orchestration
 - `database-reviewer` — PostgreSQL schema, migration, performance
 - `harness-optimizer` — local agent harness configuration
@@ -80,6 +76,12 @@ Build error resolvers:
 Code reviewers:
 
 - `python-reviewer` / `typescript-reviewer` / `go-reviewer` / `rust-reviewer`
+
+Main-session surfaces (not agents — emit a command/skill step, not a `task()` call):
+
+- `/hkx-plan` — requirement restatement, step planning, sizing/phasing (`design` and `plan` tags)
+- `documentation-lookup` skill — third-party library/API lookups (`lookup` tag)
+- design skills — `intent-driven-development`, `hexagonal-architecture`, `domain-modeling`, `api-design`
 
 A misspelled agent name fails invocation. Cross-check against this list before
 emitting.
@@ -126,17 +128,17 @@ Trigger words below are matched case-insensitively.
 
 | Tag | Trigger words | Default chain |
 |---|---|---|
-| `design` | architecture, design, choose, evaluate, RFC | `planner,architect,code-architect` |
-| `plan` | plan, breakdown, milestone | `planner` |
+| `design` | architecture, design, choose, evaluate, RFC | main-loop `/hkx-plan` step (optionally `code-explorer` recon first) |
+| `plan` | plan, breakdown, milestone | main-loop `/hkx-plan` step |
 | `impl` | implement, build, add, create, port | `tdd-guide,<lang>-reviewer` |
 | `test` | test, coverage, e2e, integration | `tdd-guide,e2e-runner` |
-| `refactor` | refactor, cleanup, dedupe, split | `architect,refactor-cleaner,<lang>-reviewer` |
-| `migration` | migrate, upgrade, rewrite, port | `architect,tdd-guide,<lang>-reviewer` |
+| `refactor` | refactor, cleanup, dedupe, split | `refactor-cleaner,<lang>-reviewer` |
+| `migration` | migrate, upgrade, rewrite, port | `tdd-guide,<lang>-reviewer` |
 | `db` | schema, migration, index, SQL, Postgres, alembic, sqlmodel | `database-reviewer,<lang>-reviewer` |
 | `security` | encrypt, auth, secret, OWASP, PII | `security-reviewer,<lang>-reviewer` |
 | `build` | build, compile, lint failure, CI | language build resolver (falls back to `tdd-guide` when unsupported/unknown) |
 | `docs` | docs, readme, codemap, changelog | `doc-updater` |
-| `lookup` | lookup, reference, API usage | `docs-lookup` |
+| `lookup` | lookup, reference, API usage | main-loop `documentation-lookup` skill step |
 | `review` | review, audit, verify | `<lang>-reviewer,code-reviewer` |
 | `loop` | loop, autonomous, watchdog | `loop-operator` |
 
@@ -155,8 +157,10 @@ Chain composition rules:
    rationale".
 8. Chain length ≤ 4 after deduplication. If exceeded, drop weakest tag (`lookup`
    and `docs` first).
-9. Do not pair `planner` and `architect` in an `impl` chain. Pair them only on
-   `design` steps.
+9. `design`, `plan`, and `lookup` steps run in the **main session** (`/hkx-plan`
+   command or `documentation-lookup` skill): emit a command/skill step, not a
+   `task()` call. Pair `code-explorer` in front only when the step needs repo
+   evidence the plan does not already carry.
 10. Steps tagged `impl`, `refactor`, or `migration` end with a **reviewer-class**
     agent. `test` and `build` steps are gated by their own validators and do not
     require an additional reviewer.

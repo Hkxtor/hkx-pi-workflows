@@ -273,10 +273,8 @@ Representative agents:
 - `hkx.python-reviewer`
 - `hkx.go-reviewer`
 - `hkx.rust-reviewer`
-- `hkx.planner`
 - `hkx.tdd-guide`
 - `hkx.build-error-resolver`
-- `hkx.conversation-analyzer` — propose Hookify rules from conversation (read-only)
 
 ```ts
 subagent({

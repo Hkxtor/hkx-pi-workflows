@@ -44,7 +44,7 @@ Each phase delegates — it does not do the work inline.
 
 - **0. Intake** — restate the request. For `orch-build-mvp`, read the spec/design doc and extract scope, locked decisions, and a feature list.
 - **1. Research & Reuse** — use `find` / `search` / `read` for local code, then docs lookup via configured MCP tools, then package registries. Prefer adopting a proven implementation over net-new code.
-- **2. Plan** — delegate to the `planner` agent. Output a `task_list` ordered as thin vertical slices. → **GATE 1.**
+- **2. Plan** — run `/hkx-plan` in the main session (step quality, sizing/phasing, validation order). Output a `task_list` ordered as thin vertical slices. → **GATE 1.**
 - **3. Scaffold** — `orch-build-mvp` only: stand up the first end-to-end slice.
 - **4. Implement (TDD)** — drive each task through the `tdd-guide` agent (or the `tdd-workflow` skill): red → green → refactor. Honor the operation's first-move rule.
 - **5. Review** — `code-reviewer` agent. Add `security-reviewer` whenever the diff touches a security trigger.
@@ -64,7 +64,7 @@ Everything between the gates flows without stopping.
 | Phase | Primary | Fallback / escalation |
 |---|---|---|
 | Intake / understand | `code-explorer` | trace existing paths before a tweak, fix, or refactor |
-| Plan | `planner` | `architect`, `code-architect` for structural calls |
+| Plan | `/hkx-plan` (main session) | design skills (`hexagonal-architecture`, `api-design`) for structural calls |
 | Implement | `tdd-guide` (or `tdd-workflow` skill) | `build-error-resolver` / `/build-fix` on build breaks |
 | Review | `code-reviewer` / `/code-review` | language reviewer (`python-reviewer`, `typescript-reviewer`, `rust-reviewer`, `go-reviewer`) |
 | Security | `security-reviewer` | — |

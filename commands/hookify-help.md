@@ -16,7 +16,7 @@ Hookify creates **rule files** enforced by the Pi extension `hookify` to warn or
 | `/hookify-configure` | Enable / disable rules |
 | `/hookify-help` | This help |
 
-Skill: `hookify-rules` · Agent: `hkx.conversation-analyzer` · Extension: `extensions/hkx-hookify.ts`
+Skill: `hookify-rules` · Extension: `extensions/hkx-hookify.ts` (no-args conversation analysis runs in the main session via the skill)
 
 ## Rule locations
 

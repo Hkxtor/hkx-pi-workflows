@@ -293,10 +293,10 @@ process.exit(bad.length ? 1 : 0);
 		parseFailures.join("; "),
 	);
 	check("chains: old GateGuard hint removed", oldHintCount === 0, `count=${oldHintCount}`);
-	check("chains: neutral artifact hint count", newHintCount === 45, `count=${newHintCount}`);
+	check("chains: neutral artifact hint count", newHintCount === 49, `count=${newHintCount}`);
 	check(
 		"chains: neutral hint file count",
-		filesWithNewHint === 14,
+		filesWithNewHint === 15,
 		`count=${filesWithNewHint}`,
 	);
 }

@@ -172,6 +172,8 @@ Never start with `config-gc`. Inventory or stocktake first; delete only with exp
 | Operation entries | `orch-add-feature`, `orch-change-feature`, `orch-fix-defect`, `orch-refine-code`, `orch-build-mvp`, `orch-review` |
 | Generate agent plan only | `plan-orchestrate` |
 
+**orch skills vs chains — pick one, not both.** The `orch-*` skills and the packaged chains (`hkx-feature-flow`, `hkx-fix-defect`, `hkx-refactor-flow`, review/build-fix chains) cover overlapping delivery paths by design: **chains** are the repeatable, no-gates pipeline (run the whole sequence in one pass, best from routers like `/multi-workflow` or scripts); **orch skills** are the same shapes with **human gates** (plan approval at Gate 1, commit approval at Gate 2) plus per-operation first-move rules. When the operator is interactively driving, prefer the orch skill; when the operator asked for an end-to-end run or comes in through a router, prefer the chain. Do not nest one inside the other — that duplicates review lanes and re-runs gates.
+
 ### Repo understanding
 
 | Role | Skill |
@@ -216,18 +218,21 @@ Commands should stay thin. If guidance grows, keep it in the skill and point the
 
 Agents are invoked through pi-subagents (`subagent` tool / chains), not loaded like skills. The pairs below overlap by design; pick by scope, not by name similarity.
 
-### Planning and architecture agents
+### Planning and design (main session)
 
-| User says (examples) | Primary agent | Not primary |
-| --- | --- | --- |
-| system boundaries / service split / API contract / migration & rollback shape | `hkx.architect` | `hkx.code-architect` (too feature-scoped) |
-| design this feature to fit the existing codebase / blueprint with files, interfaces, build order | `hkx.code-architect` | `hkx.architect` (too system-level) |
+The planner/architect/code-architect agents were folded in the 2026-10 fold migration: design procedure is process knowledge, so it lives in skills/commands consumed by the main session instead of fresh-context subagents.
+
+| User says (examples) | Primary surface |
+| --- | --- |
+| system boundaries / service split / API contract / migration & rollback shape | skill `hexagonal-architecture`, `api-design`, `domain-modeling` + `/hkx-plan` |
+| design this feature to fit the existing codebase / blueprint with files, interfaces, build order | command `/hkx-plan` (step quality + sizing/phasing) + `feature-dev` Phase 4 in-session blueprint |
+| requirement restatement, step ordering, validation sequence | command `/hkx-plan`; skill `intent-driven-development` |
 
 Division of labor:
 
-- `hkx.architect` works at the **system layer**: module/service boundaries, data ownership, API contracts, scalability, and migration/rollback strategy. Its output is a tradeoff-driven design proposal.
-- `hkx.code-architect` works at the **feature layer**: it studies existing code organization and naming conventions first, then produces an implementation blueprint (concrete files, interfaces, data flow, build order) that fits the current patterns.
-- Rule of thumb: if the output is a decision among structural options, use `architect`; if the output is "where the new code goes and in what order", use `code-architect`. Both are read-only; neither replaces `hkx.planner` (task ordering/validation) or `hkx.code-explorer` (codebase recon).
+- **System-layer design** (module/service boundaries, data ownership, API contracts, migration/rollback) is covered by `hexagonal-architecture` / `api-design` guidance plus `/hkx-plan`.
+- **Feature-layer blueprinting** (concrete files, interfaces, data flow, build order) runs in `/hkx-plan` or `feature-dev` Phase 4 directly from the exploration evidence — no lossy mid-chain handoff.
+- Repo evidence gathering stays with `hkx.code-explorer` (context isolation earns its keep: heavy raw reads, use-and-discard). Adversarial review of a plan uses a fresh `hkx.code-reviewer`.
 
 ### Build recovery vs behavior changes
 

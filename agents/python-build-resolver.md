@@ -90,7 +90,7 @@ Return:
 
 - New or changed behavior needs tests first -> use `hkx.tdd-guide`.
 - General Python code review -> use `hkx.python-reviewer`.
-- Architecture changes -> use `hkx.architect` or `hkx.code-architect`.
+- Architecture changes -> use `/plan` / command `hkx-plan` (design runs in the main session).
 - Security investigation -> use `hkx.security-reviewer`.
 
 ## Reference

@@ -47,7 +47,6 @@ const requiredFiles = [
 	"configs/agent-settings.json",
 	"configs/keybindings.json",
 	"agents/code-reviewer.md",
-	"agents/planner.md",
 	"chains/hkx-pr-review.chain.json",
 	"chains/hkx-feature-flow.chain.json",
 	// MF-4: versioned smoke suite (npm test). Do not re-gitignore these.

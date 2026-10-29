@@ -35,7 +35,6 @@ const CURRENT_CONTRACT_FILES = [
 	"docs/language-hooks.md",
 	"skills/hookify-rules/SKILL.md",
 	"extensions/hkx-hookify.ts",
-	"agents/conversation-analyzer.md",
 ];
 const STALE_CURRENT_PATTERNS = [
 	["fact-forcing gate", /fact-forcing gate/i],

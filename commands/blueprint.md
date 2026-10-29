@@ -20,7 +20,7 @@ Follow the `blueprint` skill. Do not implement production code in this command.
 .pi/plans/{kebab-objective}.blueprint.md
 ```
 
-1. Adversarial review the plan with a **fresh** subagent (`hkx.planner` or `hkx.code-reviewer`). Fix critical findings in the plan file.
+1. Adversarial review the plan with a **fresh** subagent (`hkx.code-reviewer`). Fix critical findings in the plan file.
 2. Summarize: step count, parallel groups, mode (branch-pr vs direct), first step to run.
 3. Offer next actions (do not auto-run unless user asks):
 

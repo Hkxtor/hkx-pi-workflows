@@ -1,6 +1,6 @@
 {
   "name": "hkx-refactor-flow",
-  "description": "Behavior-preserving refactor: explore hotspots, clean with refactor-cleaner, then dual review.",
+  "description": "Behavior-preserving refactor: map the refactor surface, clean with in-step planning from the exploration evidence, then dual review.",
   "chain": [
     {
       "agent": "hkx.code-explorer",
@@ -13,23 +13,14 @@
       "task": "Map the refactor surface for:\n\n{task}\n\nIdentify duplication, dead paths, boundary smells, tests that protect behavior, and safe cleanup units.\nDo not modify project/source files; write findings to the configured output artifact."
     },
     {
-      "agent": "hkx.planner",
-      "phase": "Planning",
-      "label": "Safe refactor plan",
-      "as": "plan",
-      "output": "refactor/plan.md",
-      "outputMode": "file-only",
-      "task": "Plan a behavior-preserving refactor for:\n\n{task}\n\nContext:\n{outputs.context}\n\nPrefer small reversible steps with validation after each unit. No feature changes.\nDo not modify project/source files."
-    },
-    {
       "agent": "hkx.refactor-cleaner",
       "phase": "Implementation",
-      "label": "Apply cleanup",
+      "label": "Plan and apply cleanup",
       "as": "impl",
       "output": "refactor/implementation.md",
       "outputMode": "file-only",
       "progress": true,
-      "task": "Execute the behavior-preserving refactor for:\n\n{task}\n\nPlan:\n{outputs.plan}\n\nContext:\n{outputs.context}\n\nRules:\n- Sole writer for the active worktree.\n- Preserve behavior; delete only with evidence.\n- Keep diffs focused; validate after changes.\n\nReturn changed files, deletions, validation, and anything intentionally deferred."
+      "task": "Execute the behavior-preserving refactor for:\n\n{task}\n\nCodebase context from exploration:\n{outputs.context}\n\nFirst, draft a short refactor plan directly from the exploration evidence (small reversible cleanup units in order, validation after each unit, no feature changes) and include it at the top of your report. Then execute that plan in the same run.\n\nRules:\n- Sole writer for the active worktree.\n- Preserve behavior; delete only with evidence.\n- Keep diffs focused; validate after changes.\n\nReturn the in-step plan, changed files, deletions, validation, and anything intentionally deferred."
     },
     {
       "parallel": [

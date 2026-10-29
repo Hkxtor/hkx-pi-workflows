@@ -37,8 +37,8 @@ Examples:
 | Instead of council | Use |
 | --- | --- |
 | Verifying whether output is correct | `santa-method` (`/santa-loop`) |
-| Breaking a feature into implementation steps | `planner` |
-| Designing system architecture | `architect` |
+| Breaking a feature into implementation steps | `/hkx-plan` |
+| Designing system architecture | design skills (`hexagonal-architecture`, `api-design`) + `/hkx-plan` |
 | Reviewing code for bugs or security | `code-reviewer` or `santa-method` (`/santa-loop`) |
 | Straight factual questions | just answer directly |
 | Obvious execution tasks | just do the task |

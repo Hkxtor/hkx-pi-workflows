@@ -32,8 +32,8 @@ Manifest shape (authoritative):
 
 | Surface | Count | In repo | Path A | Path B target |
 | --- | ---: | --- | --- | --- |
-| agents | 26 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
-| chains | 14 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
+| agents | 21 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
+| chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 101 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
@@ -96,7 +96,7 @@ Operator-authored pattern guardrails (ECC hookify → Pi extension):
 - `hookify-configure` — toggle `enabled`
 - `hookify-help` — events, format, limits
 
-Runtime: `extensions/hkx-hookify.ts`. Skill: `hookify-rules`. Agent: `conversation-analyzer`.  
+Runtime: `extensions/hkx-hookify.ts`. Skill: `hookify-rules` (conversation analysis for no-args `/hookify` runs in the main session).  
 Project rules: `.pi/hookify.{name}.local.md`. Global: `~/.pi/agent/hookify/`. Kill-switch: `HKX_HOOKIFY=off`.
 
 ### Orchestration and loop commands
@@ -271,10 +271,12 @@ The `agents/` directory is now a **pi-subagents native** surface.
 
 #### Planning and architecture
 
-- `planner` — ordered implementation plans with validation steps
-- `architect` — system-layer design: boundaries, contracts, migration/rollback (see `skill-routing.md` for the split vs `code-architect`)
-- `code-architect` — feature-layer blueprint fitted to existing codebase patterns (see `skill-routing.md`)
-- `code-explorer` — codebase recon: execution paths, dependency maps
+Folded in the 2026-10 fold migration (design procedure = main-session process knowledge, see `docs/skill-routing.md`):
+
+- ~~`planner`~~ — folded into `/hkx-plan` (step quality, sizing/phasing, red-flag checklist)
+- ~~`architect`~~ — folded into `hexagonal-architecture` / `api-design` skills + `/hkx-plan`
+- ~~`code-architect`~~ — folded into `/hkx-plan` + `feature-dev` Phase 4 in-session blueprint
+- `code-explorer` — codebase recon: execution paths, dependency maps (kept: context isolation earns its keep)
 
 #### Review and analysis
 
@@ -283,7 +285,6 @@ The `agents/` directory is now a **pi-subagents native** surface.
 - `pr-test-analyzer`
 - `silent-failure-hunter`
 - `agent-evaluator`
-- `docs-lookup`
 
 #### Implementation and cleanup
 
@@ -318,6 +319,7 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 - `hkx-go-review`
 - `hkx-python-review`
 - `hkx-rust-review`
+- `hkx-typescript-review`
 
 ### Build-fix chains
 
@@ -332,6 +334,8 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 - `hkx-fix-defect`
 - `hkx-refactor-flow`
 - `hkx-docs-update`
+
+The three delivery chains fold planning into the implementation step (2026-10 fold migration): the implementation agent drafts a short plan in-step from the explorer's context artifact, instead of a separate mid-chain planner handoff.
 
 Operator entry that **routes** to these chains (and orch commands) without duplicating them: `multi-workflow`.
 
@@ -457,8 +461,7 @@ These are intentionally left out of the core package unless a user asks for an o
 Pi-native port of ECC hookify (pattern rules, not Claude hooks):
 
 - commands: `hookify`, `hookify-list`, `hookify-configure`, `hookify-help`
-- skill: `hookify-rules`
-- agent: `conversation-analyzer` (`hkx.conversation-analyzer`)
+- skill: `hookify-rules` (includes the no-args conversation-analysis heuristics + YAML contract)
 - extension: `hkx-hookify.ts` (event `bash` = shell surface: `bash` + `powershell`)
 - tests: `scripts/tests/hookify-rules.mjs`, `scripts/tests/hookify-install.mjs`
 - rules on disk: project `.pi/hookify.{name}.local.md`; global `~/.pi/agent/hookify/`

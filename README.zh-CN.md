@@ -266,10 +266,8 @@ subagent({
 - `hkx.python-reviewer`
 - `hkx.go-reviewer`
 - `hkx.rust-reviewer`
-- `hkx.planner`
 - `hkx.tdd-guide`
 - `hkx.build-error-resolver`
-- `hkx.conversation-analyzer` — 从对话提议 Hookify 规则（只读）
 
 ```ts
 subagent({

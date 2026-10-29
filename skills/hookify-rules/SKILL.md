@@ -165,6 +165,34 @@ Use the preflight helper for a definitive answer — it loads the same
 
 Creation must **propose first** and only write after user confirmation. Default `action: warn`.
 
+## Conversation analysis (no-args `/hookify`)
+
+When `/hookify` runs with no arguments, the main session performs the conversation analysis itself (read-only, no file writes). Look for:
+
+- **Explicit corrections** — "No, don't do that" / "Stop doing X" / "I said NOT to…" / "That's wrong, use Y instead"
+- **Frustrated reactions** — user reverting agent edits, repeated "no" / "wrong", manually fixing agent output, escalating tone about the same mistake
+- **Repeated issues** — same mistake multiple times, undesired tool-use patterns (e.g. always `npm install` without asking), ignoring a stated constraint
+- **Reverted changes** — `git checkout --` / `git restore` after agent edits, re-editing files the agent just changed
+
+Cluster into distinct behaviors; drop one-off noise unless severity is high; cap at 5 suggestions. Output the same YAML contract the command consumes:
+
+```yaml
+summary: "One sentence on the dominant unwanted pattern(s)."
+behaviors:
+  - behavior: "Description of what the agent did wrong"
+    frequency: "once|repeated|pervasive"
+    severity: high|medium|low
+    evidence: "Short quote or paraphrase from the conversation"
+    suggested_rule:
+      name: "descriptive-kebab-name"
+      event: bash|file|prompt|stop
+      action: warn|block
+      pattern: "regex pattern to match"
+      message: "What to show when triggered"
+```
+
+A clean "no behaviors worth hookifying" result is valid. Rule design constraints: default `action: warn`; patterns specific enough to avoid false positives; prefer `bash` for command habits, `file` for edit/write habits, `prompt` for user-request constraints (soft only); never invent broad safety questionnaires (destructive-command policy belongs to GateGuard).
+
 ## Relationship to other surfaces
 
 - **GateGuard** — hard-blocks matched destructive Bash commands while enabled; it does not gate edits, authorize file writes, or provide an in-session exemption. Not pattern-based.

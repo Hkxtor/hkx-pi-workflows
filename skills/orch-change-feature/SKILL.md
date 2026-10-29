@@ -23,7 +23,7 @@ Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.
 ## How It Works
 
 1. Run the `orch-pipeline` engine with the settings above.
-2. Keep the plan light — only `standard`+ size warrants the full `planner` pass.
+2. Keep the plan light — only `standard`+ size warrants the full `/hkx-plan` pass.
 3. Stop at **Gate 1** (plan / changed-test approval) and **Gate 2** (pre-commit).
 4. Add `security-reviewer` if the change touches a security trigger.
 

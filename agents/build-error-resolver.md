@@ -136,8 +136,8 @@ npx eslint . --fix
 ## When NOT to Use
 
 - Code needs refactoring -> use the `hkx.refactor-cleaner` agent (or command `refactor-clean`)
-- Architecture changes needed -> use the `hkx.architect` agent (or `/plan` / command `hkx-plan`)
-- New features required -> use the `hkx.planner` agent (or `/plan` / command `hkx-plan`)
+- Architecture changes needed -> use `/plan` / command `hkx-plan` (design runs in the main session)
+- New features required -> use `/plan` / command `hkx-plan`
 - Tests failing -> use the `hkx.tdd-guide` agent (or skill `tdd-workflow`)
 - Security issues -> use the `hkx.security-reviewer` agent (or skill `security-review`)
 
