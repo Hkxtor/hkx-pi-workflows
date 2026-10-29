@@ -38,15 +38,19 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | what is installed in this workspace | `workspace-surface-audit` | `automation-audit-ops` | `config-gc` |
 | what automation is live / overlapping | `automation-audit-ops` | `workspace-surface-audit` | `skill-stocktake` |
 | skill overlap / portfolio health | `skill-stocktake` | `skill-health` command | `config-gc` |
+| promote recurring skill principles into rules | `rules-distill` | `skill-stocktake` first, `hookify-rules` when the constraint is mechanically enforceable | `instinct-evolve` (captures behaviors, not rules) |
 | clean up my config / too many skills | `config-gc` | after stocktake/audit | any read-only audit as delete tool |
 | why build this / product diagnostic | `product-lens` | `council` | `product-capability` first |
 | PRD → capability / interfaces | `product-capability` | `intent-driven-development` | `product-lens` only |
 | acceptance criteria for this change | `intent-driven-development` | `tdd-workflow` | `council` |
+| blast radius / what breaks if I change this | `change-impact` | `repo-scan`, `verification-loop` | `production-audit` (release readiness) |
+| frontend and backend evolving one API in parallel | `contract-first` | `api-design`, `ai-regression-testing` | `api-design` alone when the shape is the question, not the coordination |
 | multi-path go/no-go tradeoff | `council` | `product-lens` | routine implementation |
 | stress-test a plan / grill me | `grill-with-docs` | `grilling`, `domain-modeling` | `council` (decisions, not interview) |
 | record a durable decision / ADR | `architecture-decision-records` | `domain-modeling` (lighter, inline) | `grill-with-docs` (interview-driven) |
 | glossary / CONTEXT.md terms | `domain-modeling` | `architecture-decision-records` (for decisions) | `unified-memory` (vault, not glossary) |
 | dual independent review until ship-ready | `santa-method` | `verification-loop` first | `council` (decisions, not correctness) |
+| build autonomously to a scored quality bar | `gan-style-harness` | `/gan-build` (operator entrance), `loop-design-check` (loop contract), `browser-qa` (live probing) | `santa-method` (review, no build loop) |
 | extract session patterns as instincts | `instinct-evolve` | commands `learn` / `learn-eval` | `growth-log` (human journal) |
 | durable project/user context vault | `unified-memory` | `/unified-memory` / CLI `memory` | `instinct-evolve` (behaviors) or `/om` (session) |
 | multi-session multi-PR construction plan | `blueprint` | `/hkx-plan-canvas` for approve | `/hkx-plan` for single-session |

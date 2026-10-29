@@ -19,7 +19,7 @@ Six agents are not reached through packaged chains; they are entered directly vi
 | ~~`docs-lookup`~~ | folded | absorbed into skill `documentation-lookup` (docs MCP tools + web search + lookup budget); removed from the agent catalogue |
 | ~~`conversation-analyzer`~~ | folded | no-args `/hookify` analyzes in the main session via skill `hookify-rules` conversation-analysis section |
 
-## Chain Routes (15 chains)
+## Chain Routes (16 chains)
 
 Agent sequences inside `chains/*.chain.json` (parallel steps in brackets):
 
@@ -29,6 +29,7 @@ Agent sequences inside `chains/*.chain.json` (parallel steps in brackets):
 | `hkx-docs-update` | code-explorer → doc-updater → code-reviewer |
 | `hkx-feature-flow` | code-explorer → tdd-guide (in-step planning) → [code-reviewer + security-reviewer + pr-test-analyzer] |
 | `hkx-fix-defect` | code-explorer → tdd-guide (regression-first, in-step planning) → [code-reviewer + silent-failure-hunter + pr-test-analyzer] |
+| `hkx-gan-pass` | gan-generator → gan-evaluator (one pass; `/gan-build` repeats it per `gan-style-harness`, so the loop and its stop decision stay in the main session) |
 | `hkx-go-build-fix` | go-build-resolver → [go-reviewer + code-reviewer + silent-failure-hunter] |
 | `hkx-go-review` | [go-reviewer + security-reviewer + pr-test-analyzer + silent-failure-hunter] → agent-evaluator |
 | `hkx-pr-review` | [code-reviewer + security-reviewer + pr-test-analyzer + silent-failure-hunter] → agent-evaluator |
@@ -58,6 +59,10 @@ Agent sequences inside `chains/*.chain.json` (parallel steps in brackets):
 | `/feature-dev` command | ported | `commands/feature-dev.md` — standard pi command: `hkx.code-explorer` recon, in-session Phase 4 design (folded code-architect blueprint), `hkx.code-reviewer` (+ `hkx.security-reviewer` for sensitive changes); no orchestration chains required |
 | `/multi-plan` / `/multi-execute` / `/multi-backend` / `/multi-frontend` as separate commands | not ported | folded into `commands/multi-workflow.md` modes; separate commands would duplicate the thin router |
 | ECC `/orchestrate` as a command | not ported | superseded by `skills/orch-pipeline` + `commands/hkx-orch-*` family |
+| ECC `change-impact` skill | ported | `skills/change-impact` — free-standing PRD/ADR location names replaced with "write only where the project already defines a location" |
+| ECC `contract-first` skill | ported | `skills/contract-first` — complements `api-design` (shape of a good API) by governing how a boundary changes |
+| ECC `rules-distill` skill | ported | `skills/rules-distill` — `~/.claude/skills/...` scan scripts replaced with in-repo `find`/`ffgrep`; targets hkx `rules/` and the `hkx-rules` extension |
+| ECC `gan-style-harness` + `gan-planner`/`gan-generator`/`gan-evaluator` agents | ported, planner folded | `skills/gan-style-harness` + `hkx.gan-generator` (writer) + `hkx.gan-evaluator` (read-only) + `chains/hkx-gan-pass.chain.json`. `gan-planner` has no agent: the spec is written by the main loop, per the fold rule. Evaluator drives the app through `bash` because pi exposes no browser tool to children |
 
 ## Agent Entrance Coverage
 
@@ -74,6 +79,8 @@ Every shipped agent has at least one entrance of type chain / command / skill. R
 | e2e-runner | — | e2e | plan-orchestrate |
 | go-build-resolver | go-build-fix | orch-fix-defect | plan-orchestrate |
 | go-reviewer | 2 chains | orch-review | orch-pipeline, orch-review, plan-orchestrate |
+| gan-evaluator | gan-pass | gan-build | gan-style-harness |
+| gan-generator | gan-pass | gan-build | gan-style-harness |
 | harness-optimizer | — | harness-audit | plan-orchestrate |
 | loop-operator | — | loop-start, loop-status | plan-orchestrate |
 | pr-test-analyzer | 8 chains | review-pr | — |
@@ -87,4 +94,4 @@ Every shipped agent has at least one entrance of type chain / command / skill. R
 | tdd-guide | 3 chains | — | orch-pipeline, plan-orchestrate |
 | typescript-reviewer | 2 chains | orch-review | orch-pipeline, orch-review, plan-orchestrate |
 
-**Verification**: `docs/command-agent-map-checklist.md` holds the grep-verified script that confirmed all 26 rows at M3 (`26/26 PASS`); after the 2026-10 fold migration the live table above is authoritative (21 rows).
+**Verification**: `docs/command-agent-map-checklist.md` holds the grep-verified script that confirmed all 26 rows at M3 (`26/26 PASS`); after the 2026-10 fold migration the live table above is authoritative (23 rows).

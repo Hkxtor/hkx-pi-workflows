@@ -32,10 +32,10 @@ Manifest shape (authoritative):
 
 | Surface | Count | In repo | Path A | Path B target |
 | --- | ---: | --- | --- | --- |
-| agents | 21 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
-| chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 57 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 101 | `skills/` | yes | `~/.pi/agent/skills/` |
+| agents | 23 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
+| chains | 16 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
+| commands / prompts | 58 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| skills | 105 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
 | extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
@@ -115,6 +115,7 @@ These coordinate larger workflows or bounded multi-step execution:
 - `delivery-gate`
 - `hkx-session-summary`
 - `santa-loop`
+- `gan-build` — thin entrance for `gan-style-harness`; owns the iteration loop in-session
 
 ### Learning and instinct commands
 
@@ -167,6 +168,8 @@ Representative examples:
 - `search-first`
 - `iterative-retrieval`
 - `intent-driven-development`
+- `change-impact`
+- `contract-first`
 - `parallel-execution-optimizer`
 - `delivery-gate`
 - `session-summary`
@@ -197,6 +200,8 @@ Representative examples:
 - `agent-architecture-audit`
 - `agent-harness-construction`
 - `agent-introspection-debugging`
+- `gan-style-harness`
+- `rules-distill`
 - `repo-scan`
 - `codebase-onboarding`
 - `code-tour`
@@ -298,6 +303,15 @@ Folded in the 2026-10 fold migration (design procedure = main-session process kn
 - `database-reviewer`
 - `e2e-runner`
 - `harness-optimizer`
+
+#### Build-quality loop (GAN)
+
+Ported from ECC as the one deliberate multi-subagent exception to the fold-into-main-loop rule: the evaluator must not share context with the generator, otherwise it grades its own reasoning.
+
+- `gan-generator` (writer) — implements `gan/spec.md`, reads `gan/feedback.md`, iterates. Never scores its own work.
+- `gan-evaluator` (read-only) — runs the artifact, scores the rubric, returns `pass`/`fail`/`plateau`/`blocked`. Cannot write or edit.
+
+Loop ownership (spec, iteration count, stop decision) stays in the main session per `skills/gan-style-harness`. Planning is folded into the skill — there is no planner agent.
 - `loop-operator`
 
 #### Language-specific reviewers
@@ -334,6 +348,7 @@ The `chains/` directory is the packaged orchestration layer on top of those agen
 - `hkx-fix-defect`
 - `hkx-refactor-flow`
 - `hkx-docs-update`
+- `hkx-gan-pass` — one generator → evaluator pass; the main loop repeats it via `skills/gan-style-harness`
 
 The three delivery chains fold planning into the implementation step (2026-10 fold migration): the implementation agent drafts a short plan in-step from the explorer's context artifact, instead of a separate mid-chain planner handoff.
 
