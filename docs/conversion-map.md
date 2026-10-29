@@ -34,7 +34,7 @@ Manifest shape (authoritative):
 | --- | ---: | --- | --- | --- |
 | agents | 21 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 15 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
-| commands / prompts | 56 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
+| commands / prompts | 57 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 101 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
 | extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
