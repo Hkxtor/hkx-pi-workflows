@@ -40,6 +40,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 ### Agents
 
+- Surface criterion: an agent earns its own file only when it needs its own context window (heavy use-and-discard reads, parallel fresh-context review) or a scoped tool/writer boundary; process knowledge belongs in skills/commands, and in-chain planning is folded into the implementation step (`docs/skill-routing.md`, fold audit 2026-10).
 - File basename must match frontmatter `name`.
 - Use `package: hkx` so runtime names are `hkx.<name>`.
 - Declare `acceptanceRole: read-only` for inspection/planning agents and `acceptanceRole: writer` for mutation agents; any agent with `edit` or `write` must be a writer.
