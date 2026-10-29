@@ -56,8 +56,7 @@ parent instead of inventing a scope.
 4. Start the runbook from `## How to run it` and confirm it works.
 5. Smoke-check your own build (route responds, test command passes). This is a
    sanity check, not an evaluation.
-6. Write `gan/generator-state.md`.
-7. Return a short report: what you built, how to run it, what you deliberately left.
+6. Return the state artifact as your final message (see below).
 
 ### Later iterations
 
@@ -65,8 +64,8 @@ parent instead of inventing a scope.
 2. Order the work: functionality defects → robustness/error paths → craft →
    omitted features → design/originality.
 3. Fix, re-run the runbook, verify the specific issue is actually gone.
-4. Regenerate `gan/generator-state.md` with the iteration number.
-5. Return the list of issues addressed plus anything you could not fix and why.
+4. Return the state artifact as your final message, labeled with the iteration number
+   the parent gave you.
 
 Feedback items are findings, not suggestions. If one is wrong, say so explicitly with
 evidence — do not silently skip it, and do not fix it by weakening the test.
@@ -83,9 +82,11 @@ evidence — do not silently skip it, and do not fix it by weakening the test.
 - **Small diffs beat rewrites.** Iterate on what the feedback names.
 - **No drive-by changes** outside the spec and the feedback.
 
-## Generator State File
+## Final Message Is the State Artifact
 
-Write `gan/generator-state.md` at the end of every iteration:
+Do not write `gan/generator-state.md` yourself — your **final message is saved
+verbatim** to that path. Anything before or after the state document ends up in the
+artifact, so start directly at the heading.
 
 ```markdown
 # Generator State — Iteration NNN
@@ -114,10 +115,7 @@ Write `gan/generator-state.md` at the end of every iteration:
 
 ## Output
 
-Return:
-
-1. Iteration number.
-2. What changed (file-level).
-3. Runbook status (started / not started, URL if relevant).
-4. Issues addressed vs. outstanding.
-5. Anything the parent must decide.
+The state document above **is** the output — do not return a separate chat summary
+after it. It already carries the iteration number, what changed, runbook status,
+issues addressed vs. outstanding, and anything the parent must decide. If a point
+needs framing, add a line to the document instead of narrating around it.

@@ -82,6 +82,20 @@ asks for.
 `## How to run it` is not optional — an evaluator that cannot start the artifact
 cannot evaluate it.
 
+**Write the runbook in gateway-parseable shape.** Every command in that section is
+executed by a child agent through `bash`, and pi's shell gate floors command text its
+parser cannot resolve, so an exotic one-liner silently turns into a step the evaluator
+cannot reproduce:
+
+- One command per line. No inline control flow (`for … & done`, `while`, `case`).
+- No hand-built `printf … | xargs …` pipelines for concurrency or batching.
+- When a case needs a loop, retries, or multi-step setup, commit a small script
+  (`scripts/probe-concurrency.sh`) and invoke it once.
+- Prefer an explicit data path (`--data /tmp/gan-probe.json`) over destroying the
+  project's real state file between cases.
+- A step that needs a pseudo-TTY cannot be verified this way — put it under
+  non-goals or accept it as an explicitly unverified branch.
+
 ## Phase 2 — Iterate
 
 Operator entry: **`/gan-build <brief>`** drives the whole loop (spec check, budget gate,
@@ -98,30 +112,41 @@ Then consume the verdict:
 
 | Verdict | Main loop action |
 | --- | --- |
-| `pass` | Stop. Report final score, iteration count, known gaps. |
+| `pass` | Stop. Report final score, scored-round count, known gaps. |
 | `fail` | Loop again with the feedback file as input. |
-| `plateau` | Stop. Three consecutive iterations with no score movement is a design problem, not a code problem — escalate to the operator. |
+| `no-verdict` | The pass produced no score — timeout, crash, or detached run. Charge the dispatch, not a scored round, and retry once with a narrower scope; a second `no-verdict` stops the run as `blocked`. |
+| `plateau` | Stop. Two consecutive scored rounds with no movement is a design problem, not a code problem — escalate to the operator. |
 | `blocked` | Stop. The evaluator could not run the artifact; fix the runbook before iterating. |
 
-Record the iteration table as you go, so the stop decision has evidence:
+Record the round table as you go, so the stop decision has evidence. Keep dispatch
+count and scored-round count separate — a timeout burns the first without moving the
+second:
 
 ```text
-| Iter | Functionality | Craft | Coherence | Robustness | Weighted | Notes |
+| Round | Iter | Functionality | Craft | Coherence | Robustness | Weighted | Notes |
 ```
+
+The main loop is the single source of the iteration number; children that print their
+own count are reporting a local counter, not the run's timeline.
 
 ## Evaluation Modes
 
-The evaluator has `read`, search, `ls`, and `bash` — no browser tool. Pick the
-strongest mode the environment actually supports, and **report degradations instead
-of silently scoring a weaker mode**:
+The evaluator has `read`, search, `ls`, and `bash` — no browser tool.
 
-| Mode | How it works | Use for |
+The decisive question is **whether the artifact was really executed**; `live` versus
+`headless` is only a sub-shape of "executed". Record the mode you achieved and say how
+you achieved it.
+
+| Mode | Meaning | Sub-shape |
 | --- | --- | --- |
-| `live` | `bash` drives the running app (curl, a pinned Playwright CLI script, a repo test command) | Full-stack apps, anything with routes or state |
-| `headless` | `bash` runs unit/integration suites plus build and lint | APIs, libraries, CLI tools |
-| `static` | Read-only review of code and artifacts | Last resort only — must be labeled as such |
+| `live` | A long-running process was started and driven while it stayed up | Server responding to HTTP or CLI calls, interactive session |
+| `headless` | The artifact was invoked once per case and observed | CLI tool, test suite, build, script |
+| `static` | Only code and artifacts were read | Last resort, always labeled |
 
-A `static` evaluation reported as `live` is a harness failure, not a result.
+When in doubt between `live` and `headless`, record `headless`: it understates
+nothing, whereas `live` overstates. Scoring a code read as `live` or `headless` is a
+harness failure, not a result. When only `static` was possible, say so and name what
+stays unproven.
 
 ## Default Rubric
 

@@ -55,19 +55,24 @@ A passing score must mean the artifact is genuinely good. Not good for an AI.
 
 ## Step 1 — Establish the Mode
 
-Read `gan/spec.md` first, especially `## How to run it`.
+1. Read `gan/spec.md` first, especially `## How to run it`.
 
-Then determine which evaluation mode the environment actually supports:
+   Then determine which evaluation mode you can actually achieve. The decisive
+   question is whether the artifact was **executed**; `live` versus `headless` is only
+   a sub-shape:
 
-| Mode | Requirement | Use for |
-| --- | --- | --- |
-| `live` | You can start the app and drive it through `bash` (curl, a pinned Playwright CLI script, repo test commands) | Full-stack apps, routes, state, UI |
-| `headless` | You can run unit/integration suites plus build and lint | APIs, libraries, CLI tools |
-| `static` | Neither above is possible | Last resort |
+   | Mode | Meaning | Sub-shape |
+   | --- | --- | --- |
+   | `live` | A long-running process was started and driven while it stayed up | Server responding to HTTP or CLI calls, interactive session |
+   | `headless` | The artifact was invoked once per case and observed | CLI tool, suite, build, script |
+   | `static` | Only code and artifacts were read | Last resort, always labeled |
 
-Record the mode you **achieved**, not the one you wanted. If the runbook fails, that
-is a `blocked` verdict with the failure as the finding — not a silent downgrade to a
-code read scored as if it were live.
+   When in doubt between `live` and `headless`, record `headless` — it understates
+   nothing, whereas `live` overstates.
+
+   Record the mode you **achieved**, not the one you wanted. If the runbook fails, that
+   is a `blocked` verdict with the failure as the finding — not a silent downgrade to a
+   code read scored as if it were executed.
 
 ## Step 2 — Test Systematically
 
@@ -155,6 +160,10 @@ pass | fail | plateau | blocked — one paragraph justifying it.
 
 ## Rules
 
+- **Your final message is the artifact.** It is saved verbatim as `gan/feedback.md`.
+  Start directly at `# Evaluation — Iteration NNN`. No preamble, no "evidence gathering
+  complete, here is the report", no sign-off, no closing summary — anything before or
+  after the report ends up in the artifact and has to be stripped by whoever reads it.
 - **Never suggest a patch and then grade it.** You critique; the generator fixes.
 - **Every must-fix needs evidence**: a command you ran, a path and line, or a
   reproduced behavior. No evidence, no finding.

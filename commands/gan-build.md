@@ -21,7 +21,7 @@ The generator implements; an isolated read-only evaluator tests the running arti
 | free text | required | the build brief |
 | `--max=N` | `10` | hard iteration cap (ceiling 15) |
 | `--threshold=X` | `7.0` | weighted pass score, 1–10 |
-| `--mode=M` | `auto` | desired evaluation mode: `live`, `headless`, `static`, or `auto` = strongest available |
+| `--mode=M` | `auto` | desired evaluation mode: `live` (long-running process), `headless` (one-shot invocation), `static`, or `auto` = strongest available |
 
 Empty brief → ask what to build before anything else.
 
@@ -52,7 +52,7 @@ Proceed automatically for short, low-stakes runs. Ask before starting when `--ma
 
 For each iteration `N` (starting at 1):
 
-1. Dispatch the chain **`hkx-gan-pass`** with task = the brief, the iteration number, and — from iteration 2 on — the previous weighted score so the evaluator can return `plateau`.
+1. Dispatch the chain **`hkx-gan-pass`** with task = the brief, the iteration number **you** assigned, and — from the second scored round on — the previous weighted score so the evaluator can return `plateau`.
 2. Read `gan/feedback.md`. Announce the score table and the verdict in one compact block.
 3. Act on the verdict:
 
@@ -60,14 +60,24 @@ For each iteration `N` (starting at 1):
 | --- | --- |
 | `pass` | Stop. Go to step 5. |
 | `fail` | Next iteration. |
-| `plateau` | Stop. Three iterations without score movement is a design/spec problem, not a code problem — escalate instead of burning budget. |
+| `no-verdict` | The pass produced no score: timeout, crash, or detached run. Charge the dispatch, **not** a scored round, and retry once with a narrower scope. A second consecutive `no-verdict` stops the run as `blocked`. |
+| `plateau` | Stop. Two consecutive scored rounds without score movement is a design/spec problem, not a code problem — escalate instead of burning budget. |
 | `blocked` | Stop. The runbook is broken; fix `## How to run it` with the operator before iterating. |
 
-Track the iteration table as you go (iteration, four criterion scores, weighted, notes). The stop decision must rest on that evidence, not on a feeling.
+This session is the **single source of the iteration number**. Put it in the dispatch
+task and keep it in your own table. A child that prints its own count is reporting a
+local counter — reconcile it against yours rather than adopting it, and never let the
+two timelines silently diverge.
+
+Track the round table as you go (round, iteration, four criterion scores, weighted,
+notes). Keep **dispatch count** and **scored-round count** separate: a timed-out
+generator burns the first without moving the second, and a report that conflates them
+overstates how much evidence the run actually produced.
 
 ### 4. Stop conditions
 
-Stop on any of: pass, plateau, iteration cap, runabout budget, or an operator interrupt. Never exceed `--max`.
+Stop on any of: pass, plateau, a second consecutive `no-verdict`, iteration cap,
+budget cap, or an operator interrupt. Never exceed `--max` dispatches.
 
 ### 5. Verify and report
 
@@ -89,14 +99,19 @@ Run the repo's own narrow validation before claiming the build is deliverable. D
 Return:
 
 ```text
-[GAN] <brief> — <verdict> at iteration N
-| Iter | Func | Craft | Coherence | Robustness | Weighted |
+[GAN] <brief> — <verdict>
+Dispatches: D | Scored rounds: S
+| Round | Iter | Func | Craft | Coherence | Robustness | Weighted |
+No-verdict passes: <dispatch/iter + reason, or none>
 Final score: X.X / threshold Y.Y (mode: live|headless|static)
 Must-fix remaining: <list or none>
 Spec gaps raised: <list or none>
 Artifacts: gan/spec.md, gan/generator-state.md, gan/feedback.md
 Not done / not verified: <explicit list>
 ```
+
+Distinguish dispatches from scored rounds. A run that spent four dispatches on two
+scored rounds produced two rounds of evidence, and the report must say so.
 
 ## Related
 
