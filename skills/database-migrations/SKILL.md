@@ -63,7 +63,10 @@ Work in this order — each item can invalidate the ones below it:
 1. **Migration safety and rollback shape** — migration order matches application deploy order; new constraints cannot fail on existing data; defaults do not rewrite large tables unexpectedly; index names are stable and non-conflicting; rollback or recovery path is named.
 2. **Index coverage for the changed access paths** — trace the read/write call sites before recommending an index. An index nobody queries is a write cost with no read benefit.
 3. **Constraints, defaults, nullability, integrity** — the cheap checks that prevent bad rows from ever landing.
-4. **Lock duration, batching, transaction boundaries** — see the section above.
+4. **Lock duration, batching, transaction boundaries** — see the section above. Check
+   lock ordering too: concurrent transactions that take the same rows in different
+   orders deadlock, so row locks taken in a batch need a stable order
+   (`ORDER BY id FOR UPDATE`).
 5. **Query plans** — flag sequential scans on large tables and N+1 patterns at the call sites, not just in the query text.
 6. **Tenant isolation and abuse surface** — RLS enabled on multi-tenant tables, using the `(SELECT auth.uid())` pattern so the function is evaluated once per statement; RLS policy columns indexed; least privilege, no `GRANT ALL` to application roles, public-schema permissions revoked.
 7. Tests cover old data, new data, and mixed-version compatibility.

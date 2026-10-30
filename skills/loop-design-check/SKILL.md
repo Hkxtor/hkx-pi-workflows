@@ -158,6 +158,10 @@ Any one of these means stop and surface it, not iterate again:
 Escalation is not failure. A loop that keeps going after a stall converts a small
 mistake into a large one at machine speed — this is the runtime form of failure mode #1.
 
+**Resume only after the failure mode is understood, or after the guardrail has changed
+deliberately.** Restarting a stalled loop with the same guardrails reproduces the stall.
+The resumption note should name which of the two happened.
+
 ### Operating report
 
 When reporting loop state — to the operator, or in `/loop-status` — return:
