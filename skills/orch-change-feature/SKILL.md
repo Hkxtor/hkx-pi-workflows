@@ -1,5 +1,6 @@
 ---
 name: orch-change-feature
+backing-chain: hkx-feature-flow
 description: Orchestrate altering an existing, working feature to new desired behavior — update its tests to the new spec, change the implementation to match, review, and gated commit. Use when behavior is not broken but should be different.
 origin: HKX-converted-for-Pi
 ---
@@ -7,6 +8,8 @@ origin: HKX-converted-for-Pi
 # HKX orch-change-feature
 
 Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
+
+**Backing chain:** `hkx-feature-flow` owns the agent sequence; this skill adds the size floor, the phase mask, the first-move rule, and the two gates.
 ## When to Use
 
 - An existing feature **works**, but the desired behavior is different ("change", "adjust", "make it also …", "instead of X do Y").

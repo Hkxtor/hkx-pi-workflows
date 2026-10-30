@@ -141,6 +141,27 @@ Current chain families:
 
 A chain should own the **sequence**, not the deep specialist knowledge. The specialist knowledge belongs in the agents and skills it composes.
 
+### 5b. Chains vs the `orch-*` skills
+
+The `orch-*` skill family and the delivery chains are **one sequence with two gate
+policies**, not two pipelines:
+
+| Layer | Owns |
+| --- | --- |
+| Chain (`chains/hkx-*.chain.json`) | Which agents run, in what order, their handoff artifacts, the fan-out shape |
+| `orch-*` skill | Size classification, phase mask, first-move rule, GATE 1 / GATE 2 |
+
+A gated run replays the chain's steps **one at a time in the session**, inserting the
+gates between phases — it does not hand the whole chain to pi-subagents, because a
+packaged chain runs to completion and cannot stop at a gate.
+
+Each operation skill declares `backing-chain:` in frontmatter, and
+`scripts/validate.mjs` fails when the skill names an agent its chain does not contain
+unless that agent is listed under `fallback-agents:` as an explicit escalation. The guard
+exists because the copies had already drifted: `orch-pipeline` said Implement →
+`tdd-guide` for every operation while `orch-refine-code` correctly used
+`refactor-cleaner`. See `docs/skill-routing.md` for the operation → chain table.
+
 ### 6. Extensions: runtime behavior
 
 Extensions are the runtime hook layer.

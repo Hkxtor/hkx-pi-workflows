@@ -1,5 +1,7 @@
 ---
 name: orch-fix-defect
+backing-chain: hkx-fix-defect
+fallback-agents: security-reviewer, build-error-resolver
 description: Orchestrate fixing a bug — reproduce it as a failing regression test, fix to green, review, and gated commit — by delegating each phase to the matching Pi agent. Use when existing behavior is broken or wrong.
 origin: HKX-converted-for-Pi
 ---
@@ -7,6 +9,8 @@ origin: HKX-converted-for-Pi
 # HKX orch-fix-defect
 
 Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
+
+**Backing chain:** `hkx-fix-defect` owns the agent sequence; this skill adds the size floor, the phase mask, the first-move rule, and the two gates.
 ## When to Use
 
 - Something is **broken**: wrong output, an error, a crash, a regression.

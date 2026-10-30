@@ -46,8 +46,13 @@ Each phase delegates — it does not do the work inline.
 - **1. Research & Reuse** — use `find` / `search` / `read` for local code, then docs lookup via configured MCP tools, then package registries. Prefer adopting a proven implementation over net-new code.
 - **2. Plan** — run `/hkx-plan` in the main session (step quality, sizing/phasing, validation order). Output a `task_list` ordered as thin vertical slices. → **GATE 1.**
 - **3. Scaffold** — `orch-build-mvp` only: stand up the first end-to-end slice.
-- **4. Implement (TDD)** — drive each task through the `tdd-guide` agent (or the `tdd-workflow` skill): red → green → refactor. Honor the operation's first-move rule.
-- **5. Review** — `code-reviewer` agent. Add `security-reviewer` whenever the diff touches a security trigger.
+- **4. Implement (TDD)** — drive each task through the implementing agent named by the
+  **backing chain** (`tdd-guide` for feature / change / fix / mvp, `refactor-cleaner` for
+  refine): red → green → refactor. Honor the operation's first-move rule.
+- **5. Review** — the review fan-out the backing chain defines (`code-reviewer` always,
+  plus `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, or a language
+  reviewer where that chain includes them). Add `security-reviewer` whenever the diff
+  touches a security trigger even if the chain omits it.
 - **6. Commit** — conventional commits (`feat:` / `fix:` / `refactor:` / …), one per logical chunk. → **GATE 2.**
 
 ## The Two Gates
@@ -59,17 +64,64 @@ This family is **gated, not autonomous**:
 
 Everything between the gates flows without stopping.
 
-## Agent / Command Map
+## Backing Chains — who owns the execution shape
+
+**The packaged chain owns the agent sequence; this engine owns the policy around it.**
+
+That split exists because the same shape (explore → implement → review) is reachable two
+ways, and encoding the agent list twice is how the two copies drift apart. A concrete
+example of that drift, caught when this rule was written: this file used to say
+Implement → `tdd-guide` for every operation, while `orch-refine-code` correctly used
+`refactor-cleaner` — the chain had it right, the engine did not.
+
+| Operation skill | Backing chain | Shape the chain encodes |
+|---|---|---|
+| `orch-add-feature` | `hkx-feature-flow` | explore → tdd-guide → review fan-out |
+| `orch-change-feature` | `hkx-feature-flow` | same shape, different first move (amend the existing test) |
+| `orch-fix-defect` | `hkx-fix-defect` | explore → tdd-guide → review + silent-failure-hunter |
+| `orch-refine-code` | `hkx-refactor-flow` | explore → refactor-cleaner → review |
+| `orch-build-mvp` | `hkx-feature-flow` | same shape, applied per vertical slice |
+| `orch-review` | `hkx-pr-review` | reviewer fan-out only, no implementation step |
+
+What each layer owns:
+
+| This engine (`orch-pipeline`) | The backing chain |
+|---|---|
+| Size classification | Which agents run |
+| Phase mask per operation | Their order |
+| First-move rule per operation | Handoff artifacts between steps |
+| **GATE 1 / GATE 2** | The task prompt each agent receives |
+| Security trigger | Parallel fan-out shape |
+
+Because the chain is the source, an operation skill declares its `backing-chain` in
+frontmatter and names only agents the chain actually contains. `scripts/validate.mjs`
+enforces both: a declared chain must exist, and an operation skill that names an agent
+outside its chain must list it under `fallback-agents` (escalations such as
+`build-error-resolver` on a build break). Drift then fails validation instead of
+silently producing two different pipelines.
+
+### Reading the chain instead of restating it
+
+When a gated run needs the sequence, read `chains/<backing-chain>.chain.json` — each step
+carries `agent`, `phase`, `label`, `output`, and `task`. Replay the steps **one at a time
+in this session**, inserting the gates between phases. Do not hand the whole chain to
+pi-subagents: a packaged chain runs to completion and cannot stop at Gate 1.
+
+That is the whole difference between the two lanes — same steps, gates on or off.
+
+## Main-Session and Escalation Map
+
+Steps that are not part of any chain, because they are planning or recovery rather than
+execution:
 
 | Phase | Primary | Fallback / escalation |
 |---|---|---|
-| Intake / understand | `code-explorer` | trace existing paths before a tweak, fix, or refactor |
+| Intake / understand | `code-explorer` (or its `mine` mode for a spec-less module) | trace existing paths before a tweak, fix, or refactor |
 | Plan | `/hkx-plan` (main session) | design skills (`hexagonal-architecture`, `api-design`) for structural calls |
-| Implement | `tdd-guide` (or `tdd-workflow` skill) | `build-error-resolver` / `/build-fix` on build breaks |
-| Review | `code-reviewer` / `/code-review` | language reviewer (`python-reviewer`, `typescript-reviewer`, `rust-reviewer`, `go-reviewer`) |
-| Security | `security-reviewer` | — |
+| Build break | — | `build-error-resolver` / `/build-fix` |
+| Docs touch | — | `doc-updater` |
 
-Match the language reviewer to the repo.
+Match the language reviewer to the repo — the review chains already do this per language.
 
 ## Security-Review Trigger
 

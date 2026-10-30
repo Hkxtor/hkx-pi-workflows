@@ -232,6 +232,25 @@ function parseToolsList(raw) {
 		.filter(Boolean);
 }
 
+/**
+ * Collect every agent an hkx chain invokes, walking nested `parallel` blocks
+ * and `chain` references. Used to keep `skills/orch-*` from restating a
+ * sequence that disagrees with its backing chain.
+ */
+function collectChainAgents(node, out = new Set()) {
+	if (Array.isArray(node)) {
+		for (const item of node) collectChainAgents(item, out);
+		return out;
+	}
+	if (node && typeof node === "object") {
+		if (typeof node.agent === "string") {
+			out.add(node.agent.replace(/^hkx\./, ""));
+		}
+		if (node.parallel) collectChainAgents(node.parallel, out);
+	}
+	return out;
+}
+
 // Shared env-var name charset. MUST match `ENV_VAR_NAME` in
 // scripts/apply-mcp-profile.mjs so the lint catches any `${VAR}` reference
 // the resolver would silently skip. Keep them in sync; if one changes, the
@@ -1455,6 +1474,7 @@ async function main() {
 
 	// chains
 	let chainFiles = [];
+	const chainAgents = new Map();
 	try {
 		chainFiles = (await fs.readdir(path.join(root, "chains"))).filter(
 			(f) => f.endsWith(".chain.json") || f.endsWith(".chain.md"),
@@ -1471,9 +1491,83 @@ async function main() {
 					errors.push(
 						`chains/${file}: must include name, description, chain[]`,
 					);
+				} else {
+					chainAgents.set(obj.name, collectChainAgents(obj.chain));
 				}
 			} catch (err) {
 				errors.push(`chains/${file}: invalid JSON: ${err.message}`);
+			}
+		}
+	}
+
+	// orch operation skills vs their backing chain.
+	// The packaged chain owns the agent sequence; the orch skill owns size
+	// classification, phase mask, first-move rules, and the two gates. Encoding
+	// the sequence twice is how the copies drift (orch-pipeline once said
+	// Implement -> tdd-guide while orch-refine-code correctly used
+	// refactor-cleaner). So: a declared chain must exist, and an operation skill
+	// may only name agents that chain contains -- anything else has to be an
+	// explicit escalation in `fallback-agents`. `agentNames` (frontmatter names,
+	// validated above to equal the file basename) is reused rather than rebuilt.
+	let orchSkillFiles = [];
+	try {
+		orchSkillFiles = (await fs.readdir(path.join(root, "skills"), {
+			withFileTypes: true,
+		}))
+			.filter((d) => d.isDirectory() && d.name.startsWith("orch-"))
+			.map((d) => path.join(root, "skills", d.name, "SKILL.md"));
+	} catch {
+		errors.push("missing skills/ directory");
+	}
+	for (const filePath of orchSkillFiles) {
+		const relativePath = path.relative(root, filePath);
+		let text;
+		try {
+			text = await fs.readFile(filePath, "utf8");
+		} catch {
+			continue;
+		}
+		const fmMatch = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
+		if (!fmMatch) continue; // requireFrontmatter reports the missing block
+		const skillName = path.basename(path.dirname(filePath));
+		const chainField = frontmatterField(fmMatch[1], "backing-chain");
+		if (skillName === "orch-pipeline") {
+			if (chainField) {
+				errors.push(
+					`${relativePath}: orch-pipeline is the shared engine and must not declare backing-chain`,
+				);
+			}
+			continue;
+		}
+		if (!chainField || !chainField.value) {
+			errors.push(
+				`${relativePath}: missing frontmatter field backing-chain (name the packaged chain that owns this operation's agent sequence)`,
+			);
+			continue;
+		}
+		const chainSet = chainAgents.get(chainField.value);
+		if (!chainSet) {
+			errors.push(
+				`${relativePath}: backing-chain "${chainField.value}" matches no chains/*.chain.json name`,
+			);
+			continue;
+		}
+		const allowed = new Set(chainSet);
+		const fallbackField = frontmatterField(fmMatch[1], "fallback-agents");
+		for (const name of parseToolsList(fallbackField?.value ?? "")) {
+			allowed.add(name);
+		}
+		const body = text.slice(fmMatch[0].length);
+		for (const name of agentNames) {
+			const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+			const re = new RegExp(
+				`(?:^|[^A-Za-z0-9_.-])(?:hkx\\.)?${escaped}(?![A-Za-z0-9_.-])`,
+			);
+			if (!re.test(body)) continue;
+			if (!allowed.has(name)) {
+				errors.push(
+					`${relativePath}: names agent "${name}", which is neither in backing-chain ${chainField.value} nor in fallback-agents`,
+				);
 			}
 		}
 	}

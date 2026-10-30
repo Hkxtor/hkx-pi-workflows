@@ -1,5 +1,6 @@
 ---
 name: orch-add-feature
+backing-chain: hkx-feature-flow
 description: Orchestrate building a brand-new feature end to end — research, plan, TDD implementation, review, and gated commit — by delegating each phase to the matching Pi agent. Use when adding a capability that does not exist yet.
 origin: HKX-converted-for-Pi
 ---
@@ -7,6 +8,8 @@ origin: HKX-converted-for-Pi
 # HKX orch-add-feature
 
 Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
+
+**Backing chain:** `hkx-feature-flow` owns the agent sequence; this skill adds the size floor, the phase mask, the first-move rule, and the two gates.
 ## When to Use
 
 - The user wants a capability that does **not exist yet** ("add", "build", "implement", "support …").

@@ -1,5 +1,6 @@
 ---
 name: orch-build-mvp
+backing-chain: hkx-feature-flow
 description: Orchestrate bootstrapping a working MVP from a design or spec document — ingest the doc, plan thin vertical slices, scaffold the first end-to-end slice, then TDD-implement, review, and gated commit. Use to turn an SDD/PRD into a running starting point.
 origin: HKX-converted-for-Pi
 ---
@@ -7,6 +8,8 @@ origin: HKX-converted-for-Pi
 # HKX orch-build-mvp
 
 Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
+
+**Backing chain:** `hkx-feature-flow` owns the agent sequence; this skill adds the size floor, the phase mask, the first-move rule, and the two gates.
 ## When to Use
 
 - The user has a **design / spec document** (SDD, PRD, system_design) and wants a working vertical slice bootstrapped from it.

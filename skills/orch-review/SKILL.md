@@ -1,5 +1,7 @@
 ---
 name: orch-review
+backing-chain: hkx-pr-review
+fallback-agents: typescript-reviewer, python-reviewer, go-reviewer, rust-reviewer
 description: Multi-dimension review workflow for code diffs using Pi reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. Pi-native port of the orch-review workflow.
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -10,6 +12,12 @@ origin: ECC-converted-for-Pi
 A multi-dimension review workflow for code diffs. Uses Pi reviewer agents in parallel to assess code quality, language-specific correctness, and security. Deduplicates findings on evidence and produces a blocking vs advisory report.
 
 This is the Pi-native port of the ECC `orch-review.workflow.js` — it replaces the external workflow script with in-process `agent()` and `eval` orchestration.
+
+**Backing chain:** `hkx-pr-review` owns the base reviewer fan-out. The language dimension
+is not restated here as authority — `hkx-typescript-review`, `hkx-python-review`,
+`hkx-go-review`, and `hkx-rust-review` each own their language's shape, and this skill
+lists those reviewers as `fallback-agents` because a diff may need one on top of the base
+fan-out. `scripts/validate.mjs` enforces that split.
 
 ## When to Activate
 
@@ -38,8 +46,9 @@ This is the Pi-native port of the ECC `orch-review.workflow.js` — it replaces 
 | Silent failures | `silent-failure-hunter` | When code has error handling patterns |
 
 ### Language Reviewer Selection
-
-Map changed-file extensions to reviewer agents:
+Map changed-file extensions to reviewer agents. For a diff dominated by one language,
+`hkx-<lang>-review` is the chain that owns that shape; use this table when you are
+running the review in-session and need to pick the extra reviewer.
 
 | Extension | Reviewer |
 |---|---|

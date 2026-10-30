@@ -1,5 +1,6 @@
 ---
 name: orch-refine-code
+backing-chain: hkx-refactor-flow
 description: Orchestrate a behavior-preserving refactor — confirm tests are green, restructure without changing behavior, keep tests green, review, and gated commit. Use when the structure should improve but behavior must not change.
 origin: HKX-converted-for-Pi
 ---
@@ -7,6 +8,8 @@ origin: HKX-converted-for-Pi
 # HKX orch-refine-code
 
 Thin wrapper over the shared engine in [`orch-pipeline`](../orch-pipeline/SKILL.md).
+
+**Backing chain:** `hkx-refactor-flow` owns the agent sequence; this skill adds the size floor, the phase mask, the first-move rule, and the two gates.
 ## When to Use
 
 - Same behavior, **better structure**: extract modules, remove duplication, kill dead code, reduce nesting, rename for clarity.

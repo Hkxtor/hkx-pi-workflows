@@ -184,7 +184,33 @@ Never start with `config-gc`. Inventory or stocktake first; delete only with exp
 | Operation entries | `orch-add-feature`, `orch-change-feature`, `orch-fix-defect`, `orch-refine-code`, `orch-build-mvp`, `orch-review` |
 | Generate agent plan only | `plan-orchestrate` |
 
-**orch skills vs chains — pick one, not both.** The `orch-*` skills and the packaged chains (`hkx-feature-flow`, `hkx-fix-defect`, `hkx-refactor-flow`, review/build-fix chains) cover overlapping delivery paths by design: **chains** are the repeatable, no-gates pipeline (run the whole sequence in one pass, best from routers like `/multi-workflow` or scripts); **orch skills** are the same shapes with **human gates** (plan approval at Gate 1, commit approval at Gate 2) plus per-operation first-move rules. When the operator is interactively driving, prefer the orch skill; when the operator asked for an end-to-end run or comes in through a router, prefer the chain. Do not nest one inside the other — that duplicates review lanes and re-runs gates.
+**orch skills vs chains — one owner per fact.** These are not two pipelines; they are one
+sequence with two gate policies.
+
+| Owner | Owns |
+| --- | --- |
+| **Packaged chain** (`chains/hkx-*.chain.json`) | The agent sequence: which agents run, in what order, their handoff artifacts, and the fan-out shape |
+| **orch skill** (`skills/orch-*`) | Policy only: size classification, phase mask, first-move rule, **GATE 1** (plan approval) and **GATE 2** (commit approval) |
+
+Each operation skill declares its chain in frontmatter (`backing-chain:`), and
+`scripts/validate.mjs` fails when the skill names an agent that chain does not contain —
+unless it is declared under `fallback-agents:` as an explicit escalation. That guard is
+there because the two copies had already drifted: `orch-pipeline` said Implement →
+`tdd-guide` for every operation while `orch-refine-code` correctly used
+`refactor-cleaner`.
+
+| Operation | Backing chain |
+| --- | --- |
+| `orch-add-feature` / `orch-change-feature` / `orch-build-mvp` | `hkx-feature-flow` |
+| `orch-fix-defect` | `hkx-fix-defect` |
+| `orch-refine-code` | `hkx-refactor-flow` |
+| `orch-review` | `hkx-pr-review` (+ language chains for the language dimension) |
+
+**Which lane to pick.** Interactively driving, wanting approvals → the orch skill (it
+replays the chain's steps one at a time in-session, with gates between phases).
+End-to-end run, or arriving through a router like `/multi-workflow` → the chain directly
+(it runs to completion and cannot stop at a gate). **Do not nest one inside the other** —
+that duplicates review lanes and re-runs gates.
 
 ### Repo understanding
 

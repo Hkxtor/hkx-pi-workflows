@@ -114,6 +114,12 @@ These coordinate larger workflows or bounded multi-step execution:
 - `loop-status`
 - `delivery-gate`
 - `hkx-session-summary`
+
+Each `/orch-*` command is a thin entrance to the matching skill. That skill owns policy
+only — size, phase mask, first move, GATE 1 / GATE 2 — and declares a `backing-chain`
+that owns the agent sequence. `scripts/validate.mjs` fails if a skill names an agent its
+chain does not contain (unless listed under `fallback-agents`). See
+`docs/architecture.md` §5b.
 - `santa-loop`
 - `gan-build` — thin entrance for `gan-style-harness`; owns the iteration loop in-session
 
