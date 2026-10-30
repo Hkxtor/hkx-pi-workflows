@@ -118,9 +118,9 @@ Use an agent when you need:
 
 Current agent families:
 
-- **planning / architecture** — `planner`, `architect`, `code-architect`, `code-explorer`
-- **review / analysis** — `code-reviewer`, `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, `agent-evaluator`, `docs-lookup`
-- **implementation / repair** — `tdd-guide`, `build-error-resolver`, `python-build-resolver`, `go-build-resolver`, `rust-build-resolver`, `refactor-cleaner`, `doc-updater`, `database-reviewer`, `e2e-runner`, `harness-optimizer`, `loop-operator`
+- **investigation** — `code-explorer` (planning and design run in the main session; see `docs/skill-routing.md`)
+- **review / analysis** — `code-reviewer`, `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, `agent-evaluator`
+- **implementation / repair** — `tdd-guide`, `build-error-resolver`, `python-build-resolver`, `go-build-resolver`, `rust-build-resolver`, `refactor-cleaner`, `doc-updater`, `e2e-runner`
 - **language reviewers** — `typescript-reviewer`, `python-reviewer`, `go-reviewer`, `rust-reviewer`
 
 ### 5. Chains: orchestration

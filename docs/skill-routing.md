@@ -39,6 +39,14 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | what automation is live / overlapping | `automation-audit-ops` | `workspace-surface-audit` | `skill-stocktake` |
 | skill overlap / portfolio health | `skill-stocktake` | `skill-health` command | `config-gc` |
 | promote recurring skill principles into rules | `rules-distill` | `skill-stocktake` first, `hookify-rules` when the constraint is mechanically enforceable | `instinct-evolve` (captures behaviors, not rules) |
+| control answer length / token budget | `token-budget-advisor` | `context-budget` | `cost-aware-llm-pipeline` (model choice, not answer length) |
+| repeated prompts are expensive / raise cache hit rate | `prompt-caching-strategy` | `context-budget`, `cost-aware-llm-pipeline` | `prompt-optimizer` (quality, not reuse) |
+| review MCP config for mutable package pins | `mcp-dependency-review` | `security-scan`, `search-first` | `mcp-server-patterns` (building the server, not vetting the config) |
+| find the right command sequence for a workflow | `ecc-recipes` | `/recipes` (operator entrance) | `hkx-plan-orchestrate` (multi-step agent chains) |
+| draft a commit message from staged changes | `conventional-commit-review` | `hkx-common-git-workflow` rule | `coding-standards` (diff content, not message) |
+| stop AI style drift on a legacy codebase | `inherit-legacy-style` | `coding-standards`, `grilling` | `codebase-onboarding` (map, not rules) |
+| docs are rotting / deleted files keep coming back | `living-docs-governance` | `architecture-decision-records`, `code-tour` | `codebase-onboarding` (first-pass map) |
+| extract baseline behavior specs from a brownfield module | `code-explorer` agent, `mine` mode | `change-impact`, `tdd-workflow` | `codebase-onboarding` |
 | clean up my config / too many skills | `config-gc` | after stocktake/audit | any read-only audit as delete tool |
 | why build this / product diagnostic | `product-lens` | `council` | `product-capability` first |
 | PRD → capability / interfaces | `product-capability` | `intent-driven-development` | `product-lens` only |
@@ -215,8 +223,19 @@ Some commands share a name with a skill. Use the **command** as the operator ent
 | `hookify` / `list` / `configure` / `help` | `hookify-rules` | Pattern guardrails; runtime `hkx-hookify` extension |
 | `hkx-orch-*` | matching `orch-*` | Orchestrated operations |
 | `skill-health` | (pairs with `skill-stocktake`) | Health = frontmatter; stocktake = overlap/quality |
+| `recipes` | `ecc-recipes` | Which command group runs my workflow, in what order, and when to stop |
 
 Commands should stay thin. If guidance grows, keep it in the skill and point the command at that skill.
+
+### Flagged as overlaps, verified not to be
+
+Name similarity is not duplication. These three families were flagged in the 2026-10 fold audit as selection friction and re-checked: each is a deliberate composition, so nothing was merged or retired.
+
+| Family | Why it is not a duplicate |
+| --- | --- |
+| `grilling` / `grill-with-docs` | `grill-with-docs` is a thin orchestrator that loads `grilling` **plus** `domain-modeling`; it also sets `disable-model-invocation: true`, so the model cannot pick it by accident — it fires only when the operator names it. |
+| `research-ops` / `deep-research` / `market-research` / `exa-search` / `documentation-lookup` / `search-first` | Each description carries an explicit "not for X, use Y instead" clause and `research-ops` is the declared entry. Six skills with disjoint triggers beat one skill that has to be re-read to disambiguate. |
+| `recipes` command / `ecc-recipes` skill | Command is the operator entrance, skill holds the procedure — the same thin-command pattern as `delivery-gate` and `santa-loop`. |
 
 ## Agent routing (hkx.*)
 

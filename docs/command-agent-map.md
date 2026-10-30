@@ -8,14 +8,13 @@
 
 ## Command → Agent (direct invocation)
 
-Six agents are not reached through packaged chains; they are entered directly via commands, the `plan-orchestrate` catalogue, or skill routing.
+One agent is not reached through packaged chains; it is entered directly via a command.
 
 | Agent | Entrance | Where |
 |---|---|---|
-| `loop-operator` | `/loop-start`, `/loop-status` | `commands/loop-start.md:41`, `commands/loop-status.md:35`; also `plan-orchestrate` `loop` tag |
-| `harness-optimizer` | `/harness-audit` | `commands/harness-audit.md:37` |
-| `database-reviewer` | `plan-orchestrate` catalogue + `db` tag; DB skills | `skills/plan-orchestrate/SKILL.md:70`, `:135`; `skills/postgres-patterns/`, `skills/redis-patterns/` |
 | `e2e-runner` | `/e2e` | `commands/e2e.md` (thin entrance → `hkx.e2e-runner` + `e2e-testing` skill); also catalogue `:69` + `test` tag `:132` |
+| ~~`harness-optimizer`~~ | folded | harness revision runs in the main session via skill `agent-harness-construction` ("Improving an existing harness"); `/harness-audit` remains the operator entrance |
+| ~~`database-reviewer`~~ | folded | schema/migration review runs in the main session via skill `database-migrations` (ordered Review Checklist); `postgres-patterns` / `redis-patterns` stay as the reference lane |
 | ~~`docs-lookup`~~ | folded | absorbed into skill `documentation-lookup` (docs MCP tools + web search + lookup budget); removed from the agent catalogue |
 | ~~`conversation-analyzer`~~ | folded | no-args `/hookify` analyzes in the main session via skill `hookify-rules` conversation-analysis section |
 
@@ -48,7 +47,7 @@ Agent sequences inside `chains/*.chain.json` (parallel steps in brackets):
 |---|---|
 | `/multi-workflow` / `/multi-plan` / `/multi-execute` / `/multi-backend` / `/multi-frontend` → architect (+ Codex/Gemini external prompts) | merged into single thin router `commands/multi-workflow.md` — in-process pi-subagents only, no external `codeagent-wrapper` / `ccg-workflow` |
 | `/e2e` → e2e-runner | upstream moved to `legacy-command-shims`; hkx ships a fresh thin `commands/e2e.md` routing to `hkx.e2e-runner` + `e2e-testing` skill |
-| `/harness-audit` — "no single agent" | hkx routes it to `harness-optimizer` (`commands/harness-audit.md:37`) — intentional improvement upstream lacks |
+| `/harness-audit` — "no single agent" | hkx keeps the command and now runs the revision workflow in the main session via skill `agent-harness-construction` (baseline scorecard → 1–3 leverage changes → verify), so the audit is agentless as upstream intended |
 | `conversation-analyzer` absent from ECC map rows | folded (2026-10): no-args `/hookify` now analyzes in the main session via skill `hookify-rules`; the agent file was removed |
 | 26 shared agent files, ECC↔hkx all differ | expected: hkx agents are Pi-adapted rewrites; content drift is record-only (see checklist), sync is a separate scope |
 
@@ -66,7 +65,7 @@ Agent sequences inside `chains/*.chain.json` (parallel steps in brackets):
 
 ## Agent Entrance Coverage
 
-Every shipped agent has at least one entrance of type chain / command / skill. Rows marked ✓ in a chain column appear in the chain table above; command/skill columns list file-level entrances. (Fold migration 2026-10: `docs-lookup` and `conversation-analyzer` folded into skills; the planner/architect/code-architect consolidation is recorded in the migration batches.)
+Every shipped agent has at least one entrance of type chain / command / skill. Rows marked ✓ in a chain column appear in the chain table above; command/skill columns list file-level entrances. (Fold migration 2026-10: `docs-lookup`, `conversation-analyzer`, `loop-operator`, `database-reviewer`, and `harness-optimizer` folded into skills; the planner/architect/code-architect consolidation is recorded in the migration batches.)
 
 | Agent | Chains | Commands | Skills |
 |---|---|---|---|
@@ -74,15 +73,12 @@ Every shipped agent has at least one entrance of type chain / command / skill. R
 | build-error-resolver | typescript-build-fix | orch-fix-defect | orch-fix-defect, orch-pipeline, plan-orchestrate |
 | code-explorer | 4 flow chains | multi-workflow, orch-fix-defect | orch-fix-defect, orch-pipeline, plan-orchestrate |
 | code-reviewer | 11 chains | blueprint, orch-review, review-pr, santa-loop | blueprint, council, orch-pipeline, orch-review, plan-orchestrate, santa-method |
-| database-reviewer | — | — | plan-orchestrate, postgres-patterns, redis-patterns |
 | doc-updater | docs-update | — | plan-orchestrate |
 | e2e-runner | — | e2e | plan-orchestrate |
 | go-build-resolver | go-build-fix | orch-fix-defect | plan-orchestrate |
 | go-reviewer | 2 chains | orch-review | orch-pipeline, orch-review, plan-orchestrate |
 | gan-evaluator | gan-pass | gan-build | gan-style-harness |
 | gan-generator | gan-pass | gan-build | gan-style-harness |
-| harness-optimizer | — | harness-audit | plan-orchestrate |
-| loop-operator | — | loop-start, loop-status | plan-orchestrate |
 | pr-test-analyzer | 8 chains | review-pr | — |
 | python-build-resolver | python-build-fix | orch-fix-defect | plan-orchestrate |
 | python-reviewer | 2 chains | orch-review | orch-pipeline, orch-review, plan-orchestrate |
@@ -94,4 +90,4 @@ Every shipped agent has at least one entrance of type chain / command / skill. R
 | tdd-guide | 3 chains | — | orch-pipeline, plan-orchestrate |
 | typescript-reviewer | 2 chains | orch-review | orch-pipeline, orch-review, plan-orchestrate |
 
-**Verification**: `docs/command-agent-map-checklist.md` holds the grep-verified script that confirmed all 26 rows at M3 (`26/26 PASS`); after the 2026-10 fold migration the live table above is authoritative (23 rows).
+**Verification**: `docs/command-agent-map-checklist.md` holds the grep-verified script that confirmed all 26 rows at M3 (`26/26 PASS`); after the 2026-10 fold migration the live table above is authoritative (20 rows).

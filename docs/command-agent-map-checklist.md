@@ -1,6 +1,8 @@
 # Command–Agent Map Port Checklist
 
-**Status**: frozen audit trail (M1/M2 conclusions; folded into the operator-facing `docs/command-agent-map.md` at M3). Authoritative sources:
+**Status**: frozen audit trail (M1/M2 conclusions; folded into the operator-facing `docs/command-agent-map.md` at M3). Later folds are recorded in `docs/conversion-map.md`, not here — rows below reflect the M2 snapshot.
+
+Post-M3 folds affecting this document: `docs-lookup`, `conversation-analyzer`, `planner`, `architect`, `code-architect`, `loop-operator`, `database-reviewer`, `harness-optimizer`. Authoritative sources:
 
 - Upstream intent: `ECC/docs/COMMAND-AGENT-MAP.md`
 - Grading evidence: grep-verified file:line references inside this repo (`chains/`, `commands/`, `skills/`) — every grade below carries at least one such reference

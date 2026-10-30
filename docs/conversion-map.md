@@ -32,10 +32,10 @@ Manifest shape (authoritative):
 
 | Surface | Count | In repo | Path A | Path B target |
 | --- | ---: | --- | --- | --- |
-| agents | 23 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
+| agents | 20 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 16 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 58 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 105 | `skills/` | yes | `~/.pi/agent/skills/` |
+| skills | 111 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
 | extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
@@ -300,9 +300,15 @@ Folded in the 2026-10 fold migration (design procedure = main-session process kn
 - `rust-build-resolver`
 - `refactor-cleaner` (also covers the former `code-simplifier` readability-polish lane)
 - `doc-updater`
-- `database-reviewer`
 - `e2e-runner`
-- `harness-optimizer`
+
+#### Harness configuration
+
+- ~~`harness-optimizer`~~ — folded into `agent-harness-construction` ("Improving an existing harness": baseline scorecard → 1–3 highest-leverage changes → small reversible edits → verify → report before/after). `/harness-audit` stays as the operator entrance.
+
+#### Database work
+
+- ~~`database-reviewer`~~ — folded into `database-migrations` (ordered Review Checklist: migration safety → index coverage → constraints → locks → query plans → tenant isolation). `postgres-patterns` / `redis-patterns` remain the reference lane.
 
 #### Build-quality loop (GAN)
 
@@ -312,7 +318,10 @@ Ported from ECC as the one deliberate multi-subagent exception to the fold-into-
 - `gan-evaluator` (read-only) — runs the artifact, scores the rubric, returns `pass`/`fail`/`plateau`/`blocked`. Cannot write or edit.
 
 Loop ownership (spec, iteration count, stop decision) stays in the main session per `skills/gan-style-harness`. Planning is folded into the skill — there is no planner agent.
-- `loop-operator`
+
+#### Loops
+
+- ~~`loop-operator`~~ — folded into `loop-design-check` Action 3 (checkpoints, stall escalation, operating report). A nested loop inside a child adds a round trip per iteration and hides running state from the only party allowed to judge it; `/loop-start` is already the main-loop shape.
 
 #### Language-specific reviewers
 
@@ -527,6 +536,29 @@ Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default),
 - chain files use `hkx-*.chain.json`
 - agent runtime names are `hkx.<name>`
 - package metadata (`package.json`) is the source of truth for package identity
+
+## Tier 1 ECC skill port — decisions
+
+Reviewed against ECC's 311 skills; only non-overlapping ones with a real gap were ported.
+
+| ECC skill | Decision | Reason |
+|---|---|---|
+| `change-impact` | ported | no pre-change impact-analysis surface existed |
+| `contract-first` | ported | `api-design` covers API shape, not how a boundary evolves |
+| `rules-distill` | ported | `rules/` existed with no distillation step |
+| `gan-style-harness` | ported (+2 agents, 1 chain, 1 command) | generator/evaluator is the one justified multi-subagent exception |
+| `token-budget-advisor` | ported | answer-length control was absent |
+| `prompt-caching-strategy` | ported | `cost-aware-llm-pipeline` covers routing, not caching |
+| `mcp-dependency-review` | ported | hkx ships `mcp-configs/`; pin review was absent |
+| `conventional-commit-review` | ported | the git rule defines the format but nothing drafts a message from a diff |
+| `inherit-legacy-style` | ported | `coding-standards` is generic; anti-drift on legacy code was absent |
+| `living-docs-governance` | ported | long-lived-doc rot had no owner; `docs-governance` is a router over this and was **not** ported |
+| `context-and-decisions` | **not ported** | fully covered by `domain-modeling` (`CONTEXT.md`) + `architecture-decision-records`; the ECC skill itself routes ADRs there |
+| `docs-governance` | **not ported** | a router over `living-docs-governance` plus a read-only audit; the audit was folded into that skill instead |
+| `module-regression` | **deferred** | the durable `REGRESSION.md` ledger overlaps `change-impact` (per-change discovery) + `verification-loop` (what to run); revisit only if a large multi-module repo needs a persistent ledger |
+| `brownfield-retrospective` | **deferred** | 177 lines of process that overlaps the `orch-*` family; high cost, unclear incremental value |
+| `i18n-sync` | **not ported** | this pack has no multi-locale surface |
+| `spec-miner` | **folded, not added as an agent** | same read-only deep-scan profile as `code-explorer`; became its `mine` mode (Requirements WHEN→THEN / Invariants) instead of a 21st agent |
 
 ## How to Use This Map
 
