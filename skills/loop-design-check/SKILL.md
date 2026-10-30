@@ -1,6 +1,6 @@
 ---
 name: loop-design-check
-description: "Judgment-layer design and review of autonomous agent loops: decidable goals, loop type, skeletons, and failure modes (spin, Goodhart, wrong-answer-to-completion). Use when designing or reviewing a loop contract. Not runtime failure debugging (agent-introspection-debugging) or parallel lane mechanics (parallel-execution-optimizer)—those are mechanism-layer complements."
+description: "Judgment-layer design, review, and operation of autonomous agent loops: decidable goals, loop type, skeletons, failure modes (spin, Goodhart, wrong-answer-to-completion), checkpoints, and stall escalation. Use when designing or reviewing a loop contract, or when operating a running loop and deciding whether to continue. Not runtime failure debugging (agent-introspection-debugging) or parallel lane mechanics (parallel-execution-optimizer)—those are mechanism-layer complements."
 origin: HKX-converted-for-Pi
 ---
 
@@ -113,6 +113,62 @@ Retry cap, hard stop, human flips the last switch = damping. **Negative feedback
 - **Keep judgment with the human.** Acceptance / the "done" cell is flipped by a human; the loop is not the acceptance officer.
 - **Responsibility doesn't transfer.** Anything whose failure you can't afford (merge the wrong PR / publish the wrong thing / misallocate money) → **don't hand over the authority automatically.**
 - **Counter-intuitive warning.** The more "self-improving / rewrites-its-own-rules" a loop is, the **stricter the human review it needs** (to see what it rewrote the rules into) — not looser. The machine is too fast to intercept after the fact, so the human's judgment must sit **before the action** (a hard gate), not as a post-hoc patch.
+
+---
+
+## Action 3 — Operate a loop (main session, never a subagent)
+
+Designing the loop is the judgment layer above. **Operating it stays in the main
+session too** — the loop body belongs to whoever holds the goal, because the operator
+has to make the stop call.
+
+Why not a dedicated loop-runner subagent: a nested model loop inside a child adds a
+round trip per iteration and hides the running state from the only party allowed to
+judge it. `/loop-start` already *is* the main-loop shape.
+
+### Required before the first iteration
+
+- quality gates wired into the loop (lint / typecheck / tests actually run each pass);
+- an eval or test baseline to compare against — see the eval harness; without one you
+  cannot tell "improved" from "changed";
+- a rollback path, named;
+- branch or worktree isolation configured.
+
+Miss any of these → fix it first. Starting a loop without a baseline is the single most
+common way to burn a budget and learn nothing.
+
+### Checkpoints
+
+Record progress to a durable note (`.pi/checkpoints.log`, or the plan artifact the
+project already uses) when the loop runs long enough that you would otherwise
+reconstruct its history from scrollback. One line per checkpoint: what changed, what
+still fails, how far from the done-criterion.
+
+### Stall detection — escalate, do not retry harder
+
+Any one of these means stop and surface it, not iterate again:
+
+- no progress across **two consecutive checkpoints**;
+- the **same failure** repeats with no new evidence;
+- cost or runtime drifts outside the agreed budget;
+- rollback is unclear;
+- merge conflicts block advancement;
+- the loop wants an external, destructive, or irreversible action.
+
+Escalation is not failure. A loop that keeps going after a stall converts a small
+mistake into a large one at machine speed — this is the runtime form of failure mode #1.
+
+### Operating report
+
+When reporting loop state — to the operator, or in `/loop-status` — return:
+
+1. `Objective`
+2. `Loop State`
+3. `Progress / Checkpoints`
+4. `Current Blocker or Next Step`
+5. `Stop / Continue Recommendation`
+
+Item 5 is a recommendation, not the decision: the operator flips it.
 
 ---
 

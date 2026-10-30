@@ -38,7 +38,7 @@ Before proposing or launching the loop:
 ## Workflow
 
 1. Use `loop-design-check` to decide whether the task deserves a loop at all.
-2. Use `loop-operator` to define checkpoints, escalation triggers, and intervention rules.
+2. Use `loop-design-check` (Action 3) to define checkpoints, escalation triggers, and intervention rules — in this session, not by dispatching an agent.
 3. If the loop is substantial, write a runbook under `.pi/plans/`.
 4. Return the staged loop plan, not an unbounded autonomous launch.
 

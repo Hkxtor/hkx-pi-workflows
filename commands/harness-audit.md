@@ -34,7 +34,7 @@ Use Pi-native evidence:
 
 Pair these components as needed:
 
-- `harness-optimizer` for highest-leverage configuration changes
+- `agent-harness-construction` ("Improving an existing harness") for the revision workflow: baseline scorecard, 1–3 highest-leverage changes, small reversible edits
 - `workspace-surface-audit` for repo/plugin/MCP surface inventory
 - `agent-architecture-audit` when prompt/tool/memory/retry layers need deeper review
 

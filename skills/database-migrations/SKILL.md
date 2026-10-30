@@ -58,13 +58,18 @@ Use for renames, type changes, and required fields:
 
 ## Review Checklist
 
-- Migration order matches application deploy order.
-- New constraints cannot fail on existing data.
-- Defaults do not rewrite large tables unexpectedly.
-- Index names are stable and non-conflicting.
-- Rollback or recovery path is named.
-- Tests cover old data, new data, and mixed-version compatibility.
-- Generated ORM files are updated only through the generator.
+Work in this order — each item can invalidate the ones below it:
+
+1. **Migration safety and rollback shape** — migration order matches application deploy order; new constraints cannot fail on existing data; defaults do not rewrite large tables unexpectedly; index names are stable and non-conflicting; rollback or recovery path is named.
+2. **Index coverage for the changed access paths** — trace the read/write call sites before recommending an index. An index nobody queries is a write cost with no read benefit.
+3. **Constraints, defaults, nullability, integrity** — the cheap checks that prevent bad rows from ever landing.
+4. **Lock duration, batching, transaction boundaries** — see the section above.
+5. **Query plans** — flag sequential scans on large tables and N+1 patterns at the call sites, not just in the query text.
+6. **Tenant isolation and abuse surface** — RLS enabled on multi-tenant tables, using the `(SELECT auth.uid())` pattern so the function is evaluated once per statement; RLS policy columns indexed; least privilege, no `GRANT ALL` to application roles, public-schema permissions revoked.
+7. Tests cover old data, new data, and mixed-version compatibility.
+8. Generated ORM files are updated only through the generator.
+
+Read the schema, the migration, and the affected call sites **together** before judging any of it. Read-only inspection is the default; never run mutating SQL unless the task explicitly authorizes it.
 
 ## Output
 
@@ -75,4 +80,16 @@ Deploy order:
 Backfill strategy:
 Rollback/recovery:
 Verification:
+```
+
+For a review of someone else's migration or schema change, report in this shape instead:
+
+```text
+Scope reviewed:          <schema / migration / call sites>
+Correctness risks:      <ordered by severity, each with file:line or the query>
+Index gaps:             <access path → missing or wrong index>
+Lock / batching risks:
+Tenant isolation:
+Smallest safe fix:      <or "no change needed">
+Not verified:           <what needs a live database to confirm>
 ```

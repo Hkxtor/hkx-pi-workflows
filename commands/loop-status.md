@@ -32,7 +32,7 @@ If no managed-loop evidence exists, say so plainly instead of guessing.
 
 ## Pairing
 
-Use `loop-operator` when the loop needs human intervention.
+Use `loop-design-check` (Action 3 — stall detection) when the loop needs human intervention.
 
 Use `hkx-session-summary` or `delivery-gate` when the missing information is
 really about session-end evidence rather than loop state.

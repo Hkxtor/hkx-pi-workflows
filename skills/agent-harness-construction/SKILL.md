@@ -1,6 +1,6 @@
 ---
 name: agent-harness-construction
-description: Design or revise Pi agent tools, command prompts, skill prompts, observations, recovery paths, and action-space boundaries. Use when adding or changing model-callable capabilities.
+description: Design, revise, or audit Pi agent tools, command prompts, skill prompts, observations, recovery paths, action-space boundaries, and local harness configuration (AGENTS.md, MCP/settings surface, command-skill-rule overlap). Use when adding or changing model-callable capabilities, or when improving an existing harness from a baseline scorecard.
 origin: HKX-converted-for-Pi
 ---
 
@@ -69,6 +69,49 @@ artifact paths or bounded excerpts.
 - Never let hidden retries silently change the user's requested operation.
 - Internal schemes (`skill://`, `pr://`, `issue://`, `memory://`, etc.) need traversal checks.
 - If a tool exposes external state, define read-only vs write behavior in the prompt.
+
+## Improving an existing harness
+
+Designing a surface is the section above. **Revising** a harness someone already runs is
+its own discipline, because the failure mode is confident tuning with no baseline.
+
+### Workflow
+
+1. **Establish the current surface and the failure mode first.** Capture a baseline
+   scorecard before touching anything — command/skill/rule overlap, safety-gate gaps,
+   context weight, and the specific symptom that prompted the change. Without a baseline
+   "improved" is unfalsifiable.
+2. **Name the 1–3 highest-leverage changes.** A harness revision that touches ten
+   surfaces at once cannot be attributed or reverted.
+3. **Prefer small, reversible edits with measurable effect** over broad rewrites or
+   speculative tuning.
+4. **Preserve Pi-native conventions and package boundaries.**
+5. **Validate, then report before/after impact and what still risks regressing.**
+
+### Focus areas, in the order that usually pays
+
+- `AGENTS.md` clarity and **instruction conflicts** (two rules that disagree are worse
+  than one wrong rule — the model picks arbitrarily);
+- `.mcp.json`, `.pi/settings.json`, and extension surface layout;
+- command / skill / rule overlap and drift (duplicate descriptions buy selection
+  friction, not capability);
+- safety gates, validation beats, and context hygiene;
+- cost and throughput tradeoffs in agent usage.
+
+### Constraints
+
+- Avoid fragile shell quoting in hooks, commands, and generated scripts.
+- Preserve cross-platform path and shell behavior.
+- **Do not rewrite product code when the real leverage is in harness configuration** —
+  report that finding instead of fixing it here.
+
+### Report
+
+1. `Current Surface`
+2. `Highest-Leverage Changes`
+3. `Applied / Proposed Edits`
+4. `Expected Impact`
+5. `Remaining Risks`
 
 ## Verification
 

@@ -6,7 +6,7 @@ origin: ECC-converted-for-Pi
 
 # PostgreSQL Patterns
 
-Quick reference for PostgreSQL best practices. For detailed guidance, use the Pi agent: `database-reviewer` (if available).
+Quick reference for PostgreSQL best practices. For the review workflow around a schema or migration change, use the `database-migrations` skill.
 
 ## When to Activate
 
@@ -138,7 +138,7 @@ SELECT pg_reload_conf();
 
 ## Related
 
-- Agent: `database-reviewer` — Full database review workflow (Pi agent, if available)
+- Skill: `database-migrations` — migration review workflow and checklist
 - Skill: `clickhouse-io` — ClickHouse analytics patterns (not included in Pi core)
 - Skill: `backend-patterns` — API and backend patterns
 

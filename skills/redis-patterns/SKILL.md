@@ -190,4 +190,4 @@ r = Redis(connection_pool=pool)
 
 - Skill: `postgres-patterns` — relational data patterns
 - Skill: `database-migrations` — schema versioning
-- Agent: `database-reviewer` — full database review workflow (Pi agent, if available)
+- Skill: `database-migrations` — full database review workflow

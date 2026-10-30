@@ -63,9 +63,6 @@ General:
 - `refactor-cleaner` — dead code, duplicates, knip-class cleanup
 - `doc-updater` — documentation, codemap, README
 - `e2e-runner` — end-to-end test orchestration
-- `database-reviewer` — PostgreSQL schema, migration, performance
-- `harness-optimizer` — local agent harness configuration
-- `loop-operator` — long-running autonomous loops
 - `code-explorer` — codebase investigation and tracing
 
 Build error resolvers:
@@ -134,13 +131,13 @@ Trigger words below are matched case-insensitively.
 | `test` | test, coverage, e2e, integration | `tdd-guide,e2e-runner` |
 | `refactor` | refactor, cleanup, dedupe, split | `refactor-cleaner,<lang>-reviewer` |
 | `migration` | migrate, upgrade, rewrite, port | `tdd-guide,<lang>-reviewer` |
-| `db` | schema, migration, index, SQL, Postgres, alembic, sqlmodel | `database-reviewer,<lang>-reviewer` |
+| `db` | schema, migration, index, SQL, Postgres, alembic, sqlmodel | main-loop `database-migrations` review step, then `<lang>-reviewer` |
 | `security` | encrypt, auth, secret, OWASP, PII | `security-reviewer,<lang>-reviewer` |
 | `build` | build, compile, lint failure, CI | language build resolver (falls back to `tdd-guide` when unsupported/unknown) |
 | `docs` | docs, readme, codemap, changelog | `doc-updater` |
 | `lookup` | lookup, reference, API usage | main-loop `documentation-lookup` skill step |
 | `review` | review, audit, verify | `<lang>-reviewer,code-reviewer` |
-| `loop` | loop, autonomous, watchdog | `loop-operator` |
+| `loop` | loop, autonomous, watchdog | main-loop `loop-design-check` skill step (Action 3) |
 
 Chain composition rules:
 
@@ -148,7 +145,7 @@ Chain composition rules:
    in table order** (top of the table = highest priority) is the primary; the
    rest are secondaries.
 2. `impl` + `security` → `tdd-guide,<lang>-reviewer,security-reviewer`.
-3. `impl` + `db` → `tdd-guide,database-reviewer,<lang>-reviewer`.
+3. `impl` + `db` → `tdd-guide,<lang>-reviewer`, with the `database-migrations` review checklist applied between them in this session.
 4. **Deduplicate** the resulting chain (preserve first occurrence).
 5. `<lang>-reviewer` resolves to `code-reviewer` when `lang=unknown`.
 6. Build resolver mapping is explicit: TypeScript/JavaScript → `build-error-resolver`; Python → `python-build-resolver`; Go → `go-build-resolver`; Rust → `rust-build-resolver`; `lang=unknown` → `tdd-guide` with `no specialized build resolver` recorded under "Chain rationale".
@@ -195,7 +192,7 @@ Output structure:
 
 | # | Title | Tags | Chain |
 |---|---|---|---|
-| 1 | ... | impl, db | `tdd-guide → database-reviewer → python-reviewer` |
+| 1 | ... | impl, db | `tdd-guide → [db review checklist] → python-reviewer` |
 | ... | | | |
 
 ---
@@ -215,14 +212,12 @@ task(
 )
 ```
 
-### Agent 2: database-reviewer
-```python
-task(
-    agent="database-reviewer",
-    context="Previous agent (tdd-guide) completed implementation. Review the database migration.",
-    assignment="Review the database schema changes from step 1..."
-)
-```
+### Step 2: database review (main session — `database-migrations` skill)
+
+No agent dispatch. Apply the `database-migrations` Review Checklist to the migration
+step 1 produced: migration safety and rollback shape first, then index coverage for the
+changed access paths, then constraints/defaults, lock and batching behaviour, query
+plans, and tenant isolation. Record findings inline in the step report.
 ````
 
 For independent steps, emit a `parallel` block:
@@ -291,8 +286,8 @@ Excerpt of expected output:
 environment variable.
 **Tags**: impl, security, db
 **Chain rationale**: Security-sensitive write path, so `security-reviewer` closes
-the chain; `database-reviewer` validates the alembic migration; `python-reviewer`
-covers typing and PEP 8.
+the chain; the `database-migrations` checklist validates the alembic migration in this
+session; `python-reviewer` covers typing and PEP 8.
 
 ### Agent 1: tdd-guide
 ```python
@@ -303,16 +298,13 @@ task(
 )
 ```
 
-### Agent 2: database-reviewer
-```python
-task(
-    agent="database-reviewer",
-    context="Previous agent (tdd-guide) implemented EncryptedString type and migration. Review migration safety.",
-    assignment="Review the alembic migration for step 2. Check: upgrade/downgrade symmetry, index preservation, data loss risks on existing rows."
-)
-```
+### Step 2: database review (main session — `database-migrations` skill)
 
-### Agent 3: python-reviewer
+No agent dispatch. Apply the checklist to the alembic migration: upgrade/downgrade
+symmetry, index preservation, and data-loss risk on existing rows — in that order,
+because an asymmetric downgrade invalidates everything below it.
+
+### Agent 2: python-reviewer
 ```python
 task(
     agent="python-reviewer",
