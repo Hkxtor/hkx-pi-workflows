@@ -82,19 +82,36 @@ asks for.
 `## How to run it` is not optional — an evaluator that cannot start the artifact
 cannot evaluate it.
 
-**Write the runbook in gateway-parseable shape.** Every command in that section is
-executed by a child agent through `bash`, and pi's shell gate floors command text its
-parser cannot resolve, so an exotic one-liner silently turns into a step the evaluator
-cannot reproduce:
+**Write the runbook so a child agent can actually reproduce it.** Two separate
+hazards, often confused:
 
-- One command per line. No inline control flow (`for … & done`, `while`, `case`).
-- No hand-built `printf … | xargs …` pipelines for concurrency or batching.
-- When a case needs a loop, retries, or multi-step setup, commit a small script
-  (`scripts/probe-concurrency.sh`) and invoke it once.
-- Prefer an explicit data path (`--data /tmp/gan-probe.json`) over destroying the
-  project's real state file between cases.
-- A step that needs a pseudo-TTY cannot be verified this way — put it under
-  non-goals or accept it as an explicitly unverified branch.
+1. **Parseability.** pi's shell gate parses every `bash` command with tree-sitter-bash
+   and fails closed on a partial parse, so the whole command becomes an operator
+   prompt tagged `<unparsed-bash-subtree>` even when policy would allow it. The real
+   trigger is **PowerShell syntax**, which has no bash grammar: `foreach (...) { }`,
+   `if (...) { }`, `do { } while (...)`, `function Name { }`, script-block cmdlets
+   (`ForEach-Object { }`, `Where-Object { }`), `[Type]::` member access, and `-join`.
+   Ordinary bash control flow — `for … do … done`, `while`, `case`, `if [ ]; then`,
+   process substitution `<( )` — parses clean and is not a problem.
+   When in doubt, check before shipping the spec:
+
+   ```bash
+   node scripts/shell-command-preflight.mjs --command "<the command>"
+   # exit 0 clean · 2 unresolved · 1 usage/parser-setup error
+   ```
+
+2. **Reproducibility.** A step is worthless if the evaluator cannot rerun it
+   deterministically. Keep each case one command, or one script invocation, so a
+   failure points at a single step:
+
+   - When a case needs a loop, retries, or multi-step setup, commit a small script
+     (`scripts/probe-concurrency.sh`) and invoke it once.
+   - Prefer an explicit data path (`--data /tmp/gan-probe.json`) over destroying the
+     project's real state file between cases.
+   - Have the probe print the values the must-have actually asserts on
+     (`count 5 uniqueIds 5`), not a shape the evaluator has to interpret.
+   - A step that needs a pseudo-TTY cannot be verified this way — put it under
+     non-goals or accept it as an explicitly unverified branch.
 
 ## Phase 2 — Iterate
 
