@@ -113,6 +113,24 @@ hazards, often confused:
    - A step that needs a pseudo-TTY cannot be verified this way — put it under
      non-goals or accept it as an explicitly unverified branch.
 
+3. **The destructive-command gate runs inside the child too.** The evaluator's `bash`
+   goes through GateGuard, so probes that need to destroy something are refused before
+   they run. Measured behaviour:
+
+   | Probe | Gate |
+   | --- | --- |
+   | `kill -9 <pid>` | blocked |
+   | `rm -f <relative path>` | blocked |
+   | `dd … of=…` | blocked |
+   | `git reset --hard` | blocked |
+   | `rm -f /tmp/<file>` | allowed (absolute tmp path) |
+
+   So when a must-have needs an interruption, atomic-write, or recovery probe, write
+   it to work on an absolute `/tmp` path — and when even that is impossible, the spec
+   must say the item is `unverified` rather than leaving the evaluator to discover a
+   silent block. A blocked probe is never evidence of a defect, and a silently skipped
+   probe is never evidence of correctness.
+
 ## Phase 2 — Iterate
 
 Operator entry: **`/gan-build <brief>`** drives the whole loop (spec check, budget gate,
@@ -125,11 +143,24 @@ subagent: hkx-gan-pass
 task: <one-paragraph brief>; spec at gan/spec.md; iteration N
 ```
 
+**Archive the previous round before dispatching.** The chain writes
+`gan/feedback.md` and `gan/generator-state.md` by `output:`, which overwrites them, so
+a second pass destroys the first pass's verdict unless you move the pair aside:
+
+```bash
+mkdir -p gan/round-N && mv gan/feedback.md gan/generator-state.md gan/round-N/
+```
+
+Without this, the run's own history is unrecoverable: you cannot tell afterwards
+whether an above-threshold round was scored `fail` (correctly continued) or `pass`
+(correctly stopped). Keep `gan/spec.md` outside the archive — it is the contract, not a
+per-round artifact.
+
 Then consume the verdict:
 
 | Verdict | Main loop action |
 | --- | --- |
-| `pass` | Stop. Report final score, scored-round count, known gaps. |
+| `pass` | Stop immediately. A score at or above the threshold with no must-fix is a pass — do not continue for polish. |
 | `fail` | Loop again with the feedback file as input. |
 | `no-verdict` | The pass produced no score — timeout, crash, or detached run. Charge the dispatch, not a scored round, and retry once with a narrower scope; a second `no-verdict` stops the run as `blocked`. |
 | `plateau` | Stop. Two consecutive scored rounds with no movement is a design problem, not a code problem — escalate to the operator. |
@@ -213,10 +244,14 @@ author talked itself into. Use it where the quality bar justifies the multiplier
 ## Artifacts
 
 ```text
-gan/spec.md               main loop, phase 1
-gan/generator-state.md    what the generator built and why
-gan/feedback.md           evaluator scores, issues, verdict
+gan/spec.md               main loop, phase 1 — the contract, never archived
+gan/generator-state.md    what the generator built and why  (current round)
+gan/feedback.md           evaluator scores, issues, verdict  (current round)
+gan/round-<N>/            the previous round's pair, moved aside before dispatch
 ```
+
+Only the current round lives at the top level. If `gan/round-*` is missing after a
+second pass, the archive step was skipped and the earlier verdicts are gone.
 
 The `/gan-build` command owns this loop end to end; use it unless you are driving the
 chain manually.

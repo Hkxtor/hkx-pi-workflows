@@ -52,13 +52,19 @@ Proceed automatically for short, low-stakes runs. Ask before starting when `--ma
 
 For each iteration `N` (starting at 1):
 
-1. Dispatch the chain **`hkx-gan-pass`** with task = the brief, the iteration number **you** assigned, and — from the second scored round on — the previous weighted score so the evaluator can return `plateau`.
-2. Read `gan/feedback.md`. Announce the score table and the verdict in one compact block.
+1. **Archive the previous round**, then dispatch the chain **`hkx-gan-pass`** with task = the brief, the iteration number **you** assigned, and — from the second scored round on — the previous weighted score so the evaluator can return `plateau`.
+
+   The chain writes `gan/feedback.md` and `gan/generator-state.md` by `output:`, which
+   overwrites them. Move the previous pair into `gan/round-<N>/` first, or the run's
+   verdict history is gone and you cannot prove afterwards whether an
+   above-threshold round was scored `fail` (correctly continued) or `pass`
+   (should have stopped).
+2. Read `gan/feedback.md`. Announce the round's **verdict and score** — not the score alone.
 3. Act on the verdict:
 
 | Verdict | Action |
 | --- | --- |
-| `pass` | Stop. Go to step 5. |
+| `pass` | Stop immediately. A score at or above the threshold with no must-fix is a pass — do not spend another dispatch for polish. |
 | `fail` | Next iteration. |
 | `no-verdict` | The pass produced no score: timeout, crash, or detached run. Charge the dispatch, **not** a scored round, and retry once with a narrower scope. A second consecutive `no-verdict` stops the run as `blocked`. |
 | `plateau` | Stop. Two consecutive scored rounds without score movement is a design/spec problem, not a code problem — escalate instead of burning budget. |
@@ -99,19 +105,26 @@ Run the repo's own narrow validation before claiming the build is deliverable. D
 Return:
 
 ```text
-[GAN] <brief> — <verdict>
+[GAN] <brief> — <final verdict>
 Dispatches: D | Scored rounds: S
-| Round | Iter | Func | Craft | Coherence | Robustness | Weighted |
+| Round | Iter | Verdict | Func | Craft | Coherence | Robustness | Weighted |
 No-verdict passes: <dispatch/iter + reason, or none>
 Final score: X.X / threshold Y.Y (mode: live|headless|static)
 Must-fix remaining: <list or none>
 Spec gaps raised: <list or none>
-Artifacts: gan/spec.md, gan/generator-state.md, gan/feedback.md
+Artifacts: gan/spec.md, gan/generator-state.md, gan/feedback.md, gan/round-*/
 Not done / not verified: <explicit list>
 ```
 
-Distinguish dispatches from scored rounds. A run that spent four dispatches on two
-scored rounds produced two rounds of evidence, and the report must say so.
+Three fields are mandatory, not decorative:
+
+- **`Dispatches` vs `Scored rounds`** — a run that spent four dispatches on two scored
+  rounds produced two rounds of evidence, and the report must say so.
+- **Per-round `Verdict`** — a bare score cannot show whether the loop obeyed its own
+  stop rule. `7.75 then 8.35` reads as a healthy climb; `pass at 7.75, continued to
+  8.35` is a loop bug, and only the verdict column exposes the difference.
+- **`Artifacts` incl. `gan/round-*`** — if the round archive is missing, the history
+  was overwritten and the verdicts above cannot be audited.
 
 ## Related
 

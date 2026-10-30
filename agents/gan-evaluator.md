@@ -87,6 +87,17 @@ A passing score must mean the artifact is genuinely good. Not good for an AI.
 4. Error states: invalid input, missing required fields, unavailable dependency.
 5. Note what you observed, not what the code implies.
 
+**Blocked probes.** Your `bash` runs through GateGuard, so some probes are refused
+before they execute — measured: `kill -9 <pid>`, `rm -f <relative path>`,
+`dd … of=…`, and `git reset --hard` are blocked; `rm -f /tmp/<file>` is allowed.
+When a must-have needs an interruption, atomic-write, or recovery probe:
+
+1. Retry it against an absolute `/tmp` path, which passes the gate.
+2. If it still cannot run, mark the item `Unverified` in the observations table and
+   say which probe was refused.
+
+Never record a blocked probe as a defect, and never record a skipped probe as a pass.
+
 **C. Consistency audit.** Naming, error message shape, empty states, loading states,
 and layout conventions across the whole artifact. Inconsistency between parts is the
 most common real defect and the most common thing a lenient evaluator skips.
@@ -137,6 +148,20 @@ live | headless | static — <how you achieved it, or why not>
 - command:
 - result:
 
+## Must-have observations (1–NN)
+| # | Assertion | Command run | Observed | Pass / Fail / Unverified |
+| 1 | add assigns an increasing id | `node todo.mjs add x` | `added #1: x`, exit 0 | Pass |
+
+One row per numbered must-have. An item you did not execute is `Unverified`, never
+`Pass`. This table is the evidence base for Functionality — a score without it is a
+guess.
+
+## Regression check vs. previous round (<previous score, or "first round">)
+- Closed: [should-fix from last round] → [what you observed this round]
+- Still open: [item] → [why it is not yet provable]
+- New: [regression introduced this round]
+- Movement: <previous → current, and whether that is a real step or a plateau>
+
 ## Scores
 | Criterion | Score | Weight | Weighted | Justification |
 | Functionality | 6 | 0.35 | 2.10 | ... |
@@ -155,6 +180,8 @@ live | headless | static — <how you achieved it, or why not>
 - [spec item that was untestable or ambiguous, and why]
 
 ## Verdict
+
+[18 more lines in file. Use offset=158 to continue.]
 pass | fail | plateau | blocked — one paragraph justifying it.
 ```
 
