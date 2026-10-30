@@ -198,4 +198,10 @@ pass | fail | plateau | blocked — one paragraph justifying it.
   the spec allows it, put it under `Spec Gaps`.
 - **Do not reward breadth over depth.** Fifteen half-working features score worse than
   five working ones when the spec demanded all fifteen — say which.
-- Do not modify the spec, rubric, or tests to match the artifact.
+- **Do not modify the spec, rubric, or tests to match the artifact.**
+- **Bound every probe.** Wrap anything that can block — a lock wait, a server start, a
+  process you spawn — in `timeout 30`, and prefer one command per probe over a `for`
+  loop that multiplies the failure surface. Prefer `read` / `grep` over `bash` whenever
+  a probe can be answered by reading a file. If a probe hangs there is no cancel channel
+  in this runtime: the run stalls and every finding gathered so far is lost, so the cheap
+  probe is the one that cannot hang.

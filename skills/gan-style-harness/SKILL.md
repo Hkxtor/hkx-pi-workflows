@@ -156,14 +156,29 @@ whether an above-threshold round was scored `fail` (correctly continued) or `pas
 (correctly stopped). Keep `gan/spec.md` outside the archive — it is the contract, not a
 per-round artifact.
 
+**Driving the chain by hand means owning the artifacts.** `output:` is a chain-level
+feature. Dispatch `hkx.gan-generator` or `hkx.gan-evaluator` as a bare agent and nothing
+is written to `gan/` — the report lands in pi-subagents' artifact directory, and the next
+step finds no input. When you replay the steps manually (which is what the gates require),
+write each agent's final message to the path that chain step declares, before dispatching
+the next step. This is also why the agent prompts end with "your final message IS the
+artifact": it is the only copy the parent is guaranteed to have.
+
+**Dispatch the evaluator in the foreground.** Observed three times in a row: an async
+(background) evaluator run stalls on its third or fourth `bash` call — the command is
+dispatched but the shell is never spawned, no process exists to cancel, and the run sits
+idle until it is stopped, taking every finding gathered so far with it. The same agent,
+same prompt, dispatched with `async: false` completes normally. Until that is fixed
+upstream, `async: false` is the supported way to run an evaluation, and a stalled async
+run should be stopped rather than retried.
+
 Then consume the verdict:
 
 | Verdict | Main loop action |
 | --- | --- |
 | `pass` | Stop immediately. A score at or above the threshold with no must-fix is a pass — do not continue for polish. |
 | `fail` | Loop again with the feedback file as input. |
-| `no-verdict` | The pass produced no score — timeout, crash, or detached run. Charge the dispatch, not a scored round, and retry once with a narrower scope; a second `no-verdict` stops the run as `blocked`. |
-| `plateau` | Stop. Two consecutive scored rounds with no movement is a design problem, not a code problem — escalate to the operator. |
+| `no-verdict` | The pass produced no score — timeout, crash, or detached run. Charge the dispatch, not a scored round, and retry once with a narrower scope; a second `no-verdict` stops the run as `blocked`. || `plateau` | Stop. Two consecutive scored rounds with no movement is a design problem, not a code problem — escalate to the operator. |
 | `blocked` | Stop. The evaluator could not run the artifact; fix the runbook before iterating. |
 
 Record the round table as you go, so the stop decision has evidence. Keep dispatch
