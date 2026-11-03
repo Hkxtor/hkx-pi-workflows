@@ -35,7 +35,7 @@ Manifest shape (authoritative):
 | agents | 20 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 16 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 58 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 114 | `skills/` | yes | `~/.pi/agent/skills/` |
+| skills | 115 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
 | extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
@@ -562,7 +562,7 @@ Reviewed against ECC's 311 skills; only non-overlapping ones with a real gap wer
 | `click-path-audit` | ported | nothing traced a handler's full state-change sequence; `browser-qa` smokes a page, `e2e-testing` writes the test, neither finds two correct functions cancelling out |
 | `agent-security-hardening` | ported | hardens the agent framework itself (untrusted content, tool calls, workspace writes, credentials); `security-scan` mentions prompt injection once. The pi-surfaces section is new — tools allowlist, the `acceptanceRole` misconception, inheritance as an input channel, pattern gates vs sandboxing |
 | `test-collaboration` | ported (+ `templates/TESTS.example.md`) | TEST-ID governance linking requirements/risks/contracts to executable evidence; no equivalent surface. `pr-test-analyzer` reads a PR, it does not own a durable registry |
-| `knowledge-ops` | **compare before porting** | likely overlaps `unified-memory` (memory vault) + the `ctx_*` tools; merge rather than add |
+| `knowledge-ops` | ported, layers rewritten | **not** merged into `unified-memory`: that skill owns one layer's mechanics (vault schema, CLI, scopes), this one owns the cross-layer routing decision. ECC's layers (Claude memory dir, MCP memory graph, Supabase) do not exist here, so the table was rebuilt around the vault, `ctx_*` indexed corpus, project docs, conventions, and the instinct store. pi has **no** knowledge-graph layer and the skill says so instead of implying `ctx_search` is one |
 | `benchmark-methodology` | **not ported** | name collides with this pack's `benchmark` (performance) but the content is competitor profile cards — it belongs to the `market-research` family |
 | `frontend-a11y` | **not ported** | `accessibility` covers this and is framework-agnostic (WCAG 2.2 AA, keyboard, focus, ARIA) |
 | `cost-tracking` | **not ported** | bound to ECC's cost-tracker metrics-log format; would need a rewrite against pi's own usage data |

@@ -38,6 +38,7 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | session done / delivery hygiene | `delivery-gate` | `verification-loop` (if not green), `session-summary` | `agent-self-evaluation` first |
 | score my output quality | `agent-self-evaluation` | after `delivery-gate` | as a test runner |
 | what is installed in this workspace | `workspace-surface-audit` | `automation-audit-ops` | `config-gc` |
+| where should this knowledge live / it is now in two places | `knowledge-ops` | `unified-memory` (the vault layer itself), `living-docs-governance` (doc roles) | `instinct-evolve` (behaviors, not facts) |
 | what automation is live / overlapping | `automation-audit-ops` | `workspace-surface-audit` | `skill-stocktake` |
 | skill overlap / portfolio health | `skill-stocktake` | `skill-health` command | `config-gc` |
 | promote recurring skill principles into rules | `rules-distill` | `skill-stocktake` first, `hookify-rules` when the constraint is mechanically enforceable | `instinct-evolve` (captures behaviors, not rules) |
