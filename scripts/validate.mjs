@@ -1574,9 +1574,20 @@ async function main() {
 
 	// commands (prompt templates) / skills / rules — frontmatter only
 	// On disk the directory remains commands/; package.json maps it as pi.prompts.
+	//
+	// A skill directory is a package: `SKILL.md` is the entry point and any other
+	// `.md` under it is an asset (templates, examples, references) that ships with
+	// the skill and deliberately has no frontmatter. Only `SKILL.md` is a skill.
 	for (const dir of ["commands", "skills", "rules"]) {
 		const files = await collectMdFiles(path.join(root, dir));
 		for (const filePath of files) {
+			if (
+				dir === "skills" &&
+				path.basename(filePath) !== "SKILL.md" &&
+				path.dirname(path.relative(path.join(root, dir), filePath)) !== "."
+			) {
+				continue;
+			}
 			const relativePath = path.relative(root, filePath);
 			const text = await fs.readFile(filePath, "utf8");
 			// skills often use name+description; commands/prompts description; rules description

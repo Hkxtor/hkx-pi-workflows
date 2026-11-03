@@ -34,6 +34,7 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hookify`, GateGuard only for destructive bash | `instinct-evolve` (cross-session) |
 | gate destructive shell commands | `gateguard` | `safety-guard` | `hookify-rules` |
 | run checks after code change | `verification-loop` | language `*-workflow` | `delivery-gate` first |
+| which tests exist / which rules need protection | `test-collaboration` | `pr-test-analyzer` (PR-level read), `tdd-workflow` (writes them) | `verification-loop` (runs checks, keeps no registry) |
 | session done / delivery hygiene | `delivery-gate` | `verification-loop` (if not green), `session-summary` | `agent-self-evaluation` first |
 | score my output quality | `agent-self-evaluation` | after `delivery-gate` | as a test runner |
 | what is installed in this workspace | `workspace-surface-audit` | `automation-audit-ops` | `config-gc` |
