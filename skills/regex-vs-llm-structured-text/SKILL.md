@@ -1,6 +1,6 @@
 ---
 name: regex-vs-llm-structured-text
-description: "Choose regex or LLM for structured-text parsing using a hybrid default: start with deterministic parsing for the common case, then escalate only low-confidence edge cases."
+description: "Choose regex or LLM for structured-text parsing using a hybrid default: start with deterministic parsing for the common case, then escalate only low-confidence edge cases. Use when deciding whether a parsing task needs a model at all. Not for general prompt design (prompt-optimizer)."
 origin: ECC-converted-for-Pi
 ---
 

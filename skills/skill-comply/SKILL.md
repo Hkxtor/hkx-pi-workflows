@@ -1,6 +1,6 @@
 ---
 name: skill-comply
-description: Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines.
+description: Visualize whether skills, rules, and agent definitions are actually followed — auto-generates scenarios at 3 prompt strictness levels, runs agents, classifies behavioral sequences, and reports compliance rates with full tool call timelines. Use when you need evidence that skills and rules are actually being followed, not just present. Not for portfolio quality review (skill-stocktake).
 origin: ECC-converted-for-Pi
 ---
 

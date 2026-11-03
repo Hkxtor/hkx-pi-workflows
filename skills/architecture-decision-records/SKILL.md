@@ -1,6 +1,6 @@
 ---
 name: architecture-decision-records
-description: Capture durable Pi project architecture decisions as ADRs with context, alternatives, consequences, lifecycle, and approval-gated writes.
+description: Capture durable Pi project architecture decisions as ADRs with context, alternatives, consequences, lifecycle, and approval-gated writes. Use when a decision needs a durable record with its alternatives and consequences. Not for general project documentation (living-docs-governance) or facts that are not decisions (unified-memory).
 origin: HKX-converted-for-Pi
 ---
 

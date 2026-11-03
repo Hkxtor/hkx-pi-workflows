@@ -1,6 +1,6 @@
 ---
 name: orch-pipeline
-description: Shared orchestration engine for the hkx-orch-* skill family. Defines the gated Research-Plan-TDD-Review-Commit pipeline, the size classifier, the agent map, and the two human gates that the operation skills delegate to. Not usually invoked directly.
+description: Shared orchestration engine for the hkx-orch-* skill family. Defines the gated Research-Plan-TDD-Review-Commit pipeline, the size classifier, the agent map, and the two human gates that the operation skills delegate to. Not usually invoked directly. Use only via an orch-* operation skill; never invoked directly. It holds the gates those skills call into.
 origin: HKX-converted-for-Pi
 ---
 

@@ -2,7 +2,7 @@
 name: orch-review
 backing-chain: hkx-pr-review
 fallback-agents: typescript-reviewer, python-reviewer, go-reviewer, rust-reviewer
-description: Multi-dimension review workflow for code diffs using Pi reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. Pi-native port of the orch-review workflow.
+description: Multi-dimension review workflow for code diffs using Pi reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. Pi-native port of the orch-review workflow. Use when a diff needs parallel quality, language, and security review with deduplicated blocking findings. Not for a single-reviewer pass (code-reviewer) or two-adversary convergence (santa-method).
 version: 1.0.0
 origin: ECC-converted-for-Pi
 ---

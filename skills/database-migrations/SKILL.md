@@ -1,6 +1,6 @@
 ---
 name: database-migrations
-description: Safe database migration workflow for schema changes, indexes, backfills, rollbacks, and zero-downtime deploys across SQL and ORM-backed Pi projects.
+description: Safe database migration workflow for schema changes, indexes, backfills, rollbacks, and zero-downtime deploys across SQL and ORM-backed Pi projects. Use when a schema change, index, backfill, or rollback must be safe on live data. Not for query and index reference (postgres-patterns) or ORM-specific patterns.
 origin: HKX-converted-for-Pi
 ---
 

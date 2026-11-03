@@ -1,6 +1,6 @@
 ---
 name: strategic-compact
-description: Pi context hygiene guidance for compacting at phase boundaries while preserving plans, evidence, and next actions.
+description: Pi context hygiene guidance for compacting at phase boundaries while preserving plans, evidence, and next actions. Use when compacting at a phase boundary and plans or evidence must survive. Not for measuring context overhead (context-budget).
 origin: HKX-converted-for-Pi
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: ecc-recipes
-description: Map a described workflow to the right Pi command group with run-order and stop condition, and browse all command-group recipe families. Adds family-grouping, run-order, and when-to-stop on top of the flat command catalog. Advisory only.
+description: Map a described workflow to the right Pi command group with run-order and stop condition, and browse all command-group recipe families. Adds family-grouping, run-order, and when-to-stop on top of the flat command catalog. Advisory only. Use when a workflow needs its command order and stop condition spelled out. Not a command catalog to browse for its own sake.
 version: 1.0.0
 origin: ECC-converted-for-Pi
 ---

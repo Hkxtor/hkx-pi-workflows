@@ -1,6 +1,6 @@
 ---
 name: parallel-execution-optimizer
-description: Plan and run Pi parallel reads, agents, checks, and independent work lanes without sacrificing correctness.
+description: Plan and run Pi parallel reads, agents, checks, and independent work lanes without sacrificing correctness. Use when independent reads, agents, or checks could run concurrently. Not for loop contract design (loop-design-check).
 origin: HKX-converted-for-Pi
 ---
 

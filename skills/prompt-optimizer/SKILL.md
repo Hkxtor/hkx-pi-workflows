@@ -1,6 +1,6 @@
 ---
 name: prompt-optimizer
-description: Analyze a draft prompt, identify missing context and workflow gaps, match it to Pi commands/skills/agents, and output a stronger prompt the user can paste.
+description: Analyze a draft prompt, identify missing context and workflow gaps, match it to Pi commands/skills/agents, and output a stronger prompt the user can paste. Use when a draft prompt is vague or missing context and should be rewritten before use. Not for answer depth (token-budget-advisor) or prompt caching (prompt-caching-strategy).
 origin: ECC-converted-for-Pi
 ---
 

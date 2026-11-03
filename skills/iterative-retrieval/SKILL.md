@@ -1,6 +1,6 @@
 ---
 name: iterative-retrieval
-description: Pi pattern for progressively refining repository context before delegating to agents or implementing changes.
+description: Pi pattern for progressively refining repository context before delegating to agents or implementing changes. Use when repository context must be narrowed before delegating or implementing. Not for codebase investigation itself (code-explorer).
 origin: HKX-converted-for-Pi
 ---
 

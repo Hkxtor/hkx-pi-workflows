@@ -1,6 +1,6 @@
 ---
 name: deployment-patterns
-description: "Deployment and release operations for Pi projects: CI/CD, rollout strategy, health checks, rollback, artifacts, env config, and production readiness gates."
+description: "Deployment and release operations for Pi projects: CI/CD, rollout strategy, health checks, rollback, artifacts, env config, and production readiness gates. Use when planning a rollout, rollback, or release gate. Not for image and compose specifics (docker-patterns) or cluster workload design (kubernetes-patterns)."
 origin: HKX-converted-for-Pi
 ---
 

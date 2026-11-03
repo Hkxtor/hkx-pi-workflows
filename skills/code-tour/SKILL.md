@@ -1,6 +1,6 @@
 ---
 name: code-tour
-description: Create reusable CodeTour-style walkthrough artifacts with verified repository file and line anchors.
+description: Create reusable CodeTour-style walkthrough artifacts with verified repository file and line anchors. Use when producing a walkthrough for onboarding, review, or incident evidence. Not for a one-off repository map (codebase-onboarding).
 origin: HKX-converted-for-Pi
 ---
 

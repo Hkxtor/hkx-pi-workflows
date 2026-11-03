@@ -1,6 +1,6 @@
 ---
 name: redis-patterns
-description: Redis data structure patterns, caching strategies, distributed locks, rate limiting, and connection management for production applications (compact Pi version).
+description: Redis data structure patterns, caching strategies, distributed locks, rate limiting, and connection management for production applications (compact Pi version). Use when choosing Redis data structures, caching, locks, or rate limiting. Not for general caching infrastructure or HTTP cache headers.
 origin: ECC-converted-for-Pi
 ---
 

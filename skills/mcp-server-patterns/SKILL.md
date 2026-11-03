@@ -1,6 +1,6 @@
 ---
 name: mcp-server-patterns
-description: "MCP server operations and design for Pi projects: tools, resources, prompts, schemas, stdio/http transports, idempotency, errors, security, and current-doc verification."
+description: "MCP server operations and design for Pi projects: tools, resources, prompts, schemas, stdio/http transports, idempotency, errors, security, and current-doc verification. Use when building or operating an MCP server. Not for vetting an MCP client config (mcp-dependency-review)."
 origin: HKX-converted-for-Pi
 ---
 

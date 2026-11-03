@@ -1,6 +1,6 @@
 ---
 name: docker-patterns
-description: "Docker and Docker Compose operations for Pi projects: Dockerfile review, build context, non-root images, networking, volumes, health checks, and compose workflows."
+description: "Docker and Docker Compose operations for Pi projects: Dockerfile review, build context, non-root images, networking, volumes, health checks, and compose workflows. Use when reviewing a Dockerfile, compose file, or image build. Not for rollout strategy (deployment-patterns) or orchestration workloads (kubernetes-patterns)."
 origin: HKX-converted-for-Pi
 ---
 

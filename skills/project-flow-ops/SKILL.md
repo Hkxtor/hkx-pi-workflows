@@ -1,6 +1,6 @@
 ---
 name: project-flow-ops
-description: "Project-flow operations for Pi repos: classify issues and PRs into merge, fix, rebuild, close, or park; coordinate public GitHub state with internal execution notes."
+description: "Project-flow operations for Pi repos: classify issues and PRs into merge, fix, rebuild, close, or park; coordinate public GitHub state with internal execution notes. Use when triaging issues and PRs into merge, fix, rebuild, close, or park. Not for local git mechanics (git-workflow)."
 origin: HKX-converted-for-Pi
 ---
 

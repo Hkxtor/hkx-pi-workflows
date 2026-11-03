@@ -1,6 +1,6 @@
 ---
 name: eval-harness
-description: Formal evaluation framework for agent sessions implementing eval-driven development (EDD) principles.
+description: Formal evaluation framework for agent sessions implementing eval-driven development (EDD) principles. Use when agent behaviour needs measuring against a fixed task set rather than eyeballed. Not for scoring one delivered response (agent-self-evaluation) or comparing agent products (benchmark).
 origin: ECC-converted-for-Pi
 ---
 

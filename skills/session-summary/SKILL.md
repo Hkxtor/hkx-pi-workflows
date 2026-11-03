@@ -1,6 +1,6 @@
 ---
 name: hkx-session-summary
-description: Generate a concise, structured summary of the current Pi session — key accomplishments, decisions made, files changed, issues discovered, and next steps. Uses LLM summarization of session transcript for rich context.
+description: Generate a concise, structured summary of the current Pi session — key accomplishments, decisions made, files changed, issues discovered, and next steps. Uses LLM summarization of session transcript for rich context. Use when the session should be summarised for handoff or a record. Not for saving durable facts to memory (knowledge-ops).
 version: 1.0.0
 origin: ECC-converted-for-Pi
 ---

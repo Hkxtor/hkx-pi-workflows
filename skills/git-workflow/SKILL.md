@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: Pi-safe Git workflow patterns for branch strategy, commits, PRs, conflict resolution, releases, and history-sensitive operations.
+description: Pi-safe Git workflow patterns for branch strategy, commits, PRs, conflict resolution, releases, and history-sensitive operations. Use when branching, committing, resolving conflicts, or preparing a release. Not for drafting the commit message itself (conventional-commit-review).
 origin: HKX-converted-for-Pi
 ---
 

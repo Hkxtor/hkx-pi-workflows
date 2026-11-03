@@ -1,6 +1,6 @@
 ---
 name: ops-pack
-description: "Router for the HKX Pi operations pack: terminal execution, GitHub ops, git workflow, project flow, deployment, Docker, Kubernetes, automation audit, workspace audit, canary checks, MCP server operations, safety guardrails, and security scans."
+description: "Router for the HKX Pi operations pack: terminal execution, GitHub ops, git workflow, project flow, deployment, Docker, Kubernetes, automation audit, workspace audit, canary checks, MCP server operations, safety guardrails, and security scans. Use when a request spans operations areas and the entry point is unclear. Not for a single known task, which should go straight to its skill."
 origin: HKX-converted-for-Pi
 ---
 

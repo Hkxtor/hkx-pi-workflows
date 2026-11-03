@@ -1,6 +1,6 @@
 ---
 name: engineering-pack
-description: "Router for the HKX Pi engineering pack: research, context retrieval, intent capture, parallel execution, agent-loop design and runaway review, pre-action gating, context hygiene, error handling, API design, connectors, architecture, migrations, production audit, repo scan, onboarding, code tours, ADRs, docs lookup, E2E, accessibility, post-deploy browser QA, and learning capture."
+description: "Router for the HKX Pi engineering pack: research, context retrieval, intent capture, parallel execution, agent-loop design and runaway review, pre-action gating, context hygiene, error handling, API design, connectors, architecture, migrations, production audit, repo scan, onboarding, code tours, ADRs, docs lookup, E2E, accessibility, post-deploy browser QA, and learning capture. Use when a request spans several engineering areas and the entry point is unclear. Not for a single known task, which should go straight to its skill."
 origin: HKX-converted-for-Pi
 ---
 

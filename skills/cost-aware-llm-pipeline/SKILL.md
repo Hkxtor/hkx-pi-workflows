@@ -1,6 +1,6 @@
 ---
 name: cost-aware-llm-pipeline
-description: "Cost-control patterns for LLM-backed systems: route by task complexity, enforce budgets, retry only transient failures, and avoid resending stable prompt context."
+description: "Cost-control patterns for LLM-backed systems: route by task complexity, enforce budgets, retry only transient failures, and avoid resending stable prompt context. Use when an LLM pipeline's cost is driven by model choice and retry behaviour. Not for prompt caching (prompt-caching-strategy) or answer length control (token-budget-advisor)."
 origin: ECC-converted-for-Pi
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: kubernetes-patterns
-description: Kubernetes workload patterns, resource management, RBAC, probes, autoscaling, ConfigMap/Secret handling, and kubectl debugging for production-grade deployments.
+description: Kubernetes workload patterns, resource management, RBAC, probes, autoscaling, ConfigMap/Secret handling, and kubectl debugging for production-grade deployments. Use when designing workloads, resource limits, RBAC, probes, or autoscaling. Not for image build and compose concerns (docker-patterns) or release rollout strategy (deployment-patterns).
 origin: HKX-converted-for-Pi
 ---
 

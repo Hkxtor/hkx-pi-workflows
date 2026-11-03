@@ -1,6 +1,6 @@
 ---
 name: gateguard
-description: Pi destructive-command hard gate. Unconditionally blocks matched shell commands while enabled; use a non-destructive alternative or restart with HKX_GATEGUARD=off after explicit authorization.
+description: Pi destructive-command hard gate. Unconditionally blocks matched shell commands while enabled; use a non-destructive alternative or restart with HKX_GATEGUARD=off after explicit authorization. Use when a destructive shell command was blocked and a safe alternative is needed. Not for designing agent permissions (agent-security-hardening).
 origin: HKX-converted-for-Pi
 ---
 

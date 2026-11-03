@@ -1,6 +1,6 @@
 ---
 name: github-ops
-description: "GitHub operations workflow for Pi projects: issues, PRs, CI checks, releases, changelogs, security alerts, and repository automation. Read-only by default."
+description: "GitHub operations workflow for Pi projects: issues, PRs, CI checks, releases, changelogs, security alerts, and repository automation. Read-only by default. Use when working with issues, PRs, CI checks, releases, or repository automation. Not for local git operations (git-workflow)."
 origin: HKX-converted-for-Pi
 ---
 

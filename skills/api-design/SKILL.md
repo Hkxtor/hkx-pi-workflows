@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: Pi-compatible API design workflow for REST, HTTP, JSON-RPC, internal tool APIs, webhooks, resources, pagination, errors, versioning, and rate limits.
+description: Pi-compatible API design workflow for REST, HTTP, JSON-RPC, internal tool APIs, webhooks, resources, pagination, errors, versioning, and rate limits. Use when shaping an API's resources, errors, pagination, versioning, or rate limits. Not for how a boundary evolves across consumers (contract-first) or implementing the connector (api-connector-builder).
 origin: HKX-converted-for-Pi
 ---
 

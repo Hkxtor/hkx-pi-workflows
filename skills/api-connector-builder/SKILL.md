@@ -1,6 +1,6 @@
 ---
 name: api-connector-builder
-description: Build Pi-compatible API connectors, providers, plugins, or MCP integrations by matching the host repo's existing integration architecture.
+description: Build Pi-compatible API connectors, providers, plugins, or MCP integrations by matching the host repo's existing integration architecture. Use when adding a provider, plugin, or external integration. Not for designing the API surface itself (api-design) or vetting an MCP config (mcp-dependency-review).
 origin: HKX-converted-for-Pi
 ---
 

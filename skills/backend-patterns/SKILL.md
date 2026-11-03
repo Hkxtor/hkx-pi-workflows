@@ -1,6 +1,6 @@
 ---
 name: backend-patterns
-description: Backend design guidance for APIs, services, data access, validation, and operational behavior.
+description: Backend design guidance for APIs, services, data access, validation, and operational behavior. Use when designing services, data access, validation, or operational behaviour. Not for migration mechanics (database-migrations) or language-specific style (the language workflow skills).
 ---
 
 # HKX Backend Patterns

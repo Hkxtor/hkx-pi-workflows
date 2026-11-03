@@ -1,6 +1,6 @@
 ---
 name: hexagonal-architecture
-description: Design or refactor Pi services with ports-and-adapters boundaries across TypeScript, Rust, Python, and Go without leaking framework or infrastructure details.
+description: Design or refactor Pi services with ports-and-adapters boundaries across TypeScript, Rust, Python, and Go without leaking framework or infrastructure details. Use when framework or infrastructure details are leaking into business logic. Not for general API shape (api-design) or layering inside a single module.
 origin: HKX-converted-for-Pi
 ---
 

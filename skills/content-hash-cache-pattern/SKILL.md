@@ -1,6 +1,6 @@
 ---
 name: content-hash-cache-pattern
-description: Cache expensive file-processing results using content hashes instead of paths, so cache hits survive renames and invalidate automatically when the file changes.
+description: Cache expensive file-processing results using content hashes instead of paths, so cache hits survive renames and invalidate automatically when the file changes. Use when a cache keyed by file path misses after a rename or goes stale after an edit. Not for general caching infrastructure or HTTP cache headers.
 origin: ECC-converted-for-Pi
 ---
 

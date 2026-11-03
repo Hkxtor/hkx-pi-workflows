@@ -1,6 +1,6 @@
 ---
 name: safety-guard
-description: Pi operator guardrails for destructive commands, scoped writes, production systems, migrations, deployments, and autonomous agent loops.
+description: Pi operator guardrails for destructive commands, scoped writes, production systems, migrations, deployments, and autonomous agent loops. Use when an action is destructive, production-facing, or irreversible. Not for the hard shell gate itself (gateguard).
 origin: HKX-converted-for-Pi
 ---
 
