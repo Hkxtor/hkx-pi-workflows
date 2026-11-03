@@ -70,6 +70,7 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | polish spacing/type/shadows | `make-interfaces-feel-better` | `design-system` | WCAG-only `accessibility` |
 | WCAG / keyboard / ARIA | `accessibility` | `frontend-patterns` | `browser-qa` as sole a11y process |
 | post-deploy browser smoke/visual | `browser-qa` | `canary-watch` | `e2e-testing` authoring |
+| a button does nothing / label and result disagree | `click-path-audit` | `agent-introspection-debugging` (if it does reproduce), `browser-qa` (to confirm live) | `e2e-testing` (writes the test, does not find the bug) |
 | write E2E tests | `e2e-testing` | `browser-qa` | `canary-watch` |
 | live URL canary after deploy | `canary-watch` | `browser-qa` | `e2e-testing` |
 | measure performance numbers | `benchmark` | — | optimize loop first |

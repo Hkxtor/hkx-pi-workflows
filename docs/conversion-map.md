@@ -35,7 +35,7 @@ Manifest shape (authoritative):
 | agents | 20 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 16 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 58 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 111 | `skills/` | yes | `~/.pi/agent/skills/` |
+| skills | 112 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
 | extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
@@ -559,6 +559,14 @@ Reviewed against ECC's 311 skills; only non-overlapping ones with a real gap wer
 | `conventional-commit-review` | ported | the git rule defines the format but nothing drafts a message from a diff |
 | `inherit-legacy-style` | ported | `coding-standards` is generic; anti-drift on legacy code was absent |
 | `living-docs-governance` | ported | long-lived-doc rot had no owner; `docs-governance` is a router over this and was **not** ported |
+| `click-path-audit` | ported | nothing traced a handler's full state-change sequence; `browser-qa` smokes a page, `e2e-testing` writes the test, neither finds two correct functions cancelling out |
+| `agent-security-hardening` | **candidate, not yet ported** | hardens the agent framework itself (untrusted content, tool calls, workspace writes, credentials); `security-scan` mentions prompt injection once |
+| `test-collaboration` | **candidate, not yet ported** | TEST-ID governance linking requirements/risks/contracts to executable evidence; no equivalent surface |
+| `knowledge-ops` | **compare before porting** | likely overlaps `unified-memory` (memory vault) + the `ctx_*` tools; merge rather than add |
+| `benchmark-methodology` | **not ported** | name collides with this pack's `benchmark` (performance) but the content is competitor profile cards — it belongs to the `market-research` family |
+| `frontend-a11y` | **not ported** | `accessibility` covers this and is framework-agnostic (WCAG 2.2 AA, keyboard, focus, ARIA) |
+| `cost-tracking` | **not ported** | bound to ECC's cost-tracker metrics-log format; would need a rewrite against pi's own usage data |
+| `autonomous-agent-harness` / `continuous-agent-loop` / `dynamic-workflow-mode` / `agent-eval` | **not ported** | Claude-Code-specific harness concepts; covered by `loop-design-check`, `gan-style-harness`, `parallel-execution-optimizer`, `eval-harness` + the `agent-evaluator` agent |
 | `context-and-decisions` | **not ported** | fully covered by `domain-modeling` (`CONTEXT.md`) + `architecture-decision-records`; the ECC skill itself routes ADRs there |
 | `docs-governance` | **not ported** | a router over `living-docs-governance` plus a read-only audit; the audit was folded into that skill instead |
 | `module-regression` | **deferred** | the durable `REGRESSION.md` ledger overlaps `change-impact` (per-change discovery) + `verification-loop` (what to run); revisit only if a large multi-module repo needs a persistent ledger |
