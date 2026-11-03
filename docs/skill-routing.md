@@ -90,6 +90,24 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | Rust change flow | `rust-workflow` | `rust-patterns`, `rust-testing` | patterns-only for cargo flow |
 | Rust crates/FFI/unsafe design | `rust-patterns` | `rust-workflow` | `rust-testing` first |
 | Rust tests/regressions | `rust-testing` | `rust-workflow` | patterns-only |
+| change a schema / add an index safely on live data | `database-migrations` | `postgres-patterns` | `backend-patterns` (design, not migration) |
+| choose an index, data type, or query shape in Postgres | `postgres-patterns` | `database-migrations` (applying it) | `backend-patterns` |
+| Redis structures / locks / rate limits | `redis-patterns` | `backend-patterns` | general caching infrastructure |
+| review a Dockerfile / compose file / image build | `docker-patterns` | `deployment-patterns` | `kubernetes-patterns` (workloads) |
+| workload / RBAC / probes / autoscaling on k8s | `kubernetes-patterns` | `deployment-patterns` | `docker-patterns` (images) |
+| rollout / rollback / release gate | `deployment-patterns` | `docker-patterns`, `kubernetes-patterns` | `production-audit` (readiness audit) |
+| GitHub issue / PR / CI / release operations | `github-ops` | `project-flow-ops` | `git-workflow` (local git) |
+| triage issues and PRs into merge/fix/rebuild/close/park | `project-flow-ops` | `github-ops` | `git-workflow` |
+| run commands / debug a build or CI failure | `terminal-ops` | `verification-loop` | `git-workflow` |
+| design error handling / errors are being swallowed | `error-handling` | `agent-introspection-debugging` (agent loops) | `coding-standards` |
+| backend service / data access / validation design | `backend-patterns` | `api-design`, `error-handling` | `database-migrations` (schema mechanics) |
+| add a provider / plugin / MCP integration | `api-connector-builder` | `api-design`, `mcp-server-patterns` | `mcp-dependency-review` (vetting configs) |
+| narrow repo context before delegating | `iterative-retrieval` | `code-explorer` agent | `codebase-onboarding` (first pass) |
+| cache keyed by file path misses after a rename | `content-hash-cache-pattern` | `error-handling` | general caching infrastructure |
+| regex or an LLM for this parsing job | `regex-vs-llm-structured-text` | `prompt-optimizer` | `cost-aware-llm-pipeline` (cost, not parsing) |
+| high-dimensional search / repeated rollouts with an evidence trail | `recursive-decision-ledger` | `council` | `benchmark` (numbers only) |
+| which pack owns this request | `engineering-pack` / `ops-pack` | the rows above | any single skill, when it is already known |
+| are skills and rules actually being followed | `skill-comply` | `skill-stocktake` (quality, not compliance) | `hookify-rules` (enforcement, not measurement) |
 
 Skill directory names are listed without the `hkx-` package prefix used in frontmatter `name` fields.
 
