@@ -391,6 +391,93 @@ async function collectMdFiles(dir) {
 	return out;
 }
 
+/**
+ * Skill cross-references.
+ *
+ * A `## Related` (or Routing) list item that begins with a backticked name is an
+ * explicit claim that the target exists. That narrow shape is the only one checked.
+ *
+ * Measured before settling on it: a broader rule (any backticked kebab-case token on a
+ * reference-looking line) produced 43 hits, of which 12 survived adding `agents/` to the
+ * namespace and every one was a value rather than a reference — `no-verdict`,
+ * `tabular-nums`, `aria-describedby`, the `from-om` subcommand, `code-tour`'s profile
+ * names. Those would have been permanent false positives. Only the list-item shape is
+ * checked, which currently covers 98 declarations with no noise.
+ *
+ * Only the first backticked name on a line is checked. `- \`a\` / \`b\` — desc` therefore
+ * validates `a` and trusts the rest, which is the intended direction: this guard exists
+ * to catch a reference to something that was never created, not to police formatting.
+ */
+async function lintSkillReferences(errors) {
+	const namespace = new Set();
+
+	const addDir = async (dir, strip) => {
+		let entries;
+		try {
+			entries = await fs.readdir(path.join(root, dir));
+		} catch {
+			return;
+		}
+		for (const entry of entries) namespace.add(entry.replace(strip, ""));
+	};
+
+	await addDir("agents", /\.md$/);
+	await addDir("chains", /\.chain\.json$/);
+	await addDir("commands", /\.md$/);
+	await addDir("rules", /\.(md|mdc)$/);
+
+	let skillEntries;
+	try {
+		skillEntries = await fs.readdir(path.join(root, "skills"), {
+			withFileTypes: true,
+		});
+	} catch {
+		return;
+	}
+
+	const skillFiles = [];
+	for (const entry of skillEntries) {
+		if (!entry.isDirectory()) continue;
+		const file = path.join(root, "skills", entry.name, "SKILL.md");
+		try {
+			await fs.access(file);
+		} catch {
+			continue;
+		}
+		skillFiles.push(file);
+		namespace.add(entry.name);
+	}
+
+	// A skill's `name:` may differ from its directory name
+	// (session-summary ships as hkx-session-summary); both are valid targets.
+	for (const file of skillFiles) {
+		const text = await fs.readFile(file, "utf8");
+		const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
+		if (!fm) continue;
+		const name = frontmatterField(fm[1], "name");
+		if (name && name.value) namespace.add(name.value);
+	}
+
+	for (const file of skillFiles) {
+		const relativePath = path.relative(root, file);
+		const text = await fs.readFile(file, "utf8");
+		let inRelated = false;
+		for (const line of text.split("\n")) {
+			if (/^#{2,3}\s/.test(line)) {
+				inRelated = /related|routing/i.test(line);
+				continue;
+			}
+			if (!inRelated) continue;
+			const match = /^\s*[-*]\s+`([a-z][a-z0-9-]+)`/.exec(line);
+			if (!match) continue;
+			if (namespace.has(match[1])) continue;
+			errors.push(
+				`${relativePath}: Related section references "${match[1]}", which is not a skill, agent, chain, command, or rule`,
+			);
+		}
+	}
+}
+
 async function main() {
 	for (const rel of requiredFiles) {
 		try {
@@ -1599,6 +1686,11 @@ async function main() {
 	// reference must match the resolver charset and be paired with requiresEnv;
 	// no placeholder literals may ship in catalog values.
 	await lintMcpConfigs(errors);
+
+	// Skill cross-references: a `## Related` list item naming a target that does not exist
+	// is a reference a reader cannot follow. Added after two such references were found by
+	// hand (one pointing at a deferred skill, one at a .js file that is .cjs).
+	await lintSkillReferences(errors);
 
 	if (errors.length) {
 		for (const e of errors) console.error(e);
