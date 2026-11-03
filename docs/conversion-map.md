@@ -35,7 +35,7 @@ Manifest shape (authoritative):
 | agents | 20 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
 | chains | 16 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 58 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
-| skills | 112 | `skills/` | yes | `~/.pi/agent/skills/` |
+| skills | 113 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
 | extensions | 7 | `extensions/` | yes | `~/.pi/agent/extensions/` |
 | managed global Hookify guard | 1 | `configs/hkx-hookify/hookify.block-unparseable-powershell-control-flow.md` | no | `~/.pi/agent/hookify/` (refresh managed content, preserve `enabled`, backup changed destination) |
@@ -560,7 +560,7 @@ Reviewed against ECC's 311 skills; only non-overlapping ones with a real gap wer
 | `inherit-legacy-style` | ported | `coding-standards` is generic; anti-drift on legacy code was absent |
 | `living-docs-governance` | ported | long-lived-doc rot had no owner; `docs-governance` is a router over this and was **not** ported |
 | `click-path-audit` | ported | nothing traced a handler's full state-change sequence; `browser-qa` smokes a page, `e2e-testing` writes the test, neither finds two correct functions cancelling out |
-| `agent-security-hardening` | **candidate, not yet ported** | hardens the agent framework itself (untrusted content, tool calls, workspace writes, credentials); `security-scan` mentions prompt injection once |
+| `agent-security-hardening` | ported | hardens the agent framework itself (untrusted content, tool calls, workspace writes, credentials); `security-scan` mentions prompt injection once. The pi-surfaces section is new — tools allowlist, the `acceptanceRole` misconception, inheritance as an input channel, pattern gates vs sandboxing |
 | `test-collaboration` | **candidate, not yet ported** | TEST-ID governance linking requirements/risks/contracts to executable evidence; no equivalent surface |
 | `knowledge-ops` | **compare before porting** | likely overlaps `unified-memory` (memory vault) + the `ctx_*` tools; merge rather than add |
 | `benchmark-methodology` | **not ported** | name collides with this pack's `benchmark` (performance) but the content is competitor profile cards — it belongs to the `market-research` family |

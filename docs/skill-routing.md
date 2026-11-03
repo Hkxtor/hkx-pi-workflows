@@ -29,6 +29,7 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | competitor / market / fund diligence | `market-research` | `research-ops` | `deep-research` as first stop |
 | Exa tool calls only | `exa-search` | (via `research-ops`) | standalone cited report |
 | security of Pi config / MCP / hooks | `security-scan` | `workspace-surface-audit` | `security-review` |
+| harden an agent runtime / audit what an agent can do | `agent-security-hardening` | `agent-harness-construction` (designing the surface), `gateguard` / `hookify-rules` (the gates, and their limits) | `security-review` (app-level auth), `security-scan` (inventory) |
 | security of auth / permissions / threat model | `security-review` | `safety-guard` | `security-scan` |
 | prevent repeated agent behavior / write hookify rule | `hookify-rules` | `/hookify`, GateGuard only for destructive bash | `instinct-evolve` (cross-session) |
 | gate destructive shell commands | `gateguard` | `safety-guard` | `hookify-rules` |
