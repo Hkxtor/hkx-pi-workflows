@@ -77,7 +77,7 @@ Prefer fenced `mermaid` blocks in plan markdown; the canvas renders them when th
 
 ## Security notes
 
-- Binds loopback only; Host/Origin gated via `scripts/lib/loopback-guard.js`
+- Binds loopback only; Host/Origin gated via `scripts/lib/loopback-guard.cjs`
 - Serves local artifact paths only — never fetch remote review targets
 - Do not put secrets into plan files opened in the canvas
 

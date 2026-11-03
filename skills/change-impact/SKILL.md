@@ -63,8 +63,8 @@ Answer in order. Each axis needs evidence, not intuition.
 - Hard-to-reverse decisions with lasting rationale → `architecture-decision-records`.
 - Cross-client or cross-service boundary → `contract-first`, then plan consumer and
   provider evidence against the single contract artifact.
-- Post-change regression scope → `verification-loop`, or `module-regression` when
-  only one module's behavior moved.
+- Post-change regression scope → `verification-loop`, narrowed to the module whose
+  behavior moved when only one did.
 - Security-sensitive surface (auth, secrets, tool permissions, network) →
   `security-review`.
 - Unclear blast radius on an unfamiliar repo → `repo-scan` or `codebase-onboarding`
