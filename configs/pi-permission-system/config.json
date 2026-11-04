@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/gotgenes/pi-packages/main/packages/pi-permission-system/schemas/permissions.schema.json",
   "debugLog": false,
-  "permissionReviewLog": false,
+  "permissionReviewLog": true,
   "yoloMode": false,
   "permission": {
     "*": "allow",
@@ -55,6 +55,8 @@
     },
     "external_directory_write": {
       "*": "ask",
+      "/root/workspace": "allow",
+      "/root/workspace/*": "allow",
       "/tmp": "allow",
       "/tmp/*": "allow",
       "/var/tmp": "allow",
