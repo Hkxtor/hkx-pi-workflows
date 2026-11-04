@@ -24,6 +24,7 @@ const installPath = path.join(root, "scripts", "install.mjs");
 const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "hkx-retired-surface-"));
 const pass = [];
 const fail = [];
+const skip = [];
 
 function check(name, condition, detail = "") {
 	if (condition) pass.push(name);
@@ -77,7 +78,7 @@ try {
 			const liveLink = path.join(destDir, "hkx-live.md");
 			const retiredLink = path.join(destDir, "hkx-retired.md");
 			const liveKind = await makeLink(liveSrc, liveLink);
-			await makeLink(retiredSrc, retiredLink);
+			const retiredKind = await makeLink(retiredSrc, retiredLink);
 
 			// Retire the source: the link is now dangling.
 			await fs.rm(retiredSrc, { force: true });
@@ -85,26 +86,50 @@ try {
 			const pruned = await pruneDanglingLinks(srcDir, destDir, {
 				extensions: [".md", ".mdc"],
 			});
-			check(
-				"A: prunes the dangling link",
-				Array.isArray(pruned) && pruned.includes("hkx-retired.md"),
-				JSON.stringify(pruned),
-			);
-			check(
-				"A: dangling link is gone",
-				!existsSync(retiredLink) && !(await pathExistsLstat(retiredLink)),
-				retiredLink,
-			);
-			check(
-				"A: live link survives",
-				await pathExistsLstat(liveLink),
-				`kind=${liveKind}`,
-			);
-			check(
-				"A: live link still resolves",
-				readFileSync(liveLink, "utf8").includes("description: live"),
-				"",
-			);
+
+			if (liveKind === "symlink" && retiredKind === "symlink") {
+				check(
+					"A: prunes the dangling link",
+					Array.isArray(pruned) && pruned.includes("hkx-retired.md"),
+					JSON.stringify(pruned),
+				);
+				check(
+					"A: dangling link is gone",
+					!existsSync(retiredLink) && !(await pathExistsLstat(retiredLink)),
+					retiredLink,
+				);
+				check(
+					"A: live link survives",
+					await pathExistsLstat(liveLink),
+					`kind=${liveKind}`,
+				);
+				check(
+					"A: live link still resolves",
+					readFileSync(liveLink, "utf8").includes("description: live"),
+					"",
+				);
+			} else {
+				// Junction fallback (Windows without Developer Mode). The link is a
+				// directory junction to `<target>-junction-target`, whose target still
+				// exists; readlink() also reports the resolved target rather than the
+				// recorded link text. pruneDanglingLinks refuses both by design, and
+				// unlink() cannot remove a junction directory, so the pruning half of
+				// the contract is not provable on this platform. Assert the half that
+				// is: the junction is skipped, and the live link beside it survives.
+				skip.push(
+					"A: dangling-link pruning needs real symlinks (platform fell back to junctions)",
+				);
+				check(
+					"A: junction fallback is skipped, not pruned",
+					Array.isArray(pruned) && pruned.length === 0,
+					JSON.stringify(pruned),
+				);
+				check(
+					"A: live junction survives",
+					await pathExistsLstat(liveLink),
+					`kind=${liveKind}`,
+				);
+			}
 		}
 
 		// B: an operator-owned real file is never deleted, even when the repo
@@ -251,6 +276,10 @@ async function pathExistsLstat(p) {
 
 console.log(`pass: ${pass.length}`);
 for (const p of pass) console.log(`  ok: ${p}`);
+if (skip.length) {
+	console.log(`skip: ${skip.length}`);
+	for (const s of skip) console.log(`  skipped: ${s}`);
+}
 if (fail.length) {
 	console.error(`fail: ${fail.length}`);
 	for (const f of fail) console.error(`  FAIL: ${f}`);
