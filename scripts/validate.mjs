@@ -158,10 +158,17 @@ const extensionToolProviders = new Map([
 	["todo", "npm:@juicesharp/rpiv-todo"],
 ]);
 
+// Keep this list tracking the packages pi ships (pi 1.5.0 bundles pi-schema,
+// pi-codemode, and pi-mcp alongside the older core packages). An extension that
+// imports one of them must declare it as a wildcard peer, and listing one as a
+// dependency would bundle a second copy of pi's runtime.
 const piCorePackages = new Set([
 	"@earendil-works/pi-ai",
 	"@earendil-works/pi-agent-core",
 	"@earendil-works/pi-coding-agent",
+	"@earendil-works/pi-codemode",
+	"@earendil-works/pi-mcp",
+	"@earendil-works/pi-schema",
 	"@earendil-works/pi-tui",
 	"typebox",
 ]);
@@ -591,7 +598,7 @@ async function main() {
 			continue;
 		}
 		for (const match of source.matchAll(
-			/["'](@earendil-works\/pi-(?:ai|agent-core|coding-agent|tui)(?:\/[^"']*)?|typebox)["']/g,
+			/["'](@earendil-works\/pi-(?:ai|agent-core|coding-agent|codemode|mcp|schema|tui)(?:\/[^"']*)?|typebox)["']/g,
 		)) {
 			const specifier = match[1];
 			const packageName = specifier.startsWith("@")
