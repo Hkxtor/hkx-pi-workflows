@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pi-native core workflow package: subagents, chains, prompt templates, skills, rules, extensions, and MCP templates.",
+  "description": "Pi-native core workflow package: subagents, prompt templates, skills, rules, extensions, and MCP templates.",
   "keywords": [
     "pi-package",
     "pi",
@@ -52,9 +52,6 @@
   "pi-subagents": {
     "agents": [
       "./agents"
-    ],
-    "chains": [
-      "./chains"
     ]
   },
   "peerDependencies": {

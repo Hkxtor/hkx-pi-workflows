@@ -150,7 +150,7 @@ Complementary surfaces:
 
 ### hkx-subagent-supervisor-auto-reply.ts
 
-Parent-session extension that keeps review chains from stalling on artifact writes.
+Parent-session extension that keeps review runs from stalling on artifact writes.
 
 Current behavior:
 
@@ -165,7 +165,7 @@ Disable per-session:
 HKX_SUPERVISOR_AUTO_REPLY=off
 ```
 
-Together with configured chain output instructions and the permission policy, this closes the detach loop where review children escalated solely to land `adv/*.md` outputs.
+Together with configured run output instructions and the permission policy, this closes the detach loop where review children escalated solely to land `adv/*.md` outputs.
 
 ## Placement Guide
 
@@ -192,6 +192,6 @@ Likely future optional additions:
 ## Related Docs
 
 - `docs/README.md` — documentation index and routing guide
-- `docs/architecture.md` — layer boundaries across commands, skills, rules, agents, chains, and extensions
+- `docs/architecture.md` — layer boundaries across commands, skills, rules, agents, and extensions
 - `docs/conversion-map.md` — current package surface map
 - `docs/skill-routing.md` — primary skill choice when families overlap

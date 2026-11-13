@@ -64,5 +64,5 @@ Return:
 
 ## Related Skills
 
-- `hkx-plan-orchestrate` when the improved prompt should chain multiple agents
+- `hkx-plan-orchestrate` when the improved prompt should sequence multiple agents
 - `search-first` when the prompt needs research-before-coding guidance

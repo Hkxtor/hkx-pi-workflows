@@ -79,7 +79,7 @@ Prefer local repository evidence and tool output over assumptions. Keep changes 
 
 ## Orchestration Guidance
 
-When helper agents and chains are installed, use them as accelerators rather than as a requirement.
+When helper agents are installed, use them as accelerators rather than as a requirement.
 
 - Use reviewer agents for findings and implementation agents for edits.
 - Keep review steps read-only when possible.

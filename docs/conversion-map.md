@@ -19,13 +19,13 @@ Note: your local checkout directory name may differ from the package/runtime nam
 
 | Path | How | Loads |
 | --- | --- | --- |
-| **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents/chains when pi-subagents is installed |
+| **A** | `pi install git:...` / local package path | `pi.extensions`, `pi.skills`, `pi.prompts` (`commands/`), plus `pi-subagents` agents when pi-subagents is installed |
 | **B** | `npm run install-global` | Path A surfaces **plus** rules, the managed global Hookify guard, GLOBAL_AGENTS, APPEND_SYSTEM, MCP, agent-settings/keybindings merge, managed packages update, pi-lsp and permission overlays, rpiv-advisor seed |
 
 Manifest shape (authoritative):
 
 - `package.json` → `pi.{extensions,skills,prompts}`
-- `package.json` → `pi-subagents.{agents,chains}`
+- `package.json` → `pi-subagents.agents`
 - Repo directory stays `commands/`; it is **not** renamed to `prompts/`, but is declared as prompts for Path A.
 
 ## What the Package Ships
@@ -33,7 +33,6 @@ Manifest shape (authoritative):
 | Surface | Count | In repo | Path A | Path B target |
 | --- | ---: | --- | --- | --- |
 | agents | 20 | `agents/` | yes (`pi-subagents`) | `~/.pi/agent/agents/hkx/*.md` |
-| chains | 16 | `chains/` | yes (`pi-subagents`) | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands / prompts | 58 | `commands/` | yes (`pi.prompts`) | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | 115 | `skills/` | yes | `~/.pi/agent/skills/` |
 | rules | 17 | `rules/` | no (the `hkx-rules` extension ships, the rule files do not) | `~/.pi/agent/rules/` (loaded by `extensions/hkx-rules.ts`) |
@@ -58,7 +57,7 @@ This package combines three kinds of inputs:
 | --- | --- | --- |
 | HKX-derived | Adapted from the HKX workflow set | Kept only when the workflow fits pi natively |
 | ECC-derived | Adapted from Everything Claude Code / ECC surfaces | Rewritten into pi-native commands, skills, or agents |
-| Pi-specific additions | Synthesized specifically for this package | Used where pi needed a new wrapper, chain, or install surface |
+| Pi-specific additions | Synthesized specifically for this package | Used where pi needed a new wrapper or install surface |
 
 The important rule is: **current pi-native behavior matters more than historical origin**.
 
@@ -103,7 +102,7 @@ Project rules: `.pi/hookify.{name}.local.md`. Global: `~/.pi/agent/hookify/`. Ki
 
 These coordinate larger workflows or bounded multi-step execution:
 
-- `multi-workflow` — thin ECC `multi-*` router → existing chains / orch / `workflow` (no ccg-workflow runtime)
+- `multi-workflow` — thin ECC `multi-*` router → existing commands / orch skills / `workflow` (no ccg-workflow runtime)
 - `orch-review`
 - `orch-add-feature`
 - `orch-build-mvp`
@@ -116,10 +115,9 @@ These coordinate larger workflows or bounded multi-step execution:
 - `hkx-session-summary`
 
 Each `/orch-*` command is a thin entrance to the matching skill. That skill owns policy
-only — size, phase mask, first move, GATE 1 / GATE 2 — and declares a `backing-chain`
-that owns the agent sequence. `scripts/validate.mjs` fails if a skill names an agent its
-chain does not contain (unless listed under `fallback-agents`). See
-`docs/architecture.md` §5b.
+only — size, phase mask, first move, GATE 1 / GATE 2 — while the engine
+(`orch-pipeline`) declares each operation's agent sequence once. See
+`docs/architecture.md` §5.
 - `santa-loop`
 - `gan-build` — thin entrance for `gan-style-harness`; owns the iteration loop in-session
 
@@ -336,38 +334,25 @@ Loop ownership (spec, iteration count, stop decision) stays in the main session 
 - `go-reviewer`
 - `rust-reviewer`
 
-## Chains
+## Orchestration
 
-The `chains/` directory is the packaged orchestration layer on top of those agents.
+Multi-agent sequences are owned by the `orch-*` skills (engine: `orch-pipeline`) and the
+matching `/orch-*` commands. Each operation's agent sequence is declared once in the
+engine; the operation skill adds size classification, the phase mask, the first-move
+rule, and GATE 1 / GATE 2.
 
-### Review chains
+The delivery skills fold planning into the implementation step (2026-10 fold migration):
+the implementation agent drafts a short plan in-step from the explorer's context artifact,
+instead of a separate mid-run planner handoff.
 
-- `hkx-pr-review`
-- `hkx-adversarial-review`
-- `security-scan`
-- `hkx-go-review`
-- `hkx-python-review`
-- `hkx-rust-review`
-- `hkx-typescript-review`
+Packaged chain files are retired: pi-subagents removed durable chain definitions
+(`/chain`, `/run-chain`, `chainName`, packaged `.chain.json` loading). For an unattended
+end-to-end sequence, use a pi-subagents workflow script
+(`subagent({ workflow: true })`, `runs.run`) or `/prompt-workflow` with `chain:` frontmatter
+on prompt templates.
 
-### Build-fix chains
-
-- `hkx-typescript-build-fix`
-- `hkx-python-build-fix`
-- `hkx-go-build-fix`
-- `hkx-rust-build-fix`
-
-### Delivery / implementation chains
-
-- `hkx-feature-flow`
-- `hkx-fix-defect`
-- `hkx-refactor-flow`
-- `hkx-docs-update`
-- `hkx-gan-pass` — one generator → evaluator pass; the main loop repeats it via `skills/gan-style-harness`
-
-The three delivery chains fold planning into the implementation step (2026-10 fold migration): the implementation agent drafts a short plan in-step from the explorer's context artifact, instead of a separate mid-chain planner handoff.
-
-Operator entry that **routes** to these chains (and orch commands) without duplicating them: `multi-workflow`.
+Operator entry that **routes** to these commands and skills without duplicating them:
+`multi-workflow`.
 
 ## Extensions
 
@@ -377,7 +362,7 @@ Seven first-party extensions are shipped intentionally:
 - `hkx-language-quality.ts` — low-noise quality guidance / notification surface
 - `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands have no in-session exemption
 - `hkx-hookify.ts` — operator Hookify rules (`warn` notify / `block` tool_call); loads `.pi/hookify.*.local.md` + `~/.pi/agent/hookify/`; `HKX_HOOKIFY=off`. Event `bash` means the **shell surface**, which is `powershell` on win32 where pi replaces the native `bash` tool
-- `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves scoped permission/configured-output artifact asks so review chains do not detach
+- `hkx-subagent-supervisor-auto-reply.ts` — parent auto-approves scoped permission/configured-output artifact asks so review runs do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 - `hkx-custom-header.ts` — custom startup header (logo + keybinding hints); `/hkx-custom-header`, `HKX_CUSTOM_HEADER=off`; adapted from amosblomqvist/pi-config
 
@@ -518,7 +503,7 @@ Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default),
 
 - skill: `santa-method`
 - command: `santa-loop`
-- related chain: `hkx-adversarial-review` (multi-angle one-shot; Santa adds dual-pass convergence)
+- related surface: `/orch-review` (multi-angle one-shot; Santa adds dual-pass convergence)
 - related rule: Delegation Completion Contract in `rules/hkx-common-development-workflow.md` and `GLOBAL_AGENTS.md`
 
 ## Multi-session plans: Blueprint + Plan Canvas
@@ -539,7 +524,6 @@ Operator extras on the same CLI: `prune` (pending TTL cleanup, preview default),
 ## Naming Rules
 
 - commands use the `hkx-` prefix
-- chain files use `hkx-*.chain.json`
 - agent runtime names are `hkx.<name>`
 - package metadata (`package.json`) is the source of truth for package identity
 
@@ -552,7 +536,7 @@ Reviewed against ECC's 311 skills; only non-overlapping ones with a real gap wer
 | `change-impact` | ported | no pre-change impact-analysis surface existed |
 | `contract-first` | ported | `api-design` covers API shape, not how a boundary evolves |
 | `rules-distill` | ported | `rules/` existed with no distillation step |
-| `gan-style-harness` | ported (+2 agents, 1 chain, 1 command) | generator/evaluator is the one justified multi-subagent exception |
+| `gan-style-harness` | ported (+2 agents, 1 command) | generator/evaluator is the one justified multi-subagent exception |
 | `token-budget-advisor` | ported | answer-length control was absent |
 | `prompt-caching-strategy` | ported | `cost-aware-llm-pipeline` covers routing, not caching |
 | `mcp-dependency-review` | ported | hkx ships `mcp-configs/`; pin review was absent |
@@ -579,7 +563,7 @@ Reviewed against ECC's 311 skills; only non-overlapping ones with a real gap wer
 Use this document to answer:
 
 - what surfaces the package currently ships
-- where a workflow belongs (command vs skill vs rule vs agent vs chain)
+- where a workflow belongs (command vs skill vs rule vs agent)
 - which items are stable core surfaces versus intentionally deferred
 - what should be installed globally under `~/.pi/agent/`
 

@@ -7,7 +7,6 @@ A pi-native workflow pack adapted from HKX / Everything Claude Code ideas.
 It provides a compact core set of:
 
 - **agents** — portable pi-subagents definitions (`hkx.<name>`)
-- **chains** — reusable multi-agent workflows (`hkx-*.chain.json`)
 - **commands** — operator-facing slash prompts (`commands/`; declared as `pi.prompts`)
 - **skills** — workflow and language guidance
 - **rules** — lightweight repo/session reminders (full install only)
@@ -44,9 +43,8 @@ This writes the package into `~/.pi/agent/settings.json` `packages` and loads **
 | `pi.skills` | `skills/` |
 | `pi.prompts` | `commands/` (slash prompt templates) |
 | `pi-subagents.agents` | `agents/` as package agents (`hkx.<name>`) |
-| `pi-subagents.chains` | `chains/` as package chains |
 
-**Prerequisite for agents/chains:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
+**Prerequisite for agents:** `pi-subagents` must already be installed (for example `pi install npm:pi-subagents`). Skills/extensions/prompts load without it.
 
 **Not loaded by Path A:** `rules/`, the managed global Hookify guard, `GLOBAL_AGENTS.md`, `APPEND_SYSTEM.md`, MCP merge, `configs/agent-settings.json`, `configs/keybindings.json`, pi-lsp and permission-system config overlays, and rpiv-advisor, pi-tool-display, pi-unipi-notify, and magic-context config overlays. Use Path B for those.
 
@@ -100,7 +98,6 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | skills | yes (from package) | yes → `~/.pi/agent/skills/` |
 | commands / prompts | yes (`pi.prompts` → `commands/`) | yes → `commands/` **and** `prompts/` |
 | agents | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/agents/hkx/` |
-| chains | yes (via `pi-subagents` package discovery) | yes → `~/.pi/agent/chains/` |
 | rules | no | yes → `~/.pi/agent/rules/` |
 | managed global Hookify guard | no | yes → `~/.pi/agent/hookify/` (refresh content, preserve `enabled`, backup changes) |
 | agent settings merge | no | yes (packages + portable defaults; does **not** set `theme`) |
@@ -120,7 +117,6 @@ Local package discovery still follows `package.json` (`pi` + `pi-subagents`). Ov
 | Surface | Target |
 | --- | --- |
 | agents | `~/.pi/agent/agents/hkx/*.md` |
-| chains | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands | `~/.pi/agent/commands/` and `~/.pi/agent/prompts/` |
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
@@ -215,29 +211,16 @@ A promotion arrives as a **message**, not a prompt rewrite. Measured: the follow
 
 ### Review a diff or PR
 
-- `hkx-pr-review`
-- `hkx-adversarial-review`
-- `security-scan`
-
-```bash
-/run-chain hkx-pr-review "Review current local diff"
-```
+- `/orch-review` — parallel quality, language, and security review
+- `/santa-loop` — two independent adversaries until they converge
+- `/security-scan`
 
 ### Implement a feature or fix a defect
 
-- `hkx-feature-flow`
-- `hkx-fix-defect`
-- `hkx-refactor-flow`
-- `build-fix`
+- `/orch-add-feature`, `/orch-change-feature`, `/orch-fix-defect`, `/orch-refine-code`, `/orch-build-mvp`
+- `/build-fix` for a broken build
 
-```ts
-subagent({
-  chainName: "hkx-feature-flow",
-  task: "Add thin-slice feature X",
-  async: true,
-  context: "fresh"
-})
-```
+Repeatable multi-agent sequences are pi-subagents **workflow scripts** (`workflow: true` or a script path). This package ships the agents and the gated orchestration skills; the sequence itself lives in the orch skills and commands, not in packaged chain files.
 
 ### Instinct evolve (knowledge drafts)
 
@@ -254,7 +237,7 @@ Cluster cross-session **instincts** into skill/command/agent drafts (Linux + Win
 - `/instinct-prune` — delete expired **pending** instincts (TTL 30d; preview default; `--apply` deletes)
 - `/instinct-projects` — list known projects + instinct counts
 - `/prp-commit` / `/prp-pr` — natural-language commit targeting + template-aware GitHub PR
-- `/multi-workflow` — ECC `multi-*` router → existing chains / orch / `workflow` (no external ccg-workflow)
+- `/multi-workflow` — ECC `multi-*` router → existing commands / orch skills / `workflow` (no external ccg-workflow)
 - `/unified-memory` — memory vault on `hkx-homunculus` (`memory recall|save|handoff|promote-instinct|import-ecc|validate`; skill `unified-memory`)
 - `/hookify` / `list` / `configure` / `help` — operator behavior guardrails (pattern rules + `hkx-hookify` extension; skill `hookify-rules`)
 - skill: `instinct-evolve`
@@ -287,7 +270,7 @@ subagent({
 
 ## Tooling Assumptions
 
-These agents and chains are tuned for:
+These agents are tuned for:
 
 - **pi-fff**: `fffind`, `ffgrep`, `fff-multi-grep`
 - **pi-lsp**: `lsp_diagnostics`, `lsp_fix` (with routes from `pi-lsp.json`)
@@ -339,7 +322,7 @@ npm test
 
 ## Design Principles
 
-- portable pi-native agents and chains
+- portable pi-native agents
 - compact, reusable workflow surfaces
 - read-only reviewers and scoped writer agents
 - additive MCP configuration instead of heavy installer logic

@@ -260,48 +260,6 @@ process.exit(bad.length ? 1 : 0);
 }
 
 // ---------------------------------------------------------------------------
-// Chain artifact wording contract
-// ---------------------------------------------------------------------------
-
-{
-	const chainDir = path.join(root, "chains");
-	const chainFiles = fs
-		.readdirSync(chainDir)
-		.filter((file) => file.endsWith(".json"));
-	const parseFailures = [];
-	let oldHintCount = 0;
-	let newHintCount = 0;
-	let filesWithNewHint = 0;
-	for (const file of chainFiles) {
-		const text = fs.readFileSync(path.join(chainDir, file), "utf8");
-		try {
-			JSON.parse(text);
-		} catch (error) {
-			parseFailures.push(
-				`${file}: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		}
-		oldHintCount += text.split("pre-authorized by GateGuard").length - 1;
-		const count =
-			text.split("only permitted write target for this review").length - 1;
-		newHintCount += count;
-		if (count > 0) filesWithNewHint++;
-	}
-	check(
-		"chains: all JSON parse",
-		parseFailures.length === 0,
-		parseFailures.join("; "),
-	);
-	check("chains: old GateGuard hint removed", oldHintCount === 0, `count=${oldHintCount}`);
-	check("chains: neutral artifact hint count", newHintCount === 49, `count=${newHintCount}`);
-	check(
-		"chains: neutral hint file count",
-		filesWithNewHint === 15,
-		`count=${filesWithNewHint}`,
-	);
-}
-
-// ---------------------------------------------------------------------------
 // Package and permission policy
 // ---------------------------------------------------------------------------
 

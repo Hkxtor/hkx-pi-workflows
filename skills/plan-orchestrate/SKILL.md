@@ -1,6 +1,6 @@
 ---
 name: hkx-plan-orchestrate
-description: Read a plan document, decompose it into steps, design a per-step agent chain from the Pi catalogue, and emit ready-to-use task agent invocations. Generative only — never executes the tasks itself. Use when the user has a multi-step plan and wants to drive it through orchestrated agents without composing chains by hand.
+description: Read a plan document, decompose it into steps, design a per-step agent sequence from the Pi catalogue, and emit ready-to-use task agent invocations. Generative only — never executes the tasks itself. Use when the user has a multi-step plan and wants to drive it through orchestrated agents without composing agent sequences by hand.
 origin: HKX-converted-for-Pi
 ---
 
@@ -15,7 +15,7 @@ tasks. The user invokes each step when ready.
 - User has a multi-step plan document (PRD, RFC, implementation plan) and wants
   to drive it through orchestrated agents.
 - User says "orchestrate this plan", "give me agent prompts for each step",
-  "compose chains for this plan".
+  "compose sequences for this plan".
 - A step-by-step plan exists but the user does not want to manually pick agents
   per step.
 
@@ -35,7 +35,7 @@ Skip when:
 - `--lang` — reviewer language variant; defaults to `auto` (detected from
   project).
 - `--scope` — limits emitted steps; defaults to `all`.
-- `--dry-run` — print decomposition + chain rationale only; do not emit final
+- `--dry-run` — print decomposition + sequence rationale only; do not emit final
   prompts.
 
 ## Pi Task Invocation Shape
@@ -50,7 +50,7 @@ task(agent="<agent-name>", context="<shared context>", assignment="<task descrip
 - `context` carries shared background (plan path, step id, constraints).
 - `assignment` is self-contained per-step instructions.
 
-For multi-agent chains, emit sequential `task` calls where each builds on the
+For multi-agent sequences, emit sequential `task` calls where each builds on the
 previous output. Use `parallel` when steps are independent.
 
 ## Available Agent Catalogue (must pick from these)
@@ -99,7 +99,7 @@ emitting.
    - No supported marker matched → set `lang=unknown`.
    - `lang=unknown` is a sentinel — it is **not** an agent name. Phase 2 maps it
      to `code-reviewer` for review and `tdd-guide` for a generic writable build
-     recovery attempt; the chain rationale must disclose that no specialist exists.
+     recovery attempt; the sequence rationale must disclose that no specialist exists.
 3. **Normalize any agent names declared in the plan**: strip any prefix before
    validating against the catalogue.
 
@@ -116,14 +116,14 @@ Identify "step units" in priority order:
 Per step extract `id` (1-based), `title` (≤ 80 chars), `intent` (1–3
 sentences), `tags`.
 
-### Phase 2 — Tag and Pick Chain
+### Phase 2 — Tag and Pick Sequence
 
-Tag by intent (multi-tag allowed; chain built from primary + stacked
+Tag by intent (multi-tag allowed; sequence built from primary + stacked
 secondaries):
 
 Trigger words below are matched case-insensitively.
 
-| Tag | Trigger words | Default chain |
+| Tag | Trigger words | Default sequence |
 |---|---|---|
 | `design` | architecture, design, choose, evaluate, RFC | main-loop `/hkx-plan` step (optionally `code-explorer` recon first) |
 | `plan` | plan, breakdown, milestone | main-loop `/hkx-plan` step |
@@ -139,20 +139,20 @@ Trigger words below are matched case-insensitively.
 | `review` | review, audit, verify | `<lang>-reviewer,code-reviewer` |
 | `loop` | loop, autonomous, watchdog | main-loop `loop-design-check` skill step (Action 3) |
 
-Chain composition rules:
+Sequence composition rules:
 
 1. **Primary tag selection**: when a step matches multiple tags, the **first one
    in table order** (top of the table = highest priority) is the primary; the
    rest are secondaries.
 2. `impl` + `security` → `tdd-guide,<lang>-reviewer,security-reviewer`.
 3. `impl` + `db` → `tdd-guide,<lang>-reviewer`, with the `database-migrations` review checklist applied between them in this session.
-4. **Deduplicate** the resulting chain (preserve first occurrence).
+4. **Deduplicate** the resulting sequence (preserve first occurrence).
 5. `<lang>-reviewer` resolves to `code-reviewer` when `lang=unknown`.
-6. Build resolver mapping is explicit: TypeScript/JavaScript → `build-error-resolver`; Python → `python-build-resolver`; Go → `go-build-resolver`; Rust → `rust-build-resolver`; `lang=unknown` → `tdd-guide` with `no specialized build resolver` recorded under "Chain rationale".
-7. **Zero-tag steps**: if no trigger word matches, set chain to `code-reviewer`
-   and write `no tag matched; default review-only chain` under "Chain
+6. Build resolver mapping is explicit: TypeScript/JavaScript → `build-error-resolver`; Python → `python-build-resolver`; Go → `go-build-resolver`; Rust → `rust-build-resolver`; `lang=unknown` → `tdd-guide` with `no specialized build resolver` recorded under "Sequence rationale".
+7. **Zero-tag steps**: if no trigger word matches, set sequence to `code-reviewer`
+   and write `no tag matched; default review-only sequence` under "Sequence
    rationale".
-8. Chain length ≤ 4 after deduplication. If exceeded, drop weakest tag (`lookup`
+8. Sequence length ≤ 4 after deduplication. If exceeded, drop weakest tag (`lookup`
    and `docs` first).
 9. `design`, `plan`, and `lookup` steps run in the **main session** (`/hkx-plan`
    command or `documentation-lookup` skill): emit a command/skill step, not a
@@ -190,7 +190,7 @@ Output structure:
 
 ## Steps overview
 
-| # | Title | Tags | Chain |
+| # | Title | Tags | Sequence |
 |---|---|---|---|
 | 1 | ... | impl, db | `tdd-guide → [db review checklist] → python-reviewer` |
 | ... | | | |
@@ -201,7 +201,7 @@ Output structure:
 
 **Intent**: <1–3 sentences>
 **Tags**: <a, b>
-**Chain rationale**: <why this chain; which agent closes the loop>
+**Sequence rationale**: <why this sequence; which agent closes the loop>
 
 ### Agent 1: tdd-guide
 ```python
@@ -238,16 +238,16 @@ parallel([
 
 ### Phase 5 — Self-check (run before emitting)
 
-- [ ] Every agent in every chain comes from the catalogue.
+- [ ] Every agent in every sequence comes from the catalogue.
 - [ ] No invented flags or parameters.
 - [ ] Each task description begins with `[Plan: <path>#step-<id>]` and includes
   Acceptance (1–3 items).
-- [ ] No duplicate agent in any chain after Phase 2 dedup.
-- [ ] Chain length ≤ 4.
+- [ ] No duplicate agent in any sequence after Phase 2 dedup.
+- [ ] Sequence length ≤ 4.
 - [ ] Steps tagged `impl`/`refactor`/`migration` end with a reviewer-class
   agent.
 - [ ] Zero-tag steps emit `code-reviewer` with the rationale `no tag matched;
-  default review-only chain`.
+  default review-only sequence`.
 - [ ] Overview table lists every step in the plan, regardless of `--scope`.
 
 ## Edge Cases
@@ -259,13 +259,13 @@ parallel([
   overview table and ask the user to narrow with `--scope` before re-running for
   details.
 - **Step too broad** (e.g. "complete all backend work"): do not force a single
-  chain. Suggest splitting into N.a and N.b and propose a split.
+  sequence. Suggest splitting into N.a and N.b and propose a split.
 - **Plan declares agents**: validate against the catalogue. Replace invalid
-  agents and explain under "Chain rationale".
+  agents and explain under "Sequence rationale".
 - **Polyglot project where `--lang=auto` cannot pick a winner**: set
   `lang=unknown`; reviewer resolves to `code-reviewer` and build recovery to
   `tdd-guide`. Mention that no specialized build resolver was selected under
-  "Chain rationale".
+  "Sequence rationale".
 
 ## Examples
 
@@ -285,8 +285,8 @@ Excerpt of expected output:
 `birth_datetime` / `location` before persistence; load the key from an
 environment variable.
 **Tags**: impl, security, db
-**Chain rationale**: Security-sensitive write path, so `security-reviewer` closes
-the chain; the `database-migrations` checklist validates the alembic migration in this
+**Sequence rationale**: Security-sensitive write path, so `security-reviewer` closes
+the sequence; the `database-migrations` checklist validates the alembic migration in this
 session; `python-reviewer` covers typing and PEP 8.
 
 ### Agent 1: tdd-guide

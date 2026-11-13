@@ -10,13 +10,13 @@ Use this page when you need to decide **which doc to open**, not when you need t
 | --- | --- |
 | How do I install or use the package day to day? | `../README.md` or `../README.zh-CN.md` (dual path: `pi install` vs `install-global`) |
 | What does official `pi install` load vs full operator install? | `../README.md` / `../README.zh-CN.md` dual-path table + `architecture.md` Discovery and Install Model |
-| Where does a new surface belong (command vs skill vs agent vs chain vs extension)? | `architecture.md` |
+| Where does a new surface belong (command vs skill vs agent vs extension)? | `architecture.md` |
 | What currently ships in this package? | `conversion-map.md` |
 | Which skill should win when several could match? | `skill-routing.md` |
 | Should this be a language rule or a runtime extension? | `language-hooks.md` |
 | How do I wire a classifier / decision model (Jev, StartLux) and call it from `codemode`? | `classifier-models.md` |
 | How does instinct inventory + evolve work (Linux/Windows)? | `instinct-evolve-plan.md` + skill `instinct-evolve` |
-| Which agents have a command/skill/chain entrance (ECC port status)? | `command-agent-map.md` (formal map); `command-agent-map-checklist.md` (M1/M2 audit trail) |
+| Which agents have a command/skill entrance (ECC port status)? | `command-agent-map.md` (formal map); `command-agent-map-checklist.md` (M1/M2 audit trail) |
 | Where is the closed Unified Memory PRD (vault vs instinct vs OM)? | `prds/unified-memory-instinct-om.prd.md` + skill `unified-memory` |
 | How should maintainers change this repository? | `../AGENTS.md` |
 | What global development handbook gets installed? | `../GLOBAL_AGENTS.md` |
@@ -30,7 +30,7 @@ Package layering and surface boundaries.
 
 Read this when you need to decide:
 
-- whether something is a command, skill, rule, agent, chain, or extension
+- whether something is a command, skill, rule, agent, or extension
 - how discovery/install and mutation discipline fit together
 - how the package surfaces interact at runtime
 
@@ -41,7 +41,7 @@ Current package surface map.
 Read this when you need:
 
 - package identity
-- the shipped inventory of commands, skills, rules, agents, chains, extensions, and MCP surfaces
+- the shipped inventory of commands, skills, rules, agents, extensions, and MCP surfaces
 - intentionally excluded / deferred items
 - naming conventions
 
@@ -73,8 +73,8 @@ Operator-facing command→agent entrance map (hkx port of ECC `COMMAND-AGENT-MAP
 
 Read this when you need to decide:
 
-- which command, chain, or skill enters a specific agent (with file:line evidence)
-- how the 14 packaged chains compose agent sequences
+- which command or skill enters a specific agent (with file:line evidence)
+- how the orch skills compose agent sequences
 - what differs from the upstream ECC map and what was deliberately not ported
 - the formal 26/26 agent-entrance coverage table (R5)
 

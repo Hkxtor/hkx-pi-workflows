@@ -28,7 +28,7 @@ Operator entry: `/santa-loop`.
 | Deterministic build/lint/type/test | `verification-loop` |
 | Ambiguous product/architecture tradeoff | `council` |
 | Internal drafts / exploratory work | just continue |
-| Single-pass PR review is enough | `code-review` / `hkx-adversarial-review` chain |
+| Single-pass PR review is enough | `/code-review` / `/orch-review` |
 
 ## Architecture
 
@@ -184,7 +184,7 @@ Result: ship-ready | needs user decision
 | Skill / surface | Relationship |
 | --- | --- |
 | `verification-loop` | Run first for deterministic checks |
-| `hkx-adversarial-review` chain | Multi-angle one-shot review; Santa adds dual-pass convergence |
+| `/orch-review` | Multi-angle one-shot review; Santa adds dual-pass convergence |
 | `council` | Decisions under ambiguity, not correctness verification |
 | `instinct-evolve` | Repeated Santa misses can become pending instincts via `/learn-eval` |
 | Delegation Completion Contract | Parent owns collection of both reviewers before verdict |

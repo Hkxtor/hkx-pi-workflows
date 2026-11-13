@@ -1,7 +1,5 @@
 ---
 name: orch-review
-backing-chain: hkx-pr-review
-fallback-agents: typescript-reviewer, python-reviewer, go-reviewer, rust-reviewer
 description: Multi-dimension review workflow for code diffs using Pi reviewer agents. Fans out parallel reviews (quality, language-specific, and conditional security), deduplicates findings, and returns blocking vs advisory results. Pi-native port of the orch-review workflow. Use when a diff needs parallel quality, language, and security review with deduplicated blocking findings. Not for a single-reviewer pass (code-reviewer) or two-adversary convergence (santa-method).
 version: 1.0.0
 origin: ECC-converted-for-Pi
@@ -13,11 +11,10 @@ A multi-dimension review workflow for code diffs. Uses Pi reviewer agents in par
 
 This is the Pi-native port of the ECC `orch-review.workflow.js` — it replaces the external workflow script with in-process `agent()` and `eval` orchestration.
 
-**Backing chain:** `hkx-pr-review` owns the base reviewer fan-out. The language dimension
-is not restated here as authority — `hkx-typescript-review`, `hkx-python-review`,
-`hkx-go-review`, and `hkx-rust-review` each own their language's shape, and this skill
-lists those reviewers as `fallback-agents` because a diff may need one on top of the base
-fan-out. `scripts/validate.mjs` enforces that split.
+**Agent sequence:** the reviewer fan-out is declared once in
+[`orch-pipeline`](../orch-pipeline/SKILL.md). The language dimension picks one language
+reviewer from the diff's dominant language; that choice is made per run, not restated here
+as authority.
 
 ## When to Activate
 
@@ -46,9 +43,8 @@ fan-out. `scripts/validate.mjs` enforces that split.
 | Silent failures | `silent-failure-hunter` | When code has error handling patterns |
 
 ### Language Reviewer Selection
-Map changed-file extensions to reviewer agents. For a diff dominated by one language,
-`hkx-<lang>-review` is the chain that owns that shape; use this table when you are
-running the review in-session and need to pick the extra reviewer.
+Map changed-file extensions to reviewer agents. For a diff dominated by one language, pick
+the language reviewer for that language as the language dimension of the fan-out.
 
 | Extension | Reviewer |
 |---|---|

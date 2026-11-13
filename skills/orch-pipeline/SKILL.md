@@ -46,13 +46,13 @@ Each phase delegates — it does not do the work inline.
 - **1. Research & Reuse** — use `find` / `search` / `read` for local code, then docs lookup via configured MCP tools, then package registries. Prefer adopting a proven implementation over net-new code.
 - **2. Plan** — run `/hkx-plan` in the main session (step quality, sizing/phasing, validation order). Output a `task_list` ordered as thin vertical slices. → **GATE 1.**
 - **3. Scaffold** — `orch-build-mvp` only: stand up the first end-to-end slice.
-- **4. Implement (TDD)** — drive each task through the implementing agent named by the
-  **backing chain** (`tdd-guide` for feature / change / fix / mvp, `refactor-cleaner` for
-  refine): red → green → refactor. Honor the operation's first-move rule.
-- **5. Review** — the review fan-out the backing chain defines (`code-reviewer` always,
-  plus `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, or a language
-  reviewer where that chain includes them). Add `security-reviewer` whenever the diff
-  touches a security trigger even if the chain omits it.
+- **4. Implement (TDD)** — drive each task through the operation's implementing agent
+  (`tdd-guide` for feature / change / fix / mvp, `refactor-cleaner` for refine):
+  red → green → refactor. Honor the operation's first-move rule.
+- **5. Review** — run the review fan-out in the sequence table below (`code-reviewer`
+  always, plus `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, or the
+  language reviewer for the diff's dominant language). Add `security-reviewer` whenever
+  the diff touches a security trigger even when the fan-out would omit it.
 - **6. Commit** — conventional commits (`feat:` / `fix:` / `refactor:` / …), one per logical chunk. → **GATE 2.**
 
 ## The Two Gates
@@ -64,55 +64,48 @@ This family is **gated, not autonomous**:
 
 Everything between the gates flows without stopping.
 
-## Backing Chains — who owns the execution shape
+## Agent Sequences — who owns the execution shape
 
-**The packaged chain owns the agent sequence; this engine owns the policy around it.**
+**This engine owns the agent sequence; the operation skills own the policy around it.**
 
-That split exists because the same shape (explore → implement → review) is reachable two
-ways, and encoding the agent list twice is how the two copies drift apart. A concrete
+Declaring the sequence in one place is what keeps the copies from drifting. A concrete
 example of that drift, caught when this rule was written: this file used to say
 Implement → `tdd-guide` for every operation, while `orch-refine-code` correctly used
-`refactor-cleaner` — the chain had it right, the engine did not.
+`refactor-cleaner`.
 
-| Operation skill | Backing chain | Shape the chain encodes |
-|---|---|---|
-| `orch-add-feature` | `hkx-feature-flow` | explore → tdd-guide → review fan-out |
-| `orch-change-feature` | `hkx-feature-flow` | same shape, different first move (amend the existing test) |
-| `orch-fix-defect` | `hkx-fix-defect` | explore → tdd-guide → review + silent-failure-hunter |
-| `orch-refine-code` | `hkx-refactor-flow` | explore → refactor-cleaner → review |
-| `orch-build-mvp` | `hkx-feature-flow` | same shape, applied per vertical slice |
-| `orch-review` | `hkx-pr-review` | reviewer fan-out only, no implementation step |
+| Operation skill | Agent sequence |
+|---|---|
+| `orch-add-feature` | `code-explorer` → `tdd-guide` → review fan-out |
+| `orch-change-feature` | same shape, different first move (amend the existing test) |
+| `orch-fix-defect` | `code-explorer` → `tdd-guide` (regression-first) → review + `silent-failure-hunter` |
+| `orch-refine-code` | `code-explorer` → `refactor-cleaner` → review fan-out |
+| `orch-build-mvp` | same shape as feature, applied per vertical slice |
+| `orch-review` | reviewer fan-out only, no implementation step |
 
 What each layer owns:
 
-| This engine (`orch-pipeline`) | The backing chain |
+| This engine (`orch-pipeline`) | The operation skill |
 |---|---|
-| Size classification | Which agents run |
-| Phase mask per operation | Their order |
-| First-move rule per operation | Handoff artifacts between steps |
-| **GATE 1 / GATE 2** | The task prompt each agent receives |
-| Security trigger | Parallel fan-out shape |
+| Which agents run | Size classification |
+| Their order | Phase mask per operation |
+| Parallel fan-out shape | First-move rule per operation |
+| — | **GATE 1 / GATE 2** |
 
-Because the chain is the source, an operation skill declares its `backing-chain` in
-frontmatter and names only agents the chain actually contains. `scripts/validate.mjs`
-enforces both: a declared chain must exist, and an operation skill that names an agent
-outside its chain must list it under `fallback-agents` (escalations such as
-`build-error-resolver` on a build break). Drift then fails validation instead of
-silently producing two different pipelines.
+Packaged chain files are retired: pi-subagents removed durable chain definitions
+(`/chain`, `/run-chain`, `chainName`, packaged `.chain.json` loading). For an unattended
+end-to-end run, use a pi-subagents workflow script (`subagent({ workflow: true })`,
+`runs.run`) instead.
 
-### Reading the chain instead of restating it
+### Replay, don't hand off
 
-When a gated run needs the sequence, read `chains/<backing-chain>.chain.json` — each step
-carries `agent`, `phase`, `label`, `output`, and `task`. Replay the steps **one at a time
-in this session**, inserting the gates between phases. Do not hand the whole chain to
-pi-subagents: a packaged chain runs to completion and cannot stop at Gate 1.
-
-That is the whole difference between the two lanes — same steps, gates on or off.
+When a gated run needs the sequence, replay the steps **one at a time in this session**,
+inserting the gates between phases. That is the whole difference between the two lanes —
+same steps, gates on or off.
 
 ## Main-Session and Escalation Map
 
-Steps that are not part of any chain, because they are planning or recovery rather than
-execution:
+Steps that are not part of any operation sequence, because they are planning or recovery
+rather than execution:
 
 | Phase | Primary | Fallback / escalation |
 |---|---|---|
@@ -121,7 +114,7 @@ execution:
 | Build break | — | `build-error-resolver` / `/build-fix` |
 | Docs touch | — | `doc-updater` |
 
-Match the language reviewer to the repo — the review chains already do this per language.
+Match the language reviewer to the repo — the review fan-out already does this per language.
 
 ## Security-Review Trigger
 

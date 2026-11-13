@@ -196,7 +196,7 @@ try {
 		}
 
 		// D: extension filter — a dangling .md link is not pruned when the
-		// caller scopes the pass to chains.
+		// caller scopes the pass to another surface.
 		{
 			const srcDir = path.join(tmpRoot, "d-src");
 			const destDir = path.join(tmpRoot, "d-dest");
@@ -210,7 +210,7 @@ try {
 			await fs.rm(mdSrc, { force: true });
 
 			const pruned = await pruneDanglingLinks(srcDir, destDir, {
-				extensions: [".chain.json", ".chain.md"],
+				extensions: [".yaml"],
 			});
 			check("D: extension filter skips out-of-scope links", pruned.length === 0, JSON.stringify(pruned));
 			check("D: out-of-scope link survives", await pathExistsLstat(mdLink), mdLink);

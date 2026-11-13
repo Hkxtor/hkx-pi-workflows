@@ -36,14 +36,14 @@ main loop (holds spec, iteration count, stop decision)
    │
    ├─ 1. write/read gan/spec.md  ← planning folded in, no planner subagent
    │
-   ├─ 2. hkx-gan-pass chain
+   ├─ 2. one gan pass (generator → evaluator)
    │     ├─ hkx.gan-generator  (writer)      → gan/generator-state.md
    │     └─ hkx.gan-evaluator  (read-only)   → gan/feedback.md  + verdict inline
    │
    └─ 3. verdict?  pass → stop · fail → next iteration (or stop on plateau)
 ```
 
-The chain runs **one** pass. The main loop owns repetition — that keeps the plan,
+The pass runs **once** per iteration. The main loop owns repetition — that keeps the plan,
 the budget, and the decision in one context, which is the whole point.
 
 ## When to Use
@@ -139,13 +139,20 @@ iteration accounting, stop decision). Run this skill directly when driving the l
 Run one pass:
 
 ```text
-subagent: hkx-gan-pass
+subagent: hkx.gan-generator
 task: <one-paragraph brief>; spec at gan/spec.md; iteration N
 ```
 
-**Archive the previous round before dispatching.** The chain writes
-`gan/feedback.md` and `gan/generator-state.md` by `output:`, which overwrites them, so
-a second pass destroys the first pass's verdict unless you move the pair aside:
+then, in the same session:
+
+```text
+subagent: hkx.gan-evaluator
+task: <same brief>; read gan/generator-state.md; iteration N
+```
+
+**Archive the previous round before dispatching.** Each pass overwrites
+`gan/feedback.md` and `gan/generator-state.md`, so a second pass destroys the first pass's
+verdict unless you move the pair aside:
 
 ```bash
 mkdir -p gan/round-N && mv gan/feedback.md gan/generator-state.md gan/round-N/
@@ -156,13 +163,11 @@ whether an above-threshold round was scored `fail` (correctly continued) or `pas
 (correctly stopped). Keep `gan/spec.md` outside the archive — it is the contract, not a
 per-round artifact.
 
-**Driving the chain by hand means owning the artifacts.** `output:` is a chain-level
-feature. Dispatch `hkx.gan-generator` or `hkx.gan-evaluator` as a bare agent and nothing
-is written to `gan/` — the report lands in pi-subagents' artifact directory, and the next
-step finds no input. When you replay the steps manually (which is what the gates require),
-write each agent's final message to the path that chain step declares, before dispatching
-the next step. This is also why the agent prompts end with "your final message IS the
-artifact": it is the only copy the parent is guaranteed to have.
+**The parent owns the artifacts.** Packaged chains are retired, so nothing writes `gan/`
+for you: dispatch `hkx.gan-generator`, then write its final message to
+`gan/generator-state.md` before dispatching `hkx.gan-evaluator`, and write the evaluator's
+final message to `gan/feedback.md`. This is why the agent prompts end with "your final
+message IS the artifact": it is the only copy the parent is guaranteed to have.
 
 **Dispatch the evaluator in the foreground.** Observed three times in a row: an async
 (background) evaluator run stalls on its third or fourth `bash` call — the command is
@@ -269,7 +274,7 @@ Only the current round lives at the top level. If `gan/round-*` is missing after
 second pass, the archive step was skipped and the earlier verdicts are gone.
 
 The `/gan-build` command owns this loop end to end; use it unless you are driving the
-chain manually.
+pass manually.
 
 Add `gan/` to the project's ignore file unless the operator wants the artifacts
 committed.

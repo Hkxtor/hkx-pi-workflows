@@ -20,7 +20,6 @@
  *
  * Syncs package surfaces into ~/.pi/agent for pi / pi-subagents discovery:
  * - agents/*.md              -> ~/.pi/agent/agents/hkx/*.md   (runtime: hkx.<name>)
- * - chains/*                 -> ~/.pi/agent/chains/
  * - commands/ skills/ rules/ -> ~/.pi/agent/{commands,prompts,skills,rules}/
  *   (commands/ is also linked into prompts/ for current pi slash discovery)
  * - package.json pi.extensions -> ~/.pi/agent/extensions/
@@ -1645,7 +1644,6 @@ async function main() {
 	await ensureDir(path.join(piHome, "skills"));
 	await ensureDir(path.join(piHome, "rules"));
 	await ensureDir(path.join(piHome, "agents", "hkx"));
-	await ensureDir(path.join(piHome, "chains"));
 	await ensureDir(path.join(packageAssetRoot, "scripts"));
 
 	let pkg = {};
@@ -1744,21 +1742,14 @@ async function main() {
 		}
 	}
 
-	// Chains
-	const chainsDir = path.join(repoRoot, "chains");
-	if (await pathExists(chainsDir)) {
-		await pruneDanglingLinks(chainsDir, path.join(piHome, "chains"), {
-			extensions: [".chain.json", ".chain.md"],
-		});
-		for (const chain of await fs.readdir(chainsDir)) {
-			if (chain.endsWith(".chain.json") || chain.endsWith(".chain.md")) {
-				await linkOrCopy(
-					path.join(chainsDir, chain),
-					path.join(piHome, "chains", chain),
-				);
-			}
-		}
-	}
+	// Chains are retired: pi-subagents removed durable chain definitions, so this
+	// package no longer ships chains/ or declares pi-subagents.chains. Prune the
+	// links a previous install left behind; nothing is linked back in.
+	await pruneDanglingLinks(
+		path.join(repoRoot, "chains"),
+		path.join(piHome, "chains"),
+		{ extensions: [".chain.json", ".chain.md"] },
+	);
 
 	// MCP
 	const mcpSrc = path.join(repoRoot, ".mcp.json");
@@ -1962,7 +1953,6 @@ async function main() {
 		console.log("Global installation to ~/.pi/agent completed successfully!");
 	}
 	console.log("Agents: ~/.pi/agent/agents/hkx/*.md  (runtime: hkx.<name>)");
-	console.log("Chains: ~/.pi/agent/chains/hkx-*.chain.json");
 	console.log(
 		"Settings: configs/agent-settings.json → merge ~/.pi/agent/settings.json",
 	);
@@ -2015,6 +2005,6 @@ export {
 	installPiUnipiNotifyConfig,
 	installPlanModeConfig,
 	// Exported for the retirement regression suite; main() uses it inline for
-	// rules, commands/prompts, skills, agents, and chains.
+	// rules, commands/prompts, skills, and agents.
 	pruneDanglingLinks,
 };

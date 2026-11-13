@@ -45,7 +45,7 @@ Prefer one primary skill. Stack only when the task has two distinct phases (for 
 | control answer length / token budget | `token-budget-advisor` | `context-budget` | `cost-aware-llm-pipeline` (model choice, not answer length) |
 | repeated prompts are expensive / raise cache hit rate | `prompt-caching-strategy` | `context-budget`, `cost-aware-llm-pipeline` | `prompt-optimizer` (quality, not reuse) |
 | review MCP config for mutable package pins | `mcp-dependency-review` | `security-scan`, `search-first` | `mcp-server-patterns` (building the server, not vetting the config) |
-| find the right command sequence for a workflow | `ecc-recipes` | `/recipes` (operator entrance) | `hkx-plan-orchestrate` (multi-step agent chains) |
+| find the right command sequence for a workflow | `ecc-recipes` | `/recipes` (operator entrance) | `hkx-plan-orchestrate` (multi-step agent plans) |
 | draft a commit message from staged changes | `conventional-commit-review` | `hkx-common-git-workflow` rule | `coding-standards` (diff content, not message) |
 | stop AI style drift on a legacy codebase | `inherit-legacy-style` | `coding-standards`, `grilling` | `codebase-onboarding` (map, not rules) |
 | docs are rotting / deleted files keep coming back | `living-docs-governance` | `architecture-decision-records`, `code-tour` | `codebase-onboarding` (first-pass map) |
@@ -206,33 +206,30 @@ Never start with `config-gc`. Inventory or stocktake first; delete only with exp
 | Operation entries | `orch-add-feature`, `orch-change-feature`, `orch-fix-defect`, `orch-refine-code`, `orch-build-mvp`, `orch-review` |
 | Generate agent plan only | `plan-orchestrate` |
 
-**orch skills vs chains — one owner per fact.** These are not two pipelines; they are one
-sequence with two gate policies.
+**One owner per fact.** The engine and the operation skills are not two pipelines; they are
+one sequence with one gate policy.
 
 | Owner | Owns |
 | --- | --- |
-| **Packaged chain** (`chains/hkx-*.chain.json`) | The agent sequence: which agents run, in what order, their handoff artifacts, and the fan-out shape |
-| **orch skill** (`skills/orch-*`) | Policy only: size classification, phase mask, first-move rule, **GATE 1** (plan approval) and **GATE 2** (commit approval) |
+| **`orch-pipeline`** (shared engine) | The agent sequence: which agents run, in what order, and the fan-out shape |
+| **operation skill** (`skills/orch-*`) | Policy only: size classification, phase mask, first-move rule, **GATE 1** (plan approval) and **GATE 2** (commit approval) |
 
-Each operation skill declares its chain in frontmatter (`backing-chain:`), and
-`scripts/validate.mjs` fails when the skill names an agent that chain does not contain —
-unless it is declared under `fallback-agents:` as an explicit escalation. That guard is
-there because the two copies had already drifted: `orch-pipeline` said Implement →
-`tdd-guide` for every operation while `orch-refine-code` correctly used
-`refactor-cleaner`.
+The sequence is declared once, in `orch-pipeline`. Packaged chain files are retired:
+pi-subagents removed durable chain definitions (`/chain`, `/run-chain`, `chainName`, packaged
+`.chain.json` loading).
 
-| Operation | Backing chain |
+| Operation | Agent sequence |
 | --- | --- |
-| `orch-add-feature` / `orch-change-feature` / `orch-build-mvp` | `hkx-feature-flow` |
-| `orch-fix-defect` | `hkx-fix-defect` |
-| `orch-refine-code` | `hkx-refactor-flow` |
-| `orch-review` | `hkx-pr-review` (+ language chains for the language dimension) |
+| `orch-add-feature` / `orch-change-feature` / `orch-build-mvp` | `code-explorer` → `tdd-guide` → review fan-out |
+| `orch-fix-defect` | `code-explorer` → `tdd-guide` (regression-first) → review fan-out |
+| `orch-refine-code` | `code-explorer` → `refactor-cleaner` → review fan-out |
+| `orch-review` | reviewer fan-out only (language reviewer chosen by dominant language) |
 
 **Which lane to pick.** Interactively driving, wanting approvals → the orch skill (it
-replays the chain's steps one at a time in-session, with gates between phases).
-End-to-end run, or arriving through a router like `/multi-workflow` → the chain directly
-(it runs to completion and cannot stop at a gate). **Do not nest one inside the other** —
-that duplicates review lanes and re-runs gates.
+replays the sequence one step at a time in-session, with gates between phases).
+Unattended end-to-end → a pi-subagents workflow script (`subagent({ workflow: true })`,
+`runs.run`). **Do not nest one inside the other** — that duplicates review lanes and
+re-runs gates.
 
 ### Repo understanding
 
@@ -287,7 +284,7 @@ Name similarity is not duplication. These three families were flagged in the 202
 
 ## Agent routing (hkx.*)
 
-Agents are invoked through pi-subagents (`subagent` tool / chains), not loaded like skills. The pairs below overlap by design; pick by scope, not by name similarity.
+Agents are invoked through pi-subagents (`subagent` tool), not loaded like skills. The pairs below overlap by design; pick by scope, not by name similarity.
 
 ### Planning and design (main session)
 
@@ -302,7 +299,7 @@ The planner/architect/code-architect agents were folded in the 2026-10 fold migr
 Division of labor:
 
 - **System-layer design** (module/service boundaries, data ownership, API contracts, migration/rollback) is covered by `hexagonal-architecture` / `api-design` guidance plus `/hkx-plan`.
-- **Feature-layer blueprinting** (concrete files, interfaces, data flow, build order) runs in `/hkx-plan` or `feature-dev` Phase 4 directly from the exploration evidence — no lossy mid-chain handoff.
+- **Feature-layer blueprinting** (concrete files, interfaces, data flow, build order) runs in `/hkx-plan` or `feature-dev` Phase 4 directly from the exploration evidence — no lossy mid-run handoff.
 - Repo evidence gathering stays with `hkx.code-explorer` (context isolation earns its keep: heavy raw reads, use-and-discard). Adversarial review of a plan uses a fresh `hkx.code-reviewer`.
 
 ### Build recovery vs behavior changes

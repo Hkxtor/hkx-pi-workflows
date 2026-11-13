@@ -82,5 +82,5 @@ Result: ship-ready | needs user decision
 ## Related
 
 - skill: `santa-method`
-- chain: `hkx-adversarial-review` (multi-angle one-shot; no convergence loop)
+- `/orch-review` (multi-angle one-shot; no convergence loop)
 - `/code-review`, `/orch-review`

@@ -4,14 +4,13 @@
 
 You are working in `hkx-pi-workflows` (package `@hkx/pi-workflows`).
 
-This repository maintains a **pi-native workflow package**: portable subagents, chains, commands, skills, rules, extensions, and MCP templates intended for pi / pi-subagents.
+This repository maintains a **pi-native workflow package**: portable subagents, commands, skills, rules, extensions, and MCP templates intended for pi / pi-subagents.
 
 ## Repository Scope
 
 Included surfaces:
 
 - `agents/` — pi-subagents definitions (`package: hkx`); declared in `package.json` `pi-subagents.agents`
-- `chains/` — saved pi-subagents chains; declared in `package.json` `pi-subagents.chains`
 - `commands/` — slash prompt templates on disk; declared as `pi.prompts` (not a native `pi.commands` field)
 - `skills/` — skill folders; declared in `pi.skills`
 - `rules/` — repo/session rules (Path B / `install-global` only; not a native pi package resource)
@@ -21,13 +20,13 @@ Included surfaces:
 - `APPEND_SYSTEM.md` — source for global `~/.pi/agent/APPEND_SYSTEM.md` (Path B only)
 - `.mcp.json` and `mcp-configs/` — MCP defaults and templates (Path B only)
 - `scripts/` — day-to-day package scripts (`install`, `validate`, `test`, `mcp:apply-profile`) plus maintenance-only helpers
-- `package.json` dual-path manifest: official `pi` resources + `pi-subagents` agents/chains
+- `package.json` dual-path manifest: official `pi` resources + `pi-subagents` agents
 
 Keep this package intentionally small. It should stay focused on a useful core workflow set, not become a giant mirror of every possible domain pack.
 
 ## Required Workflow
 
-1. Search first. Before adding or replacing any agent, chain, command, skill, rule, extension, helper, or MCP entry, check what already exists.
+1. Search first. Before adding or replacing any agent, command, skill, rule, extension, helper, or MCP entry, check what already exists.
 2. Keep surfaces pi-native. Do not add compatibility shims for unrelated runtimes unless the user explicitly asks.
 3. Reuse the package conventions already present instead of introducing a second pattern.
 4. Prefer compact workflow guidance over long tutorial text.
@@ -40,7 +39,7 @@ Keep this package intentionally small. It should stay focused on a useful core w
 
 ### Agents
 
-- Surface criterion: an agent earns its own file only when it needs its own context window (heavy use-and-discard reads, parallel fresh-context review) or a scoped tool/writer boundary; process knowledge belongs in skills/commands, and in-chain planning is folded into the implementation step (`docs/skill-routing.md`, fold audit 2026-10).
+- Surface criterion: an agent earns its own file only when it needs its own context window (heavy use-and-discard reads, parallel fresh-context review) or a scoped tool/writer boundary; process knowledge belongs in skills/commands, and in-step planning is folded into the implementation step (`docs/skill-routing.md`, fold audit 2026-10).
 - File basename must match frontmatter `name`.
 - Use `package: hkx` so runtime names are `hkx.<name>`.
 - Declare `acceptanceRole: read-only` for inspection/planning agents and `acceptanceRole: writer` for mutation agents; any agent with `edit` or `write` must be a writer.
@@ -49,11 +48,9 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Prefer `ffgrep` / `fffind` (with native `grep` / `find` as co-resident fallback) and configured pi-lsp diagnostics over non-pi search aliases.
 - Every agent that declares an extension tool must also load its provider in `subagentOnlyExtensions` (`npm:@ff-labs/pi-fff`, `npm:@narumitw/pi-lsp`, `npm:pi-web-access`, `npm:@juicesharp/rpiv-todo`). Foreground subagent children never load the parent's ambient extensions, and pi-subagents fails the run when a declared tool is unregistered, so naming the tool alone is not enough; `scripts/validate.mjs` enforces the pairing.
 
-### Chains
+### Retired: packaged chains
 
-- Chain files live under `chains/` as `hkx-*.chain.json` or `.chain.md`.
-- Parallel review steps should stay read-only.
-- Implementation chains should keep a single writer agent in the mutation step.
+pi-subagents removed durable chain definitions (`/chain`, `/run-chain`, `chainName`, and packaged `.chain.json` loading). Repeatable multi-agent sequences are **workflow scripts** (`subagent({ workflow: true })`, `runs.run`) or `/prompt-workflow` with `chain:` frontmatter on prompt templates. Do not re-add `chains/`, `pi-subagents.chains`, or a `backing-chain` skill field; `scripts/validate.mjs` fails on the manifest key, and `install.mjs` prunes links a previous install left under `~/.pi/agent/chains/`.
 
 ### Commands / Skills / Rules
 
@@ -74,9 +71,9 @@ Keep this package intentionally small. It should stay focused on a useful core w
 - Pi core packages imported by shipped extensions must be wildcard (`"*"`) `peerDependencies`, never `dependencies`; reject the unrelated npm package named `pi`.
 - Official pi resources only: `pi.extensions`, `pi.skills`, `pi.prompts`.
 - Do not reintroduce custom brand theme JSON or a `pi.themes` package field.
-- Agents/chains: top-level `pi-subagents.agents` / `pi-subagents.chains` (discovered by pi-subagents from installed packages).
-- Do not put `agents`, `chains`, `commands`, `rules`, or a custom `pi.name` under `pi` — validate rejects them.
-- Path A consumers need `pi-subagents` installed separately for agents/chains.
+- Agents: top-level `pi-subagents.agents` (discovered by pi-subagents from installed packages).
+- Do not put `agents`, `chains`, `commands`, `rules`, or a custom `pi.name` under `pi` — validate rejects them. `pi-subagents.chains` is also rejected: pi-subagents removed durable chain definitions, so a declared `chains/` path would ship files nothing reads.
+- Path A consumers need `pi-subagents` installed separately for agents.
 
 ### Extensions
 

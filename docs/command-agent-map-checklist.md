@@ -7,6 +7,7 @@ Post-M3 folds affecting this document: `docs-lookup`, `conversation-analyzer`, `
 - Upstream intent: `ECC/docs/COMMAND-AGENT-MAP.md`
 - Grading evidence: grep-verified file:line references inside this repo (`chains/`, `commands/`, `skills/`) — every grade below carries at least one such reference
 - Plan: `.pi/plans/port-command-agent-map-m1.plan.md` · PRD: `.pi/prds/port-command-agent-map.prd.md`
+- Packaged chains were retired after M3 (pi-subagents removed durable chain definitions). The `chains` column and `chains/` evidence references below are the M2 snapshot; the live surface is command / skill only — see `docs/command-agent-map.md`.
 
 Grades: ✅ covered · ⚠️ partial · ❌ gap · ⛔ not-ported
 

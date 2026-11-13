@@ -9,7 +9,6 @@
 ## 提供什么
 
 - **agents** — 可移植的 pi-subagents 定义（运行时名 `hkx.<name>`）
-- **chains** — 可复用的多智能体工作流（`hkx-*.chain.json`）
 - **commands** — 面向操作者的 slash 提示词（仓库目录 `commands/`；在 `package.json` 中声明为 `pi.prompts`）
 - **skills** — 工作流与语言/领域指导
 - **rules** — 轻量仓库/会话提醒（仅完整安装路径）
@@ -44,9 +43,8 @@ pi install https://github.com/Hkxtor/hkx-pi-workflows
 | `pi.skills` | `skills/` |
 | `pi.prompts` | `commands/`（slash 提示词模板） |
 | `pi-subagents.agents` | `agents/` 作为 package agents（`hkx.<name>`） |
-| `pi-subagents.chains` | `chains/` 作为 package chains |
 
-**agents / chains 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
+**agents 前置依赖：** 需先安装 `pi-subagents`（例如 `pi install npm:pi-subagents`）。skills / extensions / prompts 不依赖它即可加载。
 
 **路径 A 不会安装：** `rules/`、受管全局 Hookify 规则、`GLOBAL_AGENTS.md`、`APPEND_SYSTEM.md`、MCP 合并、`configs/agent-settings.json`、`configs/keybindings.json`、pi-lsp 与 permission-system 配置覆盖层、以及 rpiv-advisor、pi-tool-display、pi-unipi-notify 与 magic-context 配置覆盖层。需要这些请用路径 B。
 
@@ -100,7 +98,6 @@ pi -e .
 | skills | 是（来自 package） | 是 → `~/.pi/agent/skills/` |
 | commands / prompts | 是（`pi.prompts` → `commands/`） | 是 → `commands/` **与** `prompts/` |
 | agents | 是（经 pi-subagents 包发现） | 是 → `~/.pi/agent/agents/hkx/` |
-| chains | 是（经 pi-subagents 包发现） | 是 → `~/.pi/agent/chains/` |
 | rules | 否 | 是 → `~/.pi/agent/rules/` |
 | 受管全局 Hookify 规则 | 否 | 是 → `~/.pi/agent/hookify/`（刷新受管内容、保留 `enabled`、变更前备份） |
 | agent settings 合并 | 否 | 是（packages + 可移植默认值；**不**设置 `theme`） |
@@ -120,7 +117,6 @@ pi -e .
 | Surface | 目标 |
 | --- | --- |
 | agents | `~/.pi/agent/agents/hkx/*.md` |
-| chains | `~/.pi/agent/chains/hkx-*.chain.json` |
 | commands | `~/.pi/agent/commands/` 与 `~/.pi/agent/prompts/` |
 | skills | `~/.pi/agent/skills/` |
 | rules | `~/.pi/agent/rules/` |
@@ -208,29 +204,16 @@ profile 会在写入前解析 `MCP_DATA_DIR`；未设置时会拒绝写入。应
 
 ### 评审 diff 或 PR
 
-- `hkx-pr-review`
-- `hkx-adversarial-review`
-- `security-scan`
-
-```bash
-/run-chain hkx-pr-review "Review current local diff"
-```
+- `/orch-review` — 并行的质量、语言与安全评审
+- `/santa-loop` — 两个独立对手直到收敛
+- `/security-scan`
 
 ### 实现功能或修复缺陷
 
-- `hkx-feature-flow`
-- `hkx-fix-defect`
-- `hkx-refactor-flow`
-- `build-fix`
+- `/orch-add-feature`、`/orch-change-feature`、`/orch-fix-defect`、`/orch-refine-code`、`/orch-build-mvp`
+- `/build-fix` 处理构建断裂
 
-```ts
-subagent({
-  chainName: "hkx-feature-flow",
-  task: "Add thin-slice feature X",
-  async: true,
-  context: "fresh"
-})
-```
+可复用的多智能体序列用 pi-subagents 的 **workflow script**（`workflow: true` 或脚本路径）。本包提供 agents 与带门禁的编排 skills；序列本身写在 orch skills 与 commands 里，不再以打包 chain 文件的形式分发。
 
 ### Instinct evolve（知识草稿）
 
@@ -247,7 +230,7 @@ subagent({
 - `/instinct-prune` — 清理过期 **pending** instincts（默认 TTL 30 天；默认预览，`--apply` 删除）
 - `/instinct-projects` — 列出已知项目与 instinct 计数
 - `/prp-commit` / `/prp-pr` — 自然语言选文件提交 + 模板感知 GitHub PR
-- `/multi-workflow` — ECC `multi-*` 路由到现有 chains / orch / `workflow`（无外部 ccg-workflow）
+- `/multi-workflow` — ECC `multi-*` 路由到现有 commands / orch skills / `workflow`（无外部 ccg-workflow）
 - `/unified-memory` — 同根 `hkx-homunculus` 记忆库（`memory recall|save|handoff|promote-instinct|import-ecc|validate`；skill `unified-memory`）
 - `/hookify` / `list` / `configure` / `help` — 行为护栏（模式规则 + `hkx-hookify` 扩展；skill `hookify-rules`）
 - skill：`instinct-evolve`
@@ -280,7 +263,7 @@ subagent({
 
 ## 工具假设
 
-这些 agents 与 chains 面向以下工具栈调优：
+这些 agents 面向以下工具栈调优：
 
 - **pi-fff**：`fffind`、`ffgrep`、`fff-multi-grep`
 - **pi-lsp**：`lsp_diagnostics`、`lsp_fix`（路由来自 `pi-lsp.json`）
@@ -337,7 +320,7 @@ npm test
 
 ## 设计原则
 
-- 可移植的 pi-native agents 与 chains
+- 可移植的 pi-native agents
 - 紧凑、可复用的工作流 surface
 - 评审者默认只读，实现 agent 窄范围写入
 - MCP 配置做加法，而不是沉重安装逻辑

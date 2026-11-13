@@ -1,6 +1,6 @@
 ---
 name: gan-build
-description: "Autonomous generator-evaluator build loop. The main session writes the spec, then repeats one hkx-gan-pass chain (writer generator + read-only evaluator) until the weighted score clears the bar or a stop condition fires. No auto-commit, no auto-push."
+description: "Autonomous generator-evaluator build loop. The main session writes the spec, then repeats one gan pass (writer generator + read-only evaluator) until the weighted score clears the bar or a stop condition fires. No auto-commit, no auto-push."
 argument-hint: "<build brief> [--max=N] [--threshold=X] [--mode=live|headless|static]"
 ---
 
@@ -52,10 +52,9 @@ Proceed automatically for short, low-stakes runs. Ask before starting when `--ma
 
 For each iteration `N` (starting at 1):
 
-1. **Archive the previous round**, then dispatch the chain **`hkx-gan-pass`** with task = the brief, the iteration number **you** assigned, and — from the second scored round on — the previous weighted score so the evaluator can return `plateau`.
+1. **Archive the previous round**, then dispatch **`hkx.gan-generator`** with task = the brief, the iteration number **you** assigned, and — from the second scored round on — the previous weighted score so the evaluator can return `plateau`. Write the generator's final message to `gan/generator-state.md`, then dispatch **`hkx.gan-evaluator`** and write its final message to `gan/feedback.md`.
 
-   The chain writes `gan/feedback.md` and `gan/generator-state.md` by `output:`, which
-   overwrites them. Move the previous pair into `gan/round-<N>/` first, or the run's
+   Each pass overwrites both files. Move the previous pair into `gan/round-<N>/` first, or the run's
    verdict history is gone and you cannot prove afterwards whether an
    above-threshold round was scored `fail` (correctly continued) or `pass`
    (should have stopped).
@@ -129,8 +128,7 @@ Three fields are mandatory, not decorative:
 ## Related
 
 - `gan-style-harness` skill — the procedure this command drives (rubric, modes, anti-patterns)
-- `chains/hkx-gan-pass.chain.json` — one generator → evaluator pass
-- `hkx.gan-generator` / `hkx.gan-evaluator` — the two agents
+- `hkx.gan-generator` / `hkx.gan-evaluator` — the two agents of one pass
 - `/santa-loop` — adversarial dual review without a build loop
 - `loop-design-check` — decidable goal and stop conditions for the loop itself
 - `/quality-gate` — deterministic checks after the build lands

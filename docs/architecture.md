@@ -5,7 +5,7 @@ This document explains how the package is structured today and where each kind o
 Use it when deciding:
 
 - where a new capability should live
-- whether something should be a command, skill, rule, agent, chain, or extension
+- whether something should be a command, skill, rule, agent, or extension
 - how the global context files relate to repository-local guidance
 
 ## One-line model
@@ -16,7 +16,6 @@ Use it when deciding:
 - **skills** provide reusable guidance
 - **rules** provide lightweight reminders
 - **agents** provide executable specialists
-- **chains** orchestrate multiple agents into repeatable flows
 - **extensions** enforce or surface runtime behavior (including TUI appearance hooks)
 - **global context files** shape the default agent behavior outside this repo
 
@@ -28,7 +27,6 @@ Use it when deciding:
 | `skills/` | provide reusable guidance and decision frameworks | model / agent | no |
 | `rules/` | provide short reminders and guardrails | model / agent (via `hkx-rules`) | no |
 | `agents/` | execute a narrow specialist role | pi-subagents | some yes, some no |
-| `chains/` | orchestrate multiple agents in a stable sequence | pi-subagents runner | depends on included agents |
 | `extensions/` | runtime hooks, notifications, gatekeeping, or TUI chrome | pi runtime | should stay narrow and explicit |
 | `GLOBAL_AGENTS.md` | generic global dev handbook | global pi sessions | no |
 | `APPEND_SYSTEM.md` | short system-level tool discipline | global pi sessions | no |
@@ -123,44 +121,25 @@ Current agent families:
 - **implementation / repair** — `tdd-guide`, `build-error-resolver`, `python-build-resolver`, `go-build-resolver`, `rust-build-resolver`, `refactor-cleaner`, `doc-updater`, `e2e-runner`
 - **language reviewers** — `typescript-reviewer`, `python-reviewer`, `go-reviewer`, `rust-reviewer`
 
-### 5. Chains: orchestration
+### 5. Orchestration: `orch-*` skills and workflow scripts
 
-Chains are the stable multi-agent workflow layer.
-
-Use a chain when you need:
-
-- repeated orchestration across several agents
-- a known review / plan / implement / verify sequence
-- a reusable automation path that is broader than one specialist role
-
-Current chain families:
-
-- **review** — `hkx-pr-review`, `hkx-adversarial-review`, `hkx-security-scan`, language review chains
-- **build fix** — generic and language-specific build-fix chains
-- **delivery / implementation** — `hkx-feature-flow`, `hkx-fix-defect`, `hkx-refactor-flow`, `hkx-docs-update`
-
-A chain should own the **sequence**, not the deep specialist knowledge. The specialist knowledge belongs in the agents and skills it composes.
-
-### 5b. Chains vs the `orch-*` skills
-
-The `orch-*` skill family and the delivery chains are **one sequence with two gate
-policies**, not two pipelines:
+Multi-agent sequences have exactly one owner in this package: the `orch-*` skill family.
+The engine (`orch-pipeline`) declares each operation's agent sequence once; the
+operation skills add the gate policy around it.
 
 | Layer | Owns |
 | --- | --- |
-| Chain (`chains/hkx-*.chain.json`) | Which agents run, in what order, their handoff artifacts, the fan-out shape |
-| `orch-*` skill | Size classification, phase mask, first-move rule, GATE 1 / GATE 2 |
+| `orch-pipeline` | Which agents run, in what order, and the fan-out shape |
+| operation skill (`orch-add-feature`, …) | Size classification, phase mask, first-move rule, GATE 1 / GATE 2 |
 
-A gated run replays the chain's steps **one at a time in the session**, inserting the
-gates between phases — it does not hand the whole chain to pi-subagents, because a
-packaged chain runs to completion and cannot stop at a gate.
+A gated run replays those steps **one at a time in the session**, inserting the gates
+between phases.
 
-Each operation skill declares `backing-chain:` in frontmatter, and
-`scripts/validate.mjs` fails when the skill names an agent its chain does not contain
-unless that agent is listed under `fallback-agents:` as an explicit escalation. The guard
-exists because the copies had already drifted: `orch-pipeline` said Implement →
-`tdd-guide` for every operation while `orch-refine-code` correctly used
-`refactor-cleaner`. See `docs/skill-routing.md` for the operation → chain table.
+Packaged chain files are retired: pi-subagents removed durable chain definitions
+(`/chain`, `/run-chain`, `chainName`, and packaged `.chain.json` loading). When a sequence
+must run unattended end to end, use a pi-subagents **workflow script**
+(`subagent({ workflow: true })`, `runs.run`) or `/prompt-workflow` with `chain:` frontmatter
+on prompt templates — not a chain file.
 
 ### 6. Extensions: runtime behavior
 
@@ -177,7 +156,7 @@ Current extensions:
 - `hkx-gateguard.ts` — destructive-command hard gate; matched Bash commands remain blocked while enabled
 - `hkx-hookify.ts` — operator Hookify pattern rules (warn/block); loads project `.pi/hookify.*.local.md` plus global `~/.pi/agent/hookify/hookify.*.md`; Path B installs the package-managed PowerShell parse-floor guard from `configs/hkx-hookify/`; `HKX_HOOKIFY=off`; event `bash` is the shell surface (`bash` or `powershell` on win32)
 - `hkx-language-quality.ts` — post-mutation validation notifications
-- `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to scoped permission/configured-output artifact asks so review chains do not detach
+- `hkx-subagent-supervisor-auto-reply.ts` — auto-replies to scoped permission/configured-output artifact asks so review runs do not detach
 - `hkx-working-indicator.ts` — accent braille working spinner; `/hkx-working-indicator`, `HKX_WORKING_INDICATOR=off`
 - `hkx-custom-header.ts` — custom startup header (logo + keybinding hints); `/hkx-custom-header`, `HKX_CUSTOM_HEADER=off`; adapted from amosblomqvist/pi-config
 
@@ -301,7 +280,6 @@ This is **only** for maintaining this package itself.
 The repository is the source of truth for all package surfaces:
 
 - `agents/`
-- `chains/`
 - `commands/` (slash prompt templates; mapped as `pi.prompts`)
 - `skills/`
 - `rules/`
@@ -333,15 +311,14 @@ Declared in `package.json`:
     "prompts": ["./commands"]
   },
   "pi-subagents": {
-    "agents": ["./agents"],
-    "chains": ["./chains"]
+    "agents": ["./agents"]
   }
 }
 ```
 
 - Pi loads `extensions` / `skills` / `prompts` from the `pi` block.
-- `pi-subagents` discovers package agents/chains from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
-- Agents/chains require **pi-subagents** to already be installed.
+- `pi-subagents` discovers package agents from installed package roots via `pi-subagents` or `pi.subagents` (this package uses the top-level `pi-subagents` key).
+- Agents require **pi-subagents** to already be installed.
 - Path A does **not** install rules, GLOBAL_AGENTS, APPEND_SYSTEM, MCP merges, agent-settings/keybindings overlays, or pi-lsp / permission / tool-display / notify / magic-context config overlays.
 - Path A *does* load `extensions/hkx-rules.ts`, which then finds no `~/.pi/agent/rules/` and silently injects nothing. Rules become live only under Path B.
 
@@ -352,7 +329,6 @@ Declared in `package.json`:
 Important mappings:
 
 - `agents/*.md` → `~/.pi/agent/agents/hkx/*.md`
-- `chains/*.chain.json` → `~/.pi/agent/chains/`
 - `commands/*.md` → `~/.pi/agent/commands/` **and** `~/.pi/agent/prompts/`
 - `configs/agent-settings.json` → deep-merge into `~/.pi/agent/settings.json`
 - `configs/keybindings.json` → merge managed actions into `~/.pi/agent/keybindings.json` while preserving unrelated actions
@@ -431,7 +407,7 @@ Use this decision guide.
 - the role needs a clear tool boundary
 - the same responsibility will be orchestrated repeatedly
 
-### Add a chain when
+### Add an orchestration skill when
 
 - the stable value is the sequence of multiple agents
 - the flow has a recurring plan / implement / review structure
@@ -447,7 +423,7 @@ The package follows a simple mutation discipline:
 
 - reviewers should stay read-only
 - implementation agents should mutate narrowly
-- chains should keep a single writer for the active mutation step
+- multi-agent runs should keep a single writer for the active mutation step
 - extensions should not silently do broad project mutation
 
 ## Design Principles
@@ -456,7 +432,7 @@ The package aims to be:
 
 - **pi-native** — prefer pi concepts, tool names, and install surfaces
 - **compact** — keep the core package small and readable
-- **composable** — commands, skills, agents, and chains should reinforce each other instead of duplicating each other
+- **composable** — commands, skills, and agents should reinforce each other instead of duplicating each other
 - **explicit** — runtime gates and install behavior should be easy to explain
 - **maintainable** — repo-level rules and global guidance should stay clearly separated
 

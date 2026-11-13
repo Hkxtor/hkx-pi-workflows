@@ -8,7 +8,6 @@
  * - required docs / metadata files
  * - package.json dual-path manifest (pi + pi-subagents)
  * - agents frontmatter and pi-native tools allowlist
- * - chains presence and basic shape
  * - rejection of superseded tool aliases (search, lsp/ast_grep/ast_edit)
  * - native grep/find allowed only as co-resident fallback with ffgrep/fffind
  *
@@ -47,8 +46,6 @@ const requiredFiles = [
 	"configs/agent-settings.json",
 	"configs/keybindings.json",
 	"agents/code-reviewer.md",
-	"chains/hkx-pr-review.chain.json",
-	"chains/hkx-feature-flow.chain.json",
 	// MF-4: versioned smoke suite (npm test). Do not re-gitignore these.
 	"scripts/tests/run.mjs",
 	"scripts/tests/merge-contract.mjs",
@@ -92,7 +89,7 @@ const requiredFiles = [
 	// promotion. Two suites on purpose — the pure layer and the handler contract.
 	"scripts/tests/rules-injection.mjs",
 	"scripts/tests/rules-injection-handler.mjs",
-	// Retirement contract: a rule/command/agent/chain/skill removed from the repo
+	// Retirement contract: a rule/command/agent/skill removed from the repo
 	// must not leave a dangling ~/.pi/agent symlink behind (hkx-rules would warn
 	// on every session start).
 	"scripts/tests/retired-surface-prune.mjs",
@@ -237,25 +234,6 @@ function parseToolsList(raw) {
 		.split(",")
 		.map((s) => s.trim())
 		.filter(Boolean);
-}
-
-/**
- * Collect every agent an hkx chain invokes, walking nested `parallel` blocks
- * and `chain` references. Used to keep `skills/orch-*` from restating a
- * sequence that disagrees with its backing chain.
- */
-function collectChainAgents(node, out = new Set()) {
-	if (Array.isArray(node)) {
-		for (const item of node) collectChainAgents(item, out);
-		return out;
-	}
-	if (node && typeof node === "object") {
-		if (typeof node.agent === "string") {
-			out.add(node.agent.replace(/^hkx\./, ""));
-		}
-		if (node.parallel) collectChainAgents(node.parallel, out);
-	}
-	return out;
 }
 
 // Shared env-var name charset. MUST match `ENV_VAR_NAME` in
@@ -429,7 +407,6 @@ async function lintSkillReferences(errors) {
 	};
 
 	await addDir("agents", /\.md$/);
-	await addDir("chains", /\.chain\.json$/);
 	await addDir("commands", /\.md$/);
 	await addDir("rules", /\.(md|mdc)$/);
 
@@ -479,7 +456,7 @@ async function lintSkillReferences(errors) {
 			if (!match) continue;
 			if (namespace.has(match[1])) continue;
 			errors.push(
-				`${relativePath}: Related section references "${match[1]}", which is not a skill, agent, chain, command, or rule`,
+				`${relativePath}: Related section references "${match[1]}", which is not a skill, agent, command, or rule`,
 			);
 		}
 	}
@@ -668,22 +645,27 @@ async function main() {
 		}
 	}
 
-	// pi-subagents discovery (agents/chains from installed packages)
+	// pi-subagents discovery (agents from installed packages)
 	const piSub =
 		pkg["pi-subagents"] && typeof pkg["pi-subagents"] === "object"
 			? pkg["pi-subagents"]
 			: null;
 	if (!piSub) {
 		errors.push(
-			'package.json missing "pi-subagents" block for agents/chains discovery',
+			'package.json missing "pi-subagents" block for agents discovery',
 		);
 	} else {
-		for (const key of ["agents", "chains"]) {
-			if (!Array.isArray(piSub[key]) || piSub[key].length === 0) {
-				errors.push(
-					`package.json pi-subagents.${key} must be a non-empty array`,
-				);
-			}
+		if (!Array.isArray(piSub.agents) || piSub.agents.length === 0) {
+			errors.push(
+				"package.json pi-subagents.agents must be a non-empty array",
+			);
+		}
+		// Chains are retired: pi-subagents removed durable chain definitions, so a
+		// declared chains/ path would ship files nothing reads.
+		if (piSub.chains !== undefined) {
+			errors.push(
+				"package.json pi-subagents.chains is retired: pi-subagents removed durable chain definitions",
+			);
 		}
 	}
 
@@ -1566,106 +1548,6 @@ async function main() {
 		}
 	}
 
-	// chains
-	let chainFiles = [];
-	const chainAgents = new Map();
-	try {
-		chainFiles = (await fs.readdir(path.join(root, "chains"))).filter(
-			(f) => f.endsWith(".chain.json") || f.endsWith(".chain.md"),
-		);
-	} catch {
-		errors.push("missing chains/ directory");
-	}
-	for (const file of chainFiles) {
-		const full = path.join(root, "chains", file);
-		if (file.endsWith(".chain.json")) {
-			try {
-				const obj = JSON.parse(await fs.readFile(full, "utf8"));
-				if (!obj.name || !obj.description || !Array.isArray(obj.chain)) {
-					errors.push(
-						`chains/${file}: must include name, description, chain[]`,
-					);
-				} else {
-					chainAgents.set(obj.name, collectChainAgents(obj.chain));
-				}
-			} catch (err) {
-				errors.push(`chains/${file}: invalid JSON: ${err.message}`);
-			}
-		}
-	}
-
-	// orch operation skills vs their backing chain.
-	// The packaged chain owns the agent sequence; the orch skill owns size
-	// classification, phase mask, first-move rules, and the two gates. Encoding
-	// the sequence twice is how the copies drift (orch-pipeline once said
-	// Implement -> tdd-guide while orch-refine-code correctly used
-	// refactor-cleaner). So: a declared chain must exist, and an operation skill
-	// may only name agents that chain contains -- anything else has to be an
-	// explicit escalation in `fallback-agents`. `agentNames` (frontmatter names,
-	// validated above to equal the file basename) is reused rather than rebuilt.
-	let orchSkillFiles = [];
-	try {
-		orchSkillFiles = (await fs.readdir(path.join(root, "skills"), {
-			withFileTypes: true,
-		}))
-			.filter((d) => d.isDirectory() && d.name.startsWith("orch-"))
-			.map((d) => path.join(root, "skills", d.name, "SKILL.md"));
-	} catch {
-		errors.push("missing skills/ directory");
-	}
-	for (const filePath of orchSkillFiles) {
-		const relativePath = path.relative(root, filePath);
-		let text;
-		try {
-			text = await fs.readFile(filePath, "utf8");
-		} catch {
-			continue;
-		}
-		const fmMatch = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
-		if (!fmMatch) continue; // requireFrontmatter reports the missing block
-		const skillName = path.basename(path.dirname(filePath));
-		const chainField = frontmatterField(fmMatch[1], "backing-chain");
-		if (skillName === "orch-pipeline") {
-			if (chainField) {
-				errors.push(
-					`${relativePath}: orch-pipeline is the shared engine and must not declare backing-chain`,
-				);
-			}
-			continue;
-		}
-		if (!chainField || !chainField.value) {
-			errors.push(
-				`${relativePath}: missing frontmatter field backing-chain (name the packaged chain that owns this operation's agent sequence)`,
-			);
-			continue;
-		}
-		const chainSet = chainAgents.get(chainField.value);
-		if (!chainSet) {
-			errors.push(
-				`${relativePath}: backing-chain "${chainField.value}" matches no chains/*.chain.json name`,
-			);
-			continue;
-		}
-		const allowed = new Set(chainSet);
-		const fallbackField = frontmatterField(fmMatch[1], "fallback-agents");
-		for (const name of parseToolsList(fallbackField?.value ?? "")) {
-			allowed.add(name);
-		}
-		const body = text.slice(fmMatch[0].length);
-		for (const name of agentNames) {
-			const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-			const re = new RegExp(
-				`(?:^|[^A-Za-z0-9_.-])(?:hkx\\.)?${escaped}(?![A-Za-z0-9_.-])`,
-			);
-			if (!re.test(body)) continue;
-			if (!allowed.has(name)) {
-				errors.push(
-					`${relativePath}: names agent "${name}", which is neither in backing-chain ${chainField.value} nor in fallback-agents`,
-				);
-			}
-		}
-	}
-
 	// commands (prompt templates) / skills / rules — frontmatter only
 	// On disk the directory remains commands/; package.json maps it as pi.prompts.
 	//
@@ -1686,6 +1568,16 @@ async function main() {
 			const text = await fs.readFile(filePath, "utf8");
 			// skills often use name+description; commands/prompts description; rules description
 			errors.push(...requireFrontmatter(relativePath, text, ["description"]));
+			// Chains are retired: the agent sequence lives once in the orch engine, so a
+			// `backing-chain` field would point at a file that no longer exists.
+			if (dir === "skills") {
+				const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
+				if (frontmatter && frontmatterField(frontmatter[1], "backing-chain")) {
+					errors.push(
+						`${relativePath}: backing-chain is retired — declare the agent sequence once in skills/orch-pipeline/SKILL.md`,
+					);
+				}
+			}
 		}
 	}
 
@@ -1704,7 +1596,7 @@ async function main() {
 		process.exit(1);
 	}
 	console.log(
-		`validate ok: ${agentFiles.length} agents, ${chainFiles.length} chains, package @hkx/pi-workflows (pi + pi-subagents)`,
+		`validate ok: ${agentFiles.length} agents, package @hkx/pi-workflows (pi + pi-subagents)`,
 	);
 }
 
