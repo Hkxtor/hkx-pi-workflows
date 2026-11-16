@@ -57,6 +57,8 @@
       "*": "ask",
       "/root/workspace": "allow",
       "/root/workspace/*": "allow",
+      "D:/workspace": "allow",
+      "D:/workspace/*": "allow",
       "/tmp": "allow",
       "/tmp/*": "allow",
       "/var/tmp": "allow",

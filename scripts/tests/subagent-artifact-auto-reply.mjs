@@ -376,6 +376,31 @@ process.exit(bad.length ? 1 : 0);
 		"permission: /tmp write allowed",
 		resolveOutsideCwd(writeMap, "/tmp/x") === "allow",
 	);
+	// The agent workspace root is a write target on both platforms: the sibling
+	// project checkouts live there even though each session's cwd is one level
+	// deeper. `/root/workspace` is the Linux container root, `D:/workspace` the
+	// Windows host root; the Windows entry is inert on POSIX and vice versa.
+	check(
+		"permission: workspace root write allowed",
+		resolveOutsideCwd(writeMap, path.join("/root/workspace", "probe/x")) ===
+			"allow",
+	);
+	check(
+		"permission: Windows workspace root write allowed",
+		resolveOutsideCwd(
+			writeMap,
+			path.join("D:/workspace", "probe", "file.txt"),
+		) === "allow",
+	);
+	check(
+		"permission: Windows workspace root itself write allowed",
+		resolveOutsideCwd(writeMap, "D:/workspace") === "allow",
+	);
+	// The grant is the workspace root, not the whole drive.
+	check(
+		"permission: Windows drive outside the workspace still asks",
+		resolveOutsideCwd(writeMap, path.join("D:/other", "probe/x")) === "ask",
+	);
 	// Windows scratch roots mirror the POSIX `/tmp` grant. Without them a probe
 	// script written to %TEMP% prompts on every call while the same write to
 	// /tmp passes — an asymmetry that only ever costs Windows operators a
