@@ -65,14 +65,13 @@ General:
 - `e2e-runner` — end-to-end test orchestration
 - `code-explorer` — codebase investigation and tracing
 
-Build error resolvers:
+Build error resolvers: resolved through `orch-pipeline`'s escalation table (language →
+resolver). The mapping is declared there and not repeated here; `lang=unknown` falls back
+per rule 6 below.
 
-- `build-error-resolver` — TypeScript/JavaScript
-- `python-build-resolver` / `go-build-resolver` / `rust-build-resolver`
-
-Code reviewers:
-
-- `python-reviewer` / `typescript-reviewer` / `go-reviewer` / `rust-reviewer`
+Code reviewers: the language reviewers are named in `orch-pipeline`'s review fan-out.
+Resolve `<lang>-reviewer` from there; `lang=unknown` resolves to `code-reviewer` per rule 5
+below.
 
 Main-session surfaces (not agents — emit a command/skill step, not a `task()` call):
 
@@ -148,7 +147,9 @@ Sequence composition rules:
 3. `impl` + `db` → `tdd-guide,<lang>-reviewer`, with the `database-migrations` review checklist applied between them in this session.
 4. **Deduplicate** the resulting sequence (preserve first occurrence).
 5. `<lang>-reviewer` resolves to `code-reviewer` when `lang=unknown`.
-6. Build resolver mapping is explicit: TypeScript/JavaScript → `build-error-resolver`; Python → `python-build-resolver`; Go → `go-build-resolver`; Rust → `rust-build-resolver`; `lang=unknown` → `tdd-guide` with `no specialized build resolver` recorded under "Sequence rationale".
+6. Build resolver: resolve `lang` through `orch-pipeline`'s escalation table rather than a
+   copy of it; `lang=unknown` → `tdd-guide` with `no specialized build resolver` recorded
+   under "Sequence rationale".
 7. **Zero-tag steps**: if no trigger word matches, set sequence to `code-reviewer`
    and write `no tag matched; default review-only sequence` under "Sequence
    rationale".
