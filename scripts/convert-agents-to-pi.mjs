@@ -226,7 +226,7 @@ function convertOne(file) {
 	const defaultContext = isWriter ? "fork" : "fresh";
 	const thinking = HIGH_THINKING.has(name)
 		? "high"
-		: name === "code-explorer" || name === "docs-lookup"
+		: name === "docs-lookup"
 			? "medium"
 			: "high";
 

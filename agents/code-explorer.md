@@ -5,7 +5,7 @@ acceptanceRole: read-only
 description: Deeply analyzes existing codebase features by tracing execution paths and mapping architecture layers to inform new development, or mines baseline behavioral specs (Requirements WHEN→THEN / Invariants) from a brownfield module that has none.
 tools: read, ffgrep, fffind, grep, find, ls, bash, intercom
 subagentOnlyExtensions: npm:@ff-labs/pi-fff
-thinking: medium
+thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
 inheritSkills: false
