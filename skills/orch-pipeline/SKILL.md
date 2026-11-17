@@ -50,8 +50,9 @@ Each phase delegates — it does not do the work inline.
   (`tdd-guide` for feature / change / fix / mvp, `refactor-cleaner` for refine):
   red → green → refactor. Honor the operation's first-move rule.
 - **5. Review** — run the review fan-out in the sequence table below (`code-reviewer`
-  always, plus `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, or the
-  language reviewer for the diff's dominant language). Add `security-reviewer` whenever
+  always, plus `security-reviewer`, `pr-test-analyzer`, `silent-failure-hunter`, and one
+  language reviewer for the diff's dominant language — `typescript-reviewer`,
+  `python-reviewer`, `go-reviewer`, or `rust-reviewer`). Add `security-reviewer` whenever
   the diff touches a security trigger even when the fan-out would omit it.
 - **6. Commit** — conventional commits (`feat:` / `fix:` / `refactor:` / …), one per logical chunk. → **GATE 2.**
 
@@ -111,10 +112,13 @@ rather than execution:
 |---|---|---|
 | Intake / understand | `code-explorer` (or its `mine` mode for a spec-less module) | trace existing paths before a tweak, fix, or refactor |
 | Plan | `/hkx-plan` (main session) | design skills (`hexagonal-architecture`, `api-design`) for structural calls |
-| Build break | — | `build-error-resolver` / `/build-fix` |
+| Build break | — | `build-error-resolver` (TS/JS) · `python-build-resolver` · `go-build-resolver` · `rust-build-resolver`, or `/build-fix` |
 | Docs touch | — | `doc-updater` |
 
-Match the language reviewer to the repo — the review fan-out already does this per language.
+Match the build resolver and the language reviewer to the repo — pair them so one
+language's resolver is not reached through another's. This table is the only place both
+mappings are stated; `plan-orchestrate` derives its own from here rather than repeating
+them.
 
 ## Security-Review Trigger
 

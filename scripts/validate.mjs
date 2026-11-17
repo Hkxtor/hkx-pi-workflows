@@ -462,6 +462,87 @@ async function lintSkillReferences(errors) {
 	}
 }
 
+/**
+ * Orch skill sequence ownership.
+ *
+ * Packaged chains are retired, so `orch-pipeline` is the one place that declares
+ * which agents run and in what order; the operation skills own only policy. The
+ * chain parser used to enforce that split by comparing each skill against its
+ * `backing-chain`; with the chains gone the comparison is gone with it.
+ *
+ * The split had already failed once without enforcement: `orch-pipeline` said
+ * Implement -> `tdd-guide` for every operation while `orch-refine-code` used
+ * `refactor-cleaner`. Two text checks keep it honest without a chain file:
+ *
+ * 1. An operation skill must not restate the sequence. A `## Agent N` / `## Step N`
+ *    heading is the shape a restated sequence takes, and is where that drift lived.
+ * 2. An operation skill may name an agent only if `orch-pipeline` names it too.
+ *    Naming an agent the engine does not route is how a second, unreviewed
+ *    sequence starts.
+ *
+ * Only agents that exist under `agents/` are checked, so prose may still mention
+ * a command or a skill without tripping either rule.
+ */
+async function lintOrchSkillSequences(errors) {
+	const pipelineFile = path.join(root, "skills", "orch-pipeline", "SKILL.md");
+	let pipeline;
+	try {
+		pipeline = await fs.readFile(pipelineFile, "utf8");
+	} catch {
+		return;
+	}
+
+	const operationSkills = [
+		"orch-add-feature",
+		"orch-change-feature",
+		"orch-fix-defect",
+		"orch-refine-code",
+		"orch-build-mvp",
+		"orch-review",
+	];
+
+	let agentEntries;
+	try {
+		agentEntries = await fs.readdir(path.join(root, "agents"));
+	} catch {
+		return;
+	}
+	const agentNames = new Set(
+		agentEntries
+			.filter((entry) => entry.endsWith(".md"))
+			.map((entry) => entry.replace(/\.md$/, "")),
+	);
+
+	for (const skill of operationSkills) {
+		const file = path.join(root, "skills", skill, "SKILL.md");
+		let text;
+		try {
+			text = await fs.readFile(file, "utf8");
+		} catch {
+			continue;
+		}
+		const relativePath = path.relative(root, file);
+
+		const restated = /^#{2,3}\s+(?:Agent|Step)\s+\d+\b/m.exec(text);
+		if (restated) {
+			errors.push(
+				`${relativePath}: restates the agent sequence ("${restated[0].trim()}"); the sequence is declared once in skills/orch-pipeline/SKILL.md`,
+			);
+		}
+
+		const named = new Set();
+		for (const match of text.matchAll(/`([a-z][a-z0-9-]+)`/g)) {
+			const name = match[1];
+			if (!agentNames.has(name) || named.has(name)) continue;
+			named.add(name);
+			if (pipeline.includes(`\`${name}\``)) continue;
+			errors.push(
+				`${relativePath}: names agent "${name}", which skills/orch-pipeline/SKILL.md does not route`,
+			);
+		}
+	}
+}
+
 async function main() {
 	for (const rel of requiredFiles) {
 		try {
@@ -1590,6 +1671,10 @@ async function main() {
 	// is a reference a reader cannot follow. Added after two such references were found by
 	// hand (one pointing at a deferred skill, one at a .js file that is .cjs).
 	await lintSkillReferences(errors);
+
+	// Orch skill ownership: the sequence lives in `orch-pipeline` only, and an
+	// operation skill may not name an agent that engine does not route.
+	await lintOrchSkillSequences(errors);
 
 	if (errors.length) {
 		for (const e of errors) console.error(e);
