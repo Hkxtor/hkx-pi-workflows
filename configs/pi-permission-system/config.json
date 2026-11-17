@@ -20,6 +20,7 @@
     },
     "bash": {
       "*": "allow",
+      "cd *": "allow",
       "mv *": "ask",
       "git restore *": "ask",
       "Remove-Item *": "ask",
@@ -69,6 +70,8 @@
       "~/.npm/*": "allow",
       "~/.cargo/registry": "allow",
       "~/.cargo/registry/*": "allow",
+      "~/.cargo/git": "allow",
+      "~/.cargo/git/*": "allow",
       "~/development/*": "allow",
       "~/AppData/Local/Temp": "allow",
       "~/AppData/Local/Temp/*": "allow",
