@@ -97,19 +97,19 @@
           "thinking": "high"
         },
         "hkx.rust-reviewer": {
-          "model": "meme/qwen4-max",
+          "model": "meme/kimi-k3.1-pro",
           "thinking": "high"
         },
         "hkx.security-reviewer": {
-          "model": "meme/qwen4-max",
+          "model": "meme/kimi-k3.1-pro",
           "thinking": "high"
         },
         "hkx.silent-failure-hunter": {
-          "model": "meme/qwen4-max",
+          "model": "meme/kimi-k3.1-pro",
           "thinking": "high"
         },
         "hkx.pr-test-analyzer": {
-          "model": "meme/qwen4-max",
+          "model": "meme/kimi-k3.1-pro",
           "thinking": "high"
         },
         "hkx.agent-evaluator": {
