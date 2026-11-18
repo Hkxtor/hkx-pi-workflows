@@ -36,5 +36,91 @@
   },
   "rewind": {
     "silentCheckpoints": true
+  },
+  "subagents": {
+    "agentOverridesByProvider": {
+      "meme": {
+        "hkx.code-explorer": {
+          "model": "meme/deepseek-v4.1-flash",
+          "thinking": "high"
+        },
+        "hkx.build-error-resolver": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.go-build-resolver": {
+          "model": "meme/grok-4.7",
+          "thinking": "medium"
+        },
+        "hkx.python-build-resolver": {
+          "model": "meme/grok-4.7",
+          "thinking": "medium"
+        },
+        "hkx.rust-build-resolver": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.tdd-guide": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.refactor-cleaner": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.e2e-runner": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.gan-generator": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.doc-updater": {
+          "model": "meme/qwen3.8-max",
+          "thinking": "medium"
+        },
+        "hkx.code-reviewer": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.typescript-reviewer": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.go-reviewer": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.python-reviewer": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.rust-reviewer": {
+          "model": "meme/qwen4-max",
+          "thinking": "high"
+        },
+        "hkx.security-reviewer": {
+          "model": "meme/qwen4-max",
+          "thinking": "high"
+        },
+        "hkx.silent-failure-hunter": {
+          "model": "meme/qwen4-max",
+          "thinking": "high"
+        },
+        "hkx.pr-test-analyzer": {
+          "model": "meme/qwen4-max",
+          "thinking": "high"
+        },
+        "hkx.agent-evaluator": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        },
+        "hkx.gan-evaluator": {
+          "model": "meme/grok-4.7",
+          "thinking": "high"
+        }
+      }
+    }
   }
 }
