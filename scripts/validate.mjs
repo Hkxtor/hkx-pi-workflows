@@ -155,7 +155,7 @@ const extensionToolProviders = new Map([
 	["todo", "npm:@juicesharp/rpiv-todo"],
 ]);
 
-// Keep this list tracking the packages pi ships (pi 1.5.0 bundles pi-schema,
+// Keep this list tracking the packages pi ships (pi 1.6.0 bundles pi-schema,
 // pi-codemode, and pi-mcp alongside the older core packages). An extension that
 // imports one of them must declare it as a wildcard peer, and listing one as a
 // dependency would bundle a second copy of pi's runtime.
